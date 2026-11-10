@@ -78,13 +78,20 @@ class Plants(unittest.TestCase):
                 {"id": "c7", "author": "bet", "round": 3, "verdict": "ignores", "why": ""},
                 {"id": "c8", "author": "alef", "round": 5, "verdict": None, "why": ""}]
         e = summarise_plant(plant, reps)
-        self.assertEqual((e["caught"], e["by"], e["caught_round"], e["rounds_to_catch"]), (True, ["bet", "alef"], 3, 1))
-        self.assertEqual(e["counts"], {"catches": 2, "accepts": 0, "ignores": 1, "dismisses": 0})
+        # c3 is filed under alef, so alef's catch in round 3 does not count; bet's in round 4 does
+        self.assertEqual((e["caught"], e["by"], e["caught_round"], e["rounds_to_catch"]), (True, ["bet"], 4, 2))
+        self.assertEqual(e["counts"], {"catches": 1, "accepts": 0, "ignores": 1, "dismisses": 0})
+        self.assertEqual([r.get("nominal_author", False) for r in e["replies"]], [False, True, False, True])
+        e = summarise_plant(plant, [r for r in reps if r["author"] == "alef"])
+        self.assertEqual((e["caught"], e["by"], e["caught_round"], len(e["replies"])), (False, [], None, 2))
         e = summarise_plant(plant, [{**r, "verdict": "accepts"} for r in reps])
         self.assertEqual((e["caught"], e["by"], e["caught_round"], e["rounds_to_catch"]), (False, [], None, None))
         sound = self.page.d["comments"][3]
+        # c4 is filed under bet, so bet's dismissal does not count; alef's does
         e = summarise_plant(sound, [{**reps[0], "verdict": "dismisses"}, {**reps[1], "verdict": "catches"}])
-        self.assertEqual((e["caught"], e["dismissed"], e["dismissed_by"], e["dismissed_round"]), (False, True, ["bet"], 4))
+        self.assertEqual((e["caught"], e["dismissed"], e["dismissed_by"], e["dismissed_round"]), (False, False, [], None))
+        e = summarise_plant(sound, [{**reps[0], "verdict": "dismisses"}, {**reps[1], "verdict": "dismisses"}])
+        self.assertEqual((e["dismissed"], e["dismissed_by"], e["dismissed_round"]), (True, ["alef"], 3))
 
     def test_command_end_to_end(self):
         calls = []
@@ -108,11 +115,18 @@ class Plants(unittest.TestCase):
         self.assertEqual([(r["id"], r["verdict"]) for r in slip["replies"]],
                          [("c5", "catches"), ("c6", "accepts"), ("c7", "ignores"), ("c8", "ignores")])
         self.assertEqual((slip["caught"], slip["by"], slip["caught_round"], slip["rounds_to_catch"]), (True, ["bet"], 3, 1))
-        self.assertEqual((sound["caught"], sound["dismissed"], sound["dismissed_by"]), (False, True, ["bet"]))
+        self.assertEqual([r["id"] for r in slip["replies"] if r.get("nominal_author")], ["c6", "c8"])
+        self.assertEqual(slip["counts"], {"catches": 1, "accepts": 0, "ignores": 1, "dismisses": 0})
+        # c4 is filed under bet, and its only reply, c9, is bet's own
+        self.assertEqual((sound["caught"], sound["dismissed"], sound["dismissed_by"]), (False, False, []))
+        self.assertEqual([(r["id"], r["verdict"], r.get("nominal_author")) for r in sound["replies"]], [("c9", "dismisses", True)])
         self.assertEqual(len(res["usage"]), 2)
         self.assertEqual(res["notes"], [])
         self.assertIn("caught in round 3 by bet", out)
-        self.assertIn("dismissed in round 3 by bet", out)
+        self.assertIn("by bet, round 2: not dismissed; 0 replies", out)
+        self.assertIn("not counted: 1 reply by bet, the plant's nominal author: c9 dismisses", out)
+        self.assertIn("2 replies (1 catches, 1 ignores)", out)
+        self.assertIn("not counted: 2 replies by alef, the plant's nominal author: c6 accepts, c8 ignores", out)
 
     def test_malformed_judge_output(self):
         notes = []

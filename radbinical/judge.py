@@ -4,7 +4,8 @@ Plants. A plant is a comment with `kind: "plant"` and `meta: {"sort", "truth"}`.
 subtle factual slip or bad argument and `truth` says what is wrong with it; sort "sound" is a sound
 but unfashionable reading and `truth` says why it holds. `judge_plants(page, judge)` finds every
 later comment that replies to a plant (at any depth) or names it in `see_also`, and asks the judge,
-one call per plant, whether each reply catches, accepts, ignores or dismisses it.
+one call per plant, whether each reply catches, accepts, ignores or dismisses it. Replies by the
+reader the plant is filed under are judged and listed but do not decide its outcome.
 
 Claims. `judge_claims(page, judge, extractor)` asks the extractor to pull checkable factual claims
 out of the readers' comments, each marked `hedged` when the comment itself flags doubt about it,
@@ -175,15 +176,21 @@ def first(replies, verdict):
 
 
 def summarise_plant(plant, replies):
-    """The plants.json entry for one plant from its judged replies."""
+    """The plants.json entry for one plant from its judged replies.
+
+    A plant is filed under a real reader's name, so that reader's replies in its thread are not
+    answers from someone who saw another's mistake. They are kept in `replies`, marked
+    `"nominal_author": true`, and left out of `counts` and of who caught or dismissed it and when."""
     sort, rnd = plant["meta"]["sort"], plant["layer"]
+    replies = [{**r, "nominal_author": True} if r["author"] == plant["author"] else r for r in replies]
+    counted = [r for r in replies if not r.get("nominal_author")]
     e = {"id": plant["id"], "sort": sort, "truth": plant["meta"]["truth"], "author": plant["author"], "round": rnd,
-         "replies": replies, "counts": {v: sum(r["verdict"] == v for r in replies) for v in VERDICTS}}
+         "replies": replies, "counts": {v: sum(r["verdict"] == v for r in counted) for v in VERDICTS}}
     if sort == "slip":
-        by, cr = first(replies, "catches")
+        by, cr = first(counted, "catches")
         e.update(caught=bool(by), by=by, caught_round=cr, rounds_to_catch=None if cr is None else cr - rnd)
     else:
-        by, dr = first(replies, "dismisses")
+        by, dr = first(counted, "dismisses")
         e.update(caught=False, by=[], caught_round=None, rounds_to_catch=None,
                  dismissed=bool(by), dismissed_by=by, dismissed_round=dr)
     return e
@@ -223,10 +230,15 @@ def plants_report(res):
         else:
             head += (f"dismissed in round {e['dismissed_round']} by {', '.join(e['dismissed_by'])}"
                      if e["dismissed"] else "not dismissed")
+        counted = [r for r in e["replies"] if not r.get("nominal_author")]
+        nominal = [r for r in e["replies"] if r.get("nominal_author")]
         counts = ", ".join(f"{n} {v}" for v, n in e["counts"].items() if n)
-        unjudged = sum(r["verdict"] is None for r in e["replies"])
-        lines.append(head + f"; {len(e['replies'])} repl{'y' if len(e['replies']) == 1 else 'ies'}"
+        unjudged = sum(r["verdict"] is None for r in counted)
+        lines.append(head + f"; {len(counted)} repl{'y' if len(counted) == 1 else 'ies'}"
                      + (f" ({counts})" if counts else "") + (f", {unjudged} without a verdict" if unjudged else ""))
+        if nominal:
+            lines.append(f"    not counted: {len(nominal)} repl{'y' if len(nominal) == 1 else 'ies'} by {e['author']}, "
+                         f"the plant's nominal author: " + ", ".join(f"{r['id']} {r['verdict'] or 'no verdict'}" for r in nominal))
     if res["notes"]:
         lines.append(f"{len(res['notes'])} note(s) in plants.json")
     return "\n".join(lines)
