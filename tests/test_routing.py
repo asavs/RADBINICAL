@@ -136,5 +136,46 @@ class Anthropic(unittest.TestCase):
         self.assertFalse(s.truncated)
 
 
+class Retry(unittest.TestCase):
+    def test_402_waits_for_retry_after_then_succeeds(self):
+        import io
+        import urllib.error
+        from radbinical.providers import http
+        calls, waits = [], []
+        def urlopen(req, timeout=None):
+            calls.append(1)
+            if len(calls) < 3:
+                raise urllib.error.HTTPError("u", 402, "in flight", {"Retry-After": "20"}, io.BytesIO(b"{}"))
+            class R:
+                def __enter__(self): return self
+                def __exit__(self, *a): return False
+                def read(self): return b'{"choices": [{"message": {"content": "ok"}}]}'
+            return R()
+        real = http.urllib.request.urlopen, http.time.sleep
+        http.urllib.request.urlopen, http.time.sleep = urlopen, waits.append
+        try:
+            self.assertEqual(http.post_json("http://x", "openrouter", {"model": "m"})["choices"][0]["message"]["content"], "ok")
+        finally:
+            http.urllib.request.urlopen, http.time.sleep = real
+        self.assertEqual([int(w) for w in waits], [20, 20])
+
+    def test_gives_up_after_attempts(self):
+        import io
+        import urllib.error
+        from radbinical.providers import http
+        def urlopen(req, timeout=None):
+            raise urllib.error.HTTPError("u", 429, "busy", {}, io.BytesIO(b"{}"))
+        real = http.urllib.request.urlopen, http.time.sleep
+        waits = []
+        http.urllib.request.urlopen, http.time.sleep = urlopen, waits.append
+        try:
+            with self.assertRaises(RuntimeError):
+                http.post_json("http://x", "openrouter", {"model": "m"})
+        finally:
+            http.urllib.request.urlopen, http.time.sleep = real
+        self.assertEqual(len(waits), http.ATTEMPTS - 1)
+        self.assertTrue(all(w < 61 for w in waits))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -22,6 +22,9 @@ def api_key(provider):
     return next((os.environ[n] for n in KEYS[provider] if os.environ.get(n)), None)
 
 
+ATTEMPTS = 8  # with backoff capped at a minute, about five minutes of retrying
+
+
 def post_json(url, provider, body):
     # If no key is set locally a placeholder is sent; in a managed environment the
     # network proxy swaps in the real credential for the host.
@@ -29,7 +32,8 @@ def post_json(url, provider, body):
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={
         "Authorization": f"Bearer {key}", "Content-Type": "application/json", "X-Title": "radbinical"})
     last = None
-    for attempt in range(5):
+    for attempt in range(ATTEMPTS):
+        wait = min(3 * 2 ** attempt, 60) + random.random()
         try:
             with urllib.request.urlopen(req, timeout=600) as r:
                 data = json.loads(r.read())
@@ -42,9 +46,14 @@ def post_json(url, provider, body):
             last = RuntimeError(f"HTTP {e.code} for {body['model']}: {e.read().decode(errors='replace')[:400]}")
             if e.code not in (402, 408, 409, 429) and e.code < 500:
                 raise last
+            # A shared provider answers 402 when requests already in flight hold the credit; it says when to retry.
+            after = (e.headers or {}).get("Retry-After") if e.headers is not None else None
+            if after and str(after).replace(".", "", 1).isdigit():
+                wait = min(float(after), 120) + random.random()
         except (urllib.error.URLError, TimeoutError, ConnectionError, RuntimeError, json.JSONDecodeError) as e:
             last = e
-        time.sleep(3 * 2 ** attempt + random.random())
+        if attempt < ATTEMPTS - 1:
+            time.sleep(wait)
     raise last
 
 
