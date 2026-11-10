@@ -8,16 +8,16 @@ Pages so far: https://asavs.github.io/radbinical/
 
 ## Run it
 
-    python3 radbinical.py run config.json
+    python3 -m radbinical run config.json
 
 This writes `runs/<name>/page.json`, the full record, and `runs/<name>/page.html`, a page you can
 open in a browser. Python 3.10 or later; no packages needed unless you call Anthropic directly
 (`pip install anthropic`).
 
-    python3 radbinical.py run config.mock.json                       # no keys; placeholder comments
-    python3 radbinical.py extend runs/<name> -n 2                    # two more rounds
-    python3 radbinical.py extend runs/<name> -n 1 --models x-ai/grok-4.7   # a new reader joins
-    python3 radbinical.py site                                       # rebuild docs/ for the website
+    python3 -m radbinical run config.mock.json                       # no keys; placeholder comments
+    python3 -m radbinical extend runs/<name> -n 2                    # two more rounds
+    python3 -m radbinical extend runs/<name> -n 1 --models x-ai/grok-4.7   # a new reader joins
+    python3 -m radbinical site                                       # rebuild docs/ for the website
 
 ## Readers and keys
 
@@ -63,7 +63,20 @@ Set under `flags` in the config.
 | `temperature` | none | Sampling temperature; unset uses each model's default |
 | `seed` | 0 | Fixes the shuffled order of readers |
 
+## Layout
+
+| Path | What it holds |
+|---|---|
+| `radbinical/cli.py` | Commands |
+| `radbinical/rounds.py` | The round loop and each reader's turn |
+| `radbinical/page.py` | The page record and the view each reader gets |
+| `radbinical/prompts.py` | What readers are told, and their one tool |
+| `radbinical/anchoring.py` | Matching a quoted span to the passage |
+| `radbinical/providers/` | One file per way of reaching a model |
+| `radbinical/site.py`, `radbinical/templates/` | The web pages |
+| `tests/` | `python3 -m unittest discover -s tests` |
+
 ## Website
 
-`python3 radbinical.py site` rebuilds `docs/`. GitHub Pages serves it from the `main` branch,
+`python3 -m radbinical site` rebuilds `docs/`. GitHub Pages serves it from the `main` branch,
 `/docs` folder.

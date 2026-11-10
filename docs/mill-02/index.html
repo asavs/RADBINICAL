@@ -131,7 +131,7 @@ const md = s => esc(s).split(/\n\s*\n/).map(p => '<p>' + p
 const lemmaOf = q => { const w = q.trim().split(/\s+/); return w.length > 9 ? w.slice(0, 8).join(' ') + '…' : q.trim() };
 
 function start() {
-  if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 radbinical.py render runs/<dir>'; return }
+  if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
   const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
   const ink = a => `var(--a${authors.indexOf(a) % 8})`;
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));

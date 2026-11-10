@@ -30,9 +30,9 @@ jobs:
           python-version: "3.12"
       - run: pip install anthropic
       - name: Run the page
-        run: python3 radbinical.py run "$CONFIG" --out "runs/${NAME:-$(date -u +%Y%m%d-%H%M%S)}"
+        run: python3 -m radbinical run "$CONFIG" --out "runs/${NAME:-$(date -u +%Y%m%d-%H%M%S)}"
       - name: Rebuild the website
-        run: python3 radbinical.py site
+        run: python3 -m radbinical site
       - name: Commit the result
         run: |
           git config user.name "github-actions[bot]"
