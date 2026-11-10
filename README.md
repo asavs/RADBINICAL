@@ -280,8 +280,14 @@ Set under `flags` in the config.
 
 ## The page
 
-The passage sits in the middle. Comments on the passage run in the inner column, comments on
-comments in the outer one. The rounds slider and Play show the page as it stood after each round;
+The page is built from one shape: a text with a margin, where whatever is written on the text
+stands in that margin and has a margin of its own. The passage sits in the middle with a margin on
+either side. A comment's margin lies on its far side from the passage, so a thread reads outward one
+step at a time; where there is no room for a margin beside its comment, it runs beneath it. In code
+the same shape is `children`, `thread` and `below` in `radbinical/page.py`: the passage and every
+comment are nodes, and a comment's `target` is the node it is written on.
+
+The rounds slider and Play show the page as it stood after each round;
 clicking a reader in the key hides or shows them. Selecting a comment opens its whole thread.
 People's comments carry a dotted number. Beneath the sheet, the Apparatus shows the side files
 marked "viewer" above.

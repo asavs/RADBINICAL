@@ -89,7 +89,23 @@ def load_passage(path):
 
 
 def children(page, cid):
+    """The comments written on node `cid`, in the order they were made. A node is the passage
+    (id "passage") or a comment; every comment is a node in the margin of the node it targets."""
     return [c for c in page["comments"] if c["target"] == cid]
+
+
+def thread(page, c):
+    """The chain of comments from the one on the passage down to comment `c`, c last."""
+    by_id = {x["id"]: x for x in page["comments"]}
+    chain = [c]
+    while chain[0]["target"] in by_id and len(chain) <= len(by_id):
+        chain.insert(0, by_id[chain[0]["target"]])
+    return chain
+
+
+def below(page, cid):
+    """Every comment in the margins of node `cid`, however deep: each one followed by its own."""
+    return [x for k in children(page, cid) for x in (k, *below(page, k["id"]))]
 
 
 def render_for_reader(page, visible, label, me):
@@ -118,9 +134,9 @@ def render_for_reader(page, visible, label, me):
             if k["id"] in vis_ids:
                 walk(k, depth + 1)
 
-    tops = [c for c in visible if c["target"] == "passage"]
-    for c in sorted(tops, key=lambda c: (c["start"], c["n"])):
-        walk(c, 0)
+    for c in sorted(children(page, "passage"), key=lambda c: (c["start"], c["n"])):
+        if c["id"] in vis_ids:
+            walk(c, 0)
     return "\n".join(out)
 
 

@@ -16,6 +16,7 @@ wrong shape loses only the items that do not fit: they are left without a verdic
 added to the result's "notes".
 """
 from . import ask as ask_mod
+from .page import below, thread
 
 VERDICTS = ("catches", "accepts", "ignores", "dismisses")
 RATINGS = ("right", "wrong", "unsure")
@@ -98,30 +99,17 @@ def plants_of(page):
 def replies_to(page, cid):
     """Later comments (not themselves plants) that sit anywhere below `cid` in its thread or list it
     in see_also, in the order they were made."""
-    by_id = {c["id"]: c for c in page["comments"]}
-
-    def below(c):
-        seen = set()
-        while c["target"] != "passage" and c["target"] in by_id and c["target"] not in seen:
-            seen.add(c["target"])
-            if c["target"] == cid:
-                return True
-            c = by_id[c["target"]]
-        return False
-
+    under = {c["id"] for c in below(page, cid)}
     return sorted((c for c in page["comments"] if c["id"] != cid and c.get("kind") != "plant"
-                   and (below(c) or cid in c.get("see_also", []))), key=lambda c: c["n"])
+                   and (c["id"] in under or cid in c.get("see_also", []))), key=lambda c: c["n"])
 
 
 def thread_between(page, cid, c):
     """The comments between `cid` and `c` in c's thread (excluding both), oldest first; empty when c
     replies to cid directly or only names it in see_also."""
-    by_id = {x["id"]: x for x in page["comments"]}
-    chain, t = [], c["target"]
-    while t in by_id and t != cid:
-        chain.append(by_id[t])
-        t = by_id[t]["target"]
-    return list(reversed(chain)) if t == cid else []
+    chain = thread(page, c)
+    at = next((i for i, x in enumerate(chain[:-1]) if x["id"] == cid), None)
+    return [] if at is None else chain[at + 1:-1]
 
 
 def plant_prompt(page, plant, replies):

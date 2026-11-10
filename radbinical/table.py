@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 from .config import ROOT
-from .page import is_human
+from .page import is_human, thread
 from .prices import complete, costs
 
 
@@ -26,14 +26,12 @@ def page_of(d):
 def comment_rows(run, page):
     """Rows for one page. A reply's start and end are its root's span on the passage. In a fork,
     `inherited` marks the comments copied from the run it was forked from."""
-    by_id = {c["id"]: c for c in page["comments"]}
     models = {r["name"]: r["model"] for r in page["readers"]}
     copied = (page.get("forked_from") or {}).get("comments", 0)
     out = []
     for c in sorted(page["comments"], key=lambda c: c["n"]):
-        root, depth = c, 0
-        while root["target"] != "passage":
-            root, depth = by_id[root["target"]], depth + 1
+        chain = thread(page, c)
+        root, depth = chain[0], len(chain) - 1
         out.append({
             "run": run, "passage": page["passage"]["id"], "cast": page["cast"], "group": page["group"],
             "lineage": page.get("lineage"), "model": models.get(c["author"]), "reader": c["author"],
