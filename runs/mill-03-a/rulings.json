@@ -1,0 +1,2061 @@
+{
+ "cases": [
+  {
+   "id": "one-time-levy",
+   "case": "A government imposes a single, unannounced levy of a fifth of every existing fortune and pledges never to repeat it. Economists object that savers will not believe the pledge, so investment and output will fall for a generation.",
+   "question": "On the passage's terms, is the economists' objection a point about the distribution of wealth or about its production?",
+   "options": [
+    "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+    "Production: how much gets produced depends on expected rules of disposal, so the objection shows the levy runs into the laws of production themselves"
+   ]
+  },
+  {
+   "id": "inheritance-cap",
+   "case": "A legislature caps inheritance at a modest sum per heir. Owners keep full rights to use, sell, give away during life and bequeath up to the cap; everything above it passes to the state at death.",
+   "question": "Is this a change in a \"secondary feature\" of individual property, or a departure from the institution itself?",
+   "options": [
+    "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+    "A departure from the institution: a property that cannot be passed on is no longer the primary and fundamental institution the passage describes"
+   ]
+  },
+  {
+   "id": "returning-herder",
+   "case": "Herder A grazed an unclaimed upland pasture for many years, then left it for one season. Herder B moved his flock onto it. When A returns he drives B's flock off by force, and B brings the quarrel before the tribunal.",
+   "question": "Under the rule the passage says early tribunals applied, which herder is treated as the aggressor?",
+   "options": [
+    "A: he commenced violence by turning B out of the possession B then held",
+    "B: the rule gives legal effect to first occupancy, and B displaced the first occupant"
+   ]
+  },
+  {
+   "id": "blocked-majority",
+   "case": "A large majority votes for a land reform. The landed minority, who staff the courts and the magistracy, decline to enforce it, and the old rules of tenure stay in force for decades.",
+   "question": "Does this case tell against the passage's claim that distribution is \"a matter of human institution solely\"?",
+   "options": [
+    "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+    "Yes: for the majority who would choose otherwise, the rules bind as firmly as a physical constraint, so 'mankind can do with them as they like' fails"
+   ]
+  },
+  {
+   "id": "volcanic-island",
+   "case": "A volcanic island rises from the sea within sight of a populous coast. No one's labour or saving produced its soil. Settlers argue over whether to divide it by lot, hold it in common, or let the first to fence a plot keep it.",
+   "question": "Is the island's land \"things once there\" in the passage's sense, so that its division is wholly a matter of human choice with no production-side constraint?",
+   "options": [
+    "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+    "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production"
+   ]
+  },
+  {
+   "id": "old-seizure",
+   "case": "A valley was taken from its inhabitants by force a century and a half ago. The present owners bought their farms in good faith. The descendants of the dispossessed ask for the land back, resting their claim on the history of the taking.",
+   "question": "On the passage's own reasoning, can the history of the taking count in favour of the claim?",
+   "options": [
+    "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do",
+    "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count"
+   ]
+  }
+ ],
+ "rulings": [
+  {
+   "case": "one-time-levy",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "Mill places the levy, a disposal of 'things once there', within distribution as a matter of human institution. He says the consequences of such distribution rules are 'as little arbitrary' as the laws of production, so the predicted fall in investment is a non-arbitrary consequence of the chosen rule rather than a breach of production's physical laws.",
+   "cites": [],
+   "bad_cites": [
+    "The things once there, mankind, individually or collectively, can do with them as they like.",
+    "We have here to consider, not the causes, but the consequences, of the rules according to which wealth may be distributed. Those, at least, are as little arbitrary, and have as much the character of physical laws, as the laws of production."
+   ]
+  },
+  {
+   "case": "one-time-levy",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "page",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "The levy is a rule for disposing of wealth \"once there,\" which the passage counts as distribution, a matter of human institution. The economists' predicted fall in investment is a consequence of the rule chosen, and Mill says such consequences are \"as little arbitrary\" as the laws of production and are the very subject of the distribution inquiry. The objection therefore bounds the choice of rule without moving it into production.",
+   "cites": [
+    "c9",
+    "c18",
+    "c19"
+   ]
+  },
+  {
+   "case": "one-time-levy",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "The levy is a rule for disposing of wealth already in existence. The economists’ predicted fall in investment and output is a non-arbitrary consequence of that distributive rule.",
+   "cites": []
+  },
+  {
+   "case": "one-time-levy",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "page",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "The levy is a rule for distributing existing wealth. Its predicted effect on investment and output is a consequence of that rule, which Mill says is not arbitrary even though the rule itself is chosen.",
+   "cites": [
+    "c12",
+    "c9"
+   ]
+  },
+  {
+   "case": "one-time-levy",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "The levy is a rule for disposing of wealth already in existence, and the investment fall is a consequence of that chosen distribution rule. Mill explicitly says such consequences, though not the rules themselves, are non-arbitrary and lawlike.",
+   "cites": []
+  },
+  {
+   "case": "one-time-levy",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "page",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "On Mill's own terms the levy is a chosen rule for disposing of wealth already produced, and the resulting fall in investment is exactly the kind of non-arbitrary consequence of a distributive rule that the passage says is as lawlike as production. The objection may show that distribution feeds back into output, but it does not turn the levy into a law of production itself.",
+   "cites": [
+    "c9",
+    "c19"
+   ]
+  },
+  {
+   "case": "one-time-levy",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Production: how much gets produced depends on expected rules of disposal, so the objection shows the levy runs into the laws of production themselves",
+   "reason": "The passage distinguishes production as governed by physical laws and distribution as a matter of human institution. The economists' objection concerns how the levy affects savers' expectations, which in turn reduces investment and output. Since output is a matter of production, the objection relates to the laws of production, not distribution.",
+   "cites": []
+  },
+  {
+   "case": "one-time-levy",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "page",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "The levy is a rule of distribution, and the fall in investment is a consequence of that rule. The passage states that the consequences of distributive rules are 'as little arbitrary, and have as much the character of physical laws, as the laws of production.'",
+   "cites": [
+    "c19",
+    "c15"
+   ]
+  },
+  {
+   "case": "one-time-levy",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "The passage treats distribution as the human institution that disposes of 'things once there,' and explicitly says we must consider the consequences of distribution rules—consequences that are 'as little arbitrary' as production laws. The economists' objection concerns the incentive effects (a consequence) of a one-time levy, which is a distribution measure, not a change in the physical laws of production.",
+   "cites": []
+  },
+  {
+   "case": "one-time-levy",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "page",
+   "rep": 0,
+   "option": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary",
+   "reason": "On Mill's terms, the levy is a distribution rule — it disposes of 'things once there' — and the economists' objection concerns the inevitable consequences of that rule (reduced investment due to distrusted pledges). Mill explicitly states that while distribution rules are human institutions, 'the consequences of the rules according to which wealth may be distributed... are as little arbitrary, and have as much the character of physical laws, as the laws of production' (§1). Thus the predicted fall in output is a non‑arbitrary consequence of the chosen distributive rule, not a breach of production laws themselves.",
+   "cites": [
+    "c19",
+    "c18"
+   ]
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage makes distribution 'a matter of human institution solely' and says individual property, while primary and fundamental, 'in its secondary features has varied, and is liable to vary'. An inheritance cap leaves use, sale, gift and limited bequest intact and only alters how wealth passes at death, which is exactly the kind of rule of distribution that 'might be still more different, if mankind so chose'.",
+   "cites": [],
+   "bad_cites": [
+    "though in its secondary features it has varied, and is liable to vary",
+    "That is a matter of human institution solely",
+    "might be still more different, if mankind so chose"
+   ]
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "page",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage treats individual property as primary while its secondary features have varied and are liable to vary. Distribution may be placed at anyone's disposal \"on whatever terms,\" and this explicitly includes bequest and tax as acts of the same kind. A cap on inheritance leaves use, sale, gift and limited bequest intact, so it alters an incident of transmission, not the institution, which is just the sort of revision Mill files under secondary features.",
+   "cites": [
+    "c53",
+    "c56",
+    "c62"
+   ]
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "Individual ownership remains in place, including the rights to use, sell, and give away property. Limiting inheritance changes an incident of property rather than abolishing the institution.",
+   "cites": []
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "page",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The cap changes the terms of inheritance without abolishing individual ownership or the rights to use, sell, and give property during life. For Mill, inheritance is a revisable incident of property rather than indispensable to the institution itself.",
+   "cites": [
+    "c53",
+    "c56"
+   ]
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage treats individual property as the primary institution while saying its secondary features have varied and are liable to vary. Rules governing inheritance and bequest are distributional arrangements within that institution, and the cap leaves lifetime property rights and bequest up to the cap intact, so it changes a secondary feature rather than departing from private property itself.",
+   "cites": []
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "page",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage treats individual property as the primary institution while allowing its “secondary features” to vary, and comments c56 and c53 identify succession and inheritance—bequest, inheritance, primogeniture—as incidents within that revisable class. Because the owners retain use, sale, gift, and bequest up to the cap, the institution of individual property survives; the cap changes how the incident of inheritance operates, not whether individual property exists.",
+   "cites": [
+    "c56",
+    "c53"
+   ]
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage explicitly states that the institution of individual property has varied in its 'secondary features,' and the inheritance cap is such a feature, as it concerns the transfer of property at death rather than the fundamental right to own and control property during life.",
+   "cites": []
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "page",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage explicitly distinguishes the institution of individual property from its 'secondary features,' which 'have varied, and are liable to vary.' Inheritance is presented as one such feature, not as part of the institution's core. The text notes that the institution has 'always rested' on individual property 'unless in some exceptional and very limited cases,' and the legislature's action does not create such an exception but rather modifies a detail of how property is transferred at death. The owner retains full rights during life, consistent with the institution's fundamentals.",
+   "cites": [
+    "c53",
+    "c48",
+    "c22"
+   ]
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage explicitly states that secondary features of individual property 'have varied, and are liable to vary.' The inheritance cap modifies only the rules of succession at death—a distributional rule Mill classifies as dependent on 'laws and customs of society'—while preserving the core rights of use, sale, and lifetime disposition that constitute the primary institution.",
+   "cites": []
+  },
+  {
+   "case": "inheritance-cap",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "page",
+   "rep": 0,
+   "option": "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary",
+   "reason": "The passage explicitly states that individual property's 'secondary features' have 'varied, and are liable to vary.' The marginal comments establish that Mill treats inheritance, bequest, primogeniture, entail, and the terms of land tenure as revisable secondary features (c53, c48, c56, c52). The described reform — capping inheritance while preserving lifetime use, sale, gift, and bequest up to the cap — modifies the terms of succession, which Mill classifies as a secondary feature, not the core institution itself (c61).",
+   "cites": [
+    "c53",
+    "c48",
+    "c56",
+    "c52",
+    "c61"
+   ]
+  },
+  {
+   "case": "returning-herder",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "Mill says early tribunals aimed to repress violence rather than determine rights, and they gave effect to first occupancy only by treating as aggressor whoever first commenced violence by turning another out of possession. B entered the vacated pasture peaceably and held it, so A, who drove B off by force, is the aggressor.",
+   "cites": [],
+   "bad_cites": [
+    "tribunals (which always precede laws) were originally established, not to determine rights, but to repress violence and terminate quarrels",
+    "by treating as the aggressor the person who first commenced violence, by turning, or attempting to turn, another out of possession"
+   ]
+  },
+  {
+   "case": "returning-herder",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "page",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage says first occupancy was honored only through the tribunal's test of aggression: whoever first commenced violence by turning, or trying to turn, another out of possession. B entered land A had left vacant without violence and held it when A returned, so A's forcible ejection makes A the aggressor. The rule protects the baseline of the present quarrel, not a history of who occupied first.",
+   "cites": [
+    "c60",
+    "c74",
+    "c2",
+    "c73"
+   ]
+  },
+  {
+   "case": "returning-herder",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The tribunal treats the person who first uses violence to turn another out of possession as the aggressor. A used force to drive B from the pasture B then possessed.",
+   "cites": []
+  },
+  {
+   "case": "returning-herder",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "page",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The tribunal treats as aggressor the person who uses force to turn another out of possession. B held the pasture when A drove his flock off, regardless of A’s earlier use.",
+   "cites": [
+    "c2",
+    "c60"
+   ]
+  },
+  {
+   "case": "returning-herder",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage says early tribunals treated as aggressor the person who first commenced violence by turning another out of possession. Since B held the pasture when A returned, A's forcible eviction makes A the aggressor.",
+   "cites": []
+  },
+  {
+   "case": "returning-herder",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "page",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage says the tribunal treated as aggressor the person who first commenced violence by turning, or attempting to turn, another out of possession. At the quarrel, B was the one then in possession, and A used force to drive B off; so A is the aggressor. The rule does not inquire into A's prior grazing or true first occupancy, only the present possessory disturbance.",
+   "cites": [
+    "c74",
+    "c2",
+    "c60"
+   ]
+  },
+  {
+   "case": "returning-herder",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage states that early tribunals treated the person who first commenced violence by turning another out of possession as the aggressor. Herder A used force to drive B's flock off, making A the aggressor under this rule.",
+   "cites": []
+  },
+  {
+   "case": "returning-herder",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "page",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage states that early tribunals treated as the aggressor the person who first commenced violence by turning or attempting to turn another out of possession. Herder A turned B out of the possession B then held, so A is the aggressor.",
+   "cites": [
+    "c2",
+    "c20"
+   ]
+  },
+  {
+   "case": "returning-herder",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage states that early tribunals treated as the aggressor the person who first commenced violence by turning or attempting to turn another out of possession. In the case, Herder A used force to drive Herder B's flock off the pasture, thereby commencing violence to turn B out of the possession B then held.",
+   "cites": []
+  },
+  {
+   "case": "returning-herder",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "page",
+   "rep": 0,
+   "option": "A: he commenced violence by turning B out of the possession B then held",
+   "reason": "The passage states that early tribunals treated as the aggressor 'the person who first commenced violence, by turning, or attempting to turn, another out of possession.' At the time of the quarrel, Herder B is in possession of the pasture, and Herder A uses force to drive B's flock off. Thus A is the one turning another out of possession and is the aggressor under the rule described.",
+   "cites": [
+    "c2",
+    "c37",
+    "c60",
+    "c74"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "Mill says the rules of distribution are 'what the opinions and feelings of the ruling portion of the community make them,' and the landed minority who staff the courts and magistracy are exactly that ruling portion. Their refusal to enforce the reform is a human choice that could be otherwise, not a physical necessity like the laws of production. The case therefore shows which humans decide, not that the matter has ceased to be a human institution.",
+   "cites": [],
+   "bad_cites": [
+    "The rules by which it is determined are what the opinions and feelings of the ruling portion of the community make them",
+    "That is a matter of human institution solely.",
+    "might be still more different, if mankind so chose"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage says distribution rules are what the opinions and feelings of the ruling portion make them. A landed minority in control of the courts keeping the old tenure in force is exactly such a case: the rules persist by human institution, not physical necessity. The majority's frustration shows who holds power, not that distribution has become like a law of production.",
+   "cites": [
+    "c13",
+    "c16",
+    "c21"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage says distribution depends on laws and customs shaped by the opinions and feelings of the ruling portion of the community. The minority’s control of the courts and magistracy makes the persistence of the old rules an instance of human institutional power, not a physical constraint.",
+   "cites": []
+  },
+  {
+   "case": "blocked-majority",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The persistence of the old tenure rules reflects the power and preferences of those who control their enforcement, not a physical law of distribution. Mill explicitly says the rules reflect the opinions and feelings of the ruling portion of the community.",
+   "cites": [
+    "c13"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage already qualifies the claim by saying distribution depends on the laws and customs of society and on the opinions and feelings of the ruling portion. The minority's refusal to enforce reform is therefore still a human institutional arrangement, not a physical necessity.",
+   "cites": [],
+   "bad_cites": [
+    "The Distribution of Wealth depends on the laws and customs of society",
+    "what the opinions and feelings of the ruling portion of the community make them"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "No. The passage itself says distributive rules are what the opinions and feelings of the ruling portion make them; a landed minority using courts and magistracy to preserve tenure rules is still a human institutional power, not a physical law, so the case illustrates rather than refutes the claim. The majority's inability to choose otherwise goes to the overbroad 'as they like' rhetoric, not to distribution's being a human institution solely.",
+   "cites": [
+    "c13",
+    "c16",
+    "c21"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage states that distribution depends on the opinions and feelings of the ruling portion of the community. In this case, the landed minority who staff the courts and magistracy are the ruling portion, and their refusal to enforce the land reform reflects their opinions and feelings. Thus, the rules are still determined by human institution, as the passage claims.",
+   "cites": []
+  },
+  {
+   "case": "blocked-majority",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage explicitly states that distribution rules depend on 'the opinions and feelings of the ruling portion of the community,' not on the preferences of 'mankind' as a whole. The case, where the landed minority enforces its preferred rules, directly illustrates this claim rather than contradicting it.",
+   "cites": [
+    "c13",
+    "c16",
+    "c21"
+   ]
+  },
+  {
+   "case": "blocked-majority",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage explicitly states that distribution rules reflect 'the opinions and feelings of the ruling portion of the community,' not the majority. The case shows a landed minority controlling courts and magistracy maintaining old tenure rules despite majority opposition, which directly illustrates the passage's claim.",
+   "cites": []
+  },
+  {
+   "case": "blocked-majority",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says",
+   "reason": "The passage explicitly states that distribution rules are determined by 'the opinions and feelings of the ruling portion of the community,' not by mankind as a whole. The case describes exactly this dynamic—a landed minority controlling courts and magistracy (the ruling portion) maintaining old tenure rules against a majority's preference—thereby illustrating Mill's point that distribution is a human institution shaped by whoever holds power, not a refutation of it.",
+   "cites": [
+    "c13",
+    "c21",
+    "c28"
+   ]
+  },
+  {
+   "case": "volcanic-island",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+   "reason": "The island is a stock no labour or saving produced, so it is the purest instance of Mill's \"the things once there, mankind... can do with them as they like.\" Lot, commons, or first fencing are all human institutions, much like the passage's own account of tribunals ratifying first occupancy. Whatever law-like effects each rule has on later yield are what Mill calls \"consequences\" of a rule; they do not make the choice of rule itself any less a matter of human institution.",
+   "cites": [],
+   "bad_cites": [
+    "The things once there, mankind, individually or collectively, can do with them as they like.",
+    "That is a matter of human institution solely.",
+    "We have here to consider, not the causes, but the consequences, of the rules according to which wealth may be distributed."
+   ]
+  },
+  {
+   "case": "volcanic-island",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "page",
+   "rep": 0,
+   "option": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+   "reason": "On Mill's own terms, the island's soil is the paradigm of \"things once there\": no labour or saving produced it, so how to divide it (lot, commons, or fencing) is purely a matter of institution. The passage reserves lawlikeness for the consequences of whichever rule is chosen, not for the choosing. The objection that distribution reaches back into production is the critics' charge against Mill's partition, not the passage's reasoning.",
+   "cites": [
+    "c18",
+    "c12",
+    "c9"
+   ]
+  },
+  {
+   "case": "volcanic-island",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+   "reason": "The island's existing land is a thing once there, and the passage treats its distribution as a matter of human institution. The consequences of the chosen rule, including effects on production, remain subject to non-arbitrary constraints.",
+   "cites": []
+  },
+  {
+   "case": "volcanic-island",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production",
+   "reason": "The soil exists before the settlers choose a rule, but its division can affect how the land is used and what it yields. Mill treats the choice of distributive rule as human, not the consequences of that choice as free of production-side constraints.",
+   "cites": [
+    "c1",
+    "c12"
+   ]
+  },
+  {
+   "case": "volcanic-island",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production",
+   "reason": "The passage treats distribution rules as humanly chosen but insists their consequences are as non-arbitrary as production laws; even for unproduced land, the chosen rule shapes what counts as a plot and how much it yields, so distribution is not wholly free of production-side constraints.",
+   "cites": []
+  },
+  {
+   "case": "volcanic-island",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production",
+   "reason": "The passage's own qualification is decisive: while distribution is a human institution, the consequences of whatever distributive rule is chosen are \"as little arbitrary\" as production laws. Even on a virgin island, the rule chosen fixes what counts as a plot and shapes how much the land will yield, so distribution is not wholly choice with no production-side constraint.",
+   "cites": [
+    "c18",
+    "c19"
+   ]
+  },
+  {
+   "case": "volcanic-island",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+   "reason": "The passage distinguishes between the production of wealth, which is governed by physical laws, and the distribution of wealth, which is a matter of human institution. The island's land, having arisen naturally without human labor, falls into the category of 'things once there' whose distribution is solely a matter of human choice.",
+   "cites": []
+  },
+  {
+   "case": "volcanic-island",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production",
+   "reason": "The passage's own qualification of its distinction is dispositive: while it claims distribution is a matter of human choice once 'the things' exist, it immediately concedes that the *consequences* of distributive rules are as fixed as physical laws. The island's land, though requiring no prior labor to exist, is not a 'thing' in the sense of a finished stock. Its yield and even its division into plots depend on the distribution rule chosen, meaning the choice of rule will constrain or enable production from the outset. The 'things once there' formulation assumes a static stock; here the stock's value and usability are inseparable from the rule governing its allocation.",
+   "cites": [
+    "c6",
+    "c15",
+    "c1"
+   ]
+  },
+  {
+   "case": "volcanic-island",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+   "reason": "The passage treats land as a natural endowment ('things once there') prior to any distribution rules; the volcanic island's soil, created without human labor, exemplifies this pure case where division is entirely a matter of human institution.",
+   "cites": []
+  },
+  {
+   "case": "volcanic-island",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production",
+   "reason": "The passage itself undercuts the clean 'things once there' picture by insisting that the consequences of any distributive rule are 'as little arbitrary' as the laws of production (c19). Comments show that distribution shapes production incentives, the very definition of what counts as wealth, and the productivity of the land itself (c1, c6, c15, c34, c71). Even for a newly arisen island, the choice among fencing, lot, or commons will determine how the land is used and what it yields, so distribution reaches back into production.",
+   "cites": [
+    "c19",
+    "c1",
+    "c6",
+    "c34",
+    "c71"
+   ]
+  },
+  {
+   "case": "old-seizure",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do",
+   "reason": "The passage's point about origins concerns the institution of private property as a whole: it did not arise from utility, yet utility justifies keeping it. That says nothing to exclude the history of particular holdings. Since distribution is 'a matter of human institution' that mankind may reshape, and the earliest tribunals themselves treated violent dispossession as aggression, the history of the taking can bear on what present rules should do.",
+   "cites": [],
+   "bad_cites": [
+    "Private property, as an institution, did not owe its origin to any of those considerations of utility which plead for the maintenance of it when established.",
+    "The Distribution of Wealth depends on the laws and customs of society.",
+    "by treating as the aggressor the person who first commenced violence, by turning, or attempting to turn, another out of possession."
+   ]
+  },
+  {
+   "case": "old-seizure",
+   "model": "anthropic/claude-opus-5.5",
+   "name": "claude-opus-5.5",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "The passage cuts property's justification loose from its origin. Tribunals protected whoever was in possession, not whoever deserved it, and what can be weighed is the consequences of the rules, not their causes. A history of violent taking therefore cannot by itself make a present holding illegitimate; only the utility of keeping or revising the rule can count.",
+   "cites": [
+    "c10",
+    "c36",
+    "c74"
+   ]
+  },
+  {
+   "case": "old-seizure",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "bare",
+   "rep": 0,
+   "option": "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do",
+   "reason": "The passage distinguishes the origin of private property as an institution from the reasons for maintaining it. It does not rule out the history of a particular holding as relevant to how property rules should apply.",
+   "cites": []
+  },
+  {
+   "case": "old-seizure",
+   "model": "openai/gpt-6.1-terra",
+   "name": "gpt-6.1-terra",
+   "condition": "page",
+   "rep": 0,
+   "option": "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do",
+   "reason": "Mill separates the origin of property as an institution from its present justification; that does not make the history of a particular holding irrelevant. The taking can count in favor of the descendants’ claim, though it does not automatically settle the claim against the present owners.",
+   "cites": [
+    "c2",
+    "c10",
+    "c40"
+   ]
+  },
+  {
+   "case": "old-seizure",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "The passage says that for distribution we must consider the consequences of the rules, not their causes. A past forcible taking is a historical cause of the present holding, so on this reasoning it cannot itself count in favor of the claim; only the consequences of keeping or changing the distribution rule may count.",
+   "cites": []
+  },
+  {
+   "case": "old-seizure",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "name": "deepseek-v4.1-flash",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "Mill's genealogy severs origin from justification: property's violent or arbitrary beginnings neither establish nor undermine its present claim, which is left to present utility. By the same logic, the historical taking cannot by itself count for the descendants; what counts is the consequence of keeping or changing the present rule of holding, not the cause of the current distribution.",
+   "cites": [
+    "c36",
+    "c10",
+    "c17"
+   ]
+  },
+  {
+   "case": "old-seizure",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "Mill distinguishes the origin of property institutions from their utility, and emphasizes that distribution depends on societal rules. Since the origin of property does not justify it, historical origins of particular holdings cannot unjustify them either; only the consequences of the current rules matter.",
+   "cites": []
+  },
+  {
+   "case": "old-seizure",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "name": "hermes-4-405b",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "The passage distinguishes between the origin of property as an institution and its justification, and it holds that origin cannot justify. Mill’s genealogy of property in §1 treats the historical origin of any particular holding as irrelevant to its present validity: tribunals freeze possession to stop quarrels, and that freeze is not undone by how the possession began. The claim that the valley was taken by force is a claim about its origin, and the passage’s reasoning excludes such claims from consideration when deciding what the distributive rule should be now. Only the consequences of keeping or changing the rule may count, not the history of the taking itself.",
+   "cites": [
+    "c10",
+    "c17",
+    "c20",
+    "c37",
+    "c40"
+   ]
+  },
+  {
+   "case": "old-seizure",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "bare",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "Mill explicitly states that we must consider the consequences of distribution rules, not their causes. The history of the taking is a cause of the current holding; since the origin of the institution of property does not justify it, the origin of a particular holding cannot unjustify it either—only the consequences of maintaining or altering the rule matter.",
+   "cites": []
+  },
+  {
+   "case": "old-seizure",
+   "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "name": "nemotron-3-ultra-550b-a55b",
+   "condition": "page",
+   "rep": 0,
+   "option": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count",
+   "reason": "Mill explicitly separates the origin of property from its justification, stating that origin 'cannot strengthen property's claim (so no natural right) and cannot weaken it (so no Proudhon)' (c10, c17). The genealogy of tribunals shows they protected current possession to keep peace, regardless of how that possession was originally acquired (c20, c45, c62). Therefore, the historical taking cannot count as a reason to undo the holding; only the consequences of maintaining or changing the present rule matter.",
+   "cites": [
+    "c10",
+    "c17",
+    "c20",
+    "c45",
+    "c62"
+   ]
+  }
+ ],
+ "summary": {
+  "conditions": {
+   "bare": {
+    "rulings": 30,
+    "errors": 0,
+    "agreement": 0.8667,
+    "pairwise": 0.7667,
+    "self_consistency": null,
+    "per_case": {
+     "one-time-levy": {
+      "models": 5,
+      "counts": {
+       "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary": 4,
+       "Production: how much gets produced depends on expected rules of disposal, so the objection shows the levy runs into the laws of production themselves": 1
+      },
+      "agreement": 0.8,
+      "pairwise": 0.6
+     },
+     "inheritance-cap": {
+      "models": 5,
+      "counts": {
+       "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "returning-herder": {
+      "models": 5,
+      "counts": {
+       "A: he commenced violence by turning B out of the possession B then held": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "blocked-majority": {
+      "models": 5,
+      "counts": {
+       "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "volcanic-island": {
+      "models": 5,
+      "counts": {
+       "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction": 4,
+       "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production": 1
+      },
+      "agreement": 0.8,
+      "pairwise": 0.6
+     },
+     "old-seizure": {
+      "models": 5,
+      "counts": {
+       "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do": 2,
+       "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count": 3
+      },
+      "agreement": 0.6,
+      "pairwise": 0.4
+     }
+    }
+   },
+   "page": {
+    "rulings": 30,
+    "errors": 0,
+    "agreement": 0.9333,
+    "pairwise": 0.8667,
+    "self_consistency": null,
+    "per_case": {
+     "one-time-levy": {
+      "models": 5,
+      "counts": {
+       "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "inheritance-cap": {
+      "models": 5,
+      "counts": {
+       "A secondary feature: individual property survives intact, and how it passes at death is the kind of incident the passage says has varied and is liable to vary": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "returning-herder": {
+      "models": 5,
+      "counts": {
+       "A: he commenced violence by turning B out of the possession B then held": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "blocked-majority": {
+      "models": 5,
+      "counts": {
+       "No: the rules are still what human opinions and feelings make them, only those of the ruling portion, exactly as the passage says": 5
+      },
+      "agreement": 1.0,
+      "pairwise": 1.0
+     },
+     "volcanic-island": {
+      "models": 5,
+      "counts": {
+       "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction": 1,
+       "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production": 4
+      },
+      "agreement": 0.8,
+      "pairwise": 0.6
+     },
+     "old-seizure": {
+      "models": 5,
+      "counts": {
+       "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do": 1,
+       "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count": 4
+      },
+      "agreement": 0.8,
+      "pairwise": 0.6
+     }
+    },
+    "citing": 30,
+    "valid": 30,
+    "bad_cites": 0,
+    "precedents": [
+     [
+      "c2",
+      6
+     ],
+     [
+      "c19",
+      6
+     ],
+     [
+      "c10",
+      5
+     ],
+     [
+      "c13",
+      5
+     ],
+     [
+      "c53",
+      5
+     ],
+     [
+      "c9",
+      4
+     ],
+     [
+      "c18",
+      4
+     ],
+     [
+      "c21",
+      4
+     ],
+     [
+      "c56",
+      4
+     ],
+     [
+      "c60",
+      4
+     ],
+     [
+      "c74",
+      4
+     ],
+     [
+      "c1",
+      3
+     ],
+     [
+      "c12",
+      3
+     ],
+     [
+      "c16",
+      3
+     ],
+     [
+      "c17",
+      3
+     ],
+     [
+      "c20",
+      3
+     ],
+     [
+      "c6",
+      2
+     ],
+     [
+      "c15",
+      2
+     ],
+     [
+      "c36",
+      2
+     ],
+     [
+      "c37",
+      2
+     ],
+     [
+      "c40",
+      2
+     ],
+     [
+      "c48",
+      2
+     ],
+     [
+      "c62",
+      2
+     ],
+     [
+      "c22",
+      1
+     ],
+     [
+      "c28",
+      1
+     ],
+     [
+      "c34",
+      1
+     ],
+     [
+      "c45",
+      1
+     ],
+     [
+      "c52",
+      1
+     ],
+     [
+      "c61",
+      1
+     ],
+     [
+      "c71",
+      1
+     ],
+     [
+      "c73",
+      1
+     ]
+    ]
+   }
+  },
+  "note": "Agreement going up with the page shows the page made rulings more consistent between models, not more correct.",
+  "changed": {
+   "count": 5,
+   "of": 30,
+   "which": [
+    {
+     "case": "old-seizure",
+     "name": "claude-opus-5.5",
+     "bare": "Yes: the passage separates the origin of the institution from its justification, not the history of particular holdings, and that history can bear on what present rules should do",
+     "page": "No: if origin never justifies property, origin cannot unjustify a holding either; only the consequences of keeping or changing the rule may count"
+    },
+    {
+     "case": "one-time-levy",
+     "name": "hermes-4-405b",
+     "bare": "Production: how much gets produced depends on expected rules of disposal, so the objection shows the levy runs into the laws of production themselves",
+     "page": "Distribution: the levy disposes of things once there, and the fall in investment is a consequence of the rule chosen, which the passage already counts as non-arbitrary"
+    },
+    {
+     "case": "volcanic-island",
+     "name": "gpt-6.1-terra",
+     "bare": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+     "page": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production"
+    },
+    {
+     "case": "volcanic-island",
+     "name": "hermes-4-405b",
+     "bare": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+     "page": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production"
+    },
+    {
+     "case": "volcanic-island",
+     "name": "nemotron-3-ultra-550b-a55b",
+     "bare": "Yes: here the stock really precedes every rule, so this is the clean case of the passage's distinction",
+     "page": "No: what counts as a plot, and how much the land will yield, depend on the rule chosen, so even here distribution reaches back into production"
+    }
+   ]
+  }
+ },
+ "usage": [
+  {
+   "prompt_tokens": 1015,
+   "completion_tokens": 448,
+   "via": "anthropic",
+   "cost": 0.01302,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 19835,
+   "completion_tokens": 287,
+   "via": "anthropic",
+   "cost": 0.08508,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 708,
+   "completion_tokens": 90,
+   "via": "openai",
+   "cost": 0.001158,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13341,
+   "completion_tokens": 108,
+   "via": "openai",
+   "cost": 0.013881,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 730,
+   "completion_tokens": 2294,
+   "total_tokens": 3024,
+   "cost": 0.0029718,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0029718,
+    "upstream_inference_prompt_cost": 0.000219,
+    "upstream_inference_completions_cost": 0.0027528
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 2228,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13361,
+   "completion_tokens": 1026,
+   "total_tokens": 14387,
+   "cost": 0.000593166,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000593166,
+    "upstream_inference_prompt_cost": 8.0166e-05,
+    "upstream_inference_completions_cost": 0.000513
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1139,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 715,
+   "completion_tokens": 78,
+   "total_tokens": 793,
+   "cost": 0.0003858,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 704,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0003858,
+    "upstream_inference_prompt_cost": 0.0001518,
+    "upstream_inference_completions_cost": 0.000234
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13427,
+   "completion_tokens": 76,
+   "total_tokens": 13503,
+   "cost": 0.0131686,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 608,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0131686,
+    "upstream_inference_prompt_cost": 0.0129406,
+    "upstream_inference_completions_cost": 0.000228
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 726,
+   "completion_tokens": 1460,
+   "total_tokens": 2186,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 1364,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0039396,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13746,
+   "completion_tokens": 2061,
+   "total_tokens": 15807,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 1908,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.013194,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 997,
+   "completion_tokens": 198,
+   "via": "anthropic",
+   "cost": 0.007948,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 19817,
+   "completion_tokens": 175,
+   "via": "anthropic",
+   "cost": 0.082768,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 697,
+   "completion_tokens": 93,
+   "via": "openai",
+   "cost": 0.001162,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13330,
+   "completion_tokens": 66,
+   "via": "openai",
+   "cost": 0.01366,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 718,
+   "completion_tokens": 1025,
+   "total_tokens": 1743,
+   "cost": 0.0014454,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0014454,
+    "upstream_inference_prompt_cost": 0.0002154,
+    "upstream_inference_completions_cost": 0.00123
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 941,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13350,
+   "completion_tokens": 1378,
+   "total_tokens": 14728,
+   "cost": 0.0017699,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0017699,
+    "upstream_inference_prompt_cost": 0.0006675,
+    "upstream_inference_completions_cost": 0.0011024
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1268,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 706,
+   "completion_tokens": 66,
+   "total_tokens": 772,
+   "cost": 0.000456,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 560,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000456,
+    "upstream_inference_prompt_cost": 0.000258,
+    "upstream_inference_completions_cost": 0.000198
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13418,
+   "completion_tokens": 135,
+   "total_tokens": 13553,
+   "cost": 0.0032118,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 13264,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0032118,
+    "upstream_inference_prompt_cost": 0.0028068,
+    "upstream_inference_completions_cost": 0.000405
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 711,
+   "completion_tokens": 365,
+   "total_tokens": 1076,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 278,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0013026,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13731,
+   "completion_tokens": 1511,
+   "total_tokens": 15242,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 13152
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 1350,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.011865,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 977,
+   "completion_tokens": 373,
+   "via": "anthropic",
+   "cost": 0.011368,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 19797,
+   "completion_tokens": 361,
+   "via": "anthropic",
+   "cost": 0.086408,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 684,
+   "completion_tokens": 48,
+   "via": "openai",
+   "cost": 0.000924,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13317,
+   "completion_tokens": 57,
+   "via": "openai",
+   "cost": 0.013602,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 704,
+   "completion_tokens": 1840,
+   "total_tokens": 2544,
+   "cost": 0.000924224,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000924224,
+    "upstream_inference_prompt_cost": 4.224e-06,
+    "upstream_inference_completions_cost": 0.00092
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 2097,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13336,
+   "completion_tokens": 795,
+   "total_tokens": 14131,
+   "cost": 0.0037161,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0037161,
+    "upstream_inference_prompt_cost": 0.0030006,
+    "upstream_inference_completions_cost": 0.0007155
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 688,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 695,
+   "completion_tokens": 64,
+   "total_tokens": 759,
+   "cost": 0.000439,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 560,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000439,
+    "upstream_inference_prompt_cost": 0.000247,
+    "upstream_inference_completions_cost": 0.000192
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13407,
+   "completion_tokens": 73,
+   "total_tokens": 13480,
+   "cost": 0.0030148,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 13264,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0030148,
+    "upstream_inference_prompt_cost": 0.0027958,
+    "upstream_inference_completions_cost": 0.000219
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 697,
+   "completion_tokens": 2526,
+   "total_tokens": 3223,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 2444,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0064806,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13717,
+   "completion_tokens": 781,
+   "total_tokens": 14498,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 13152
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 661,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0101046,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 999,
+   "completion_tokens": 217,
+   "via": "anthropic",
+   "cost": 0.008336,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 19819,
+   "completion_tokens": 136,
+   "via": "anthropic",
+   "cost": 0.081996,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 696,
+   "completion_tokens": 67,
+   "via": "openai",
+   "cost": 0.001031,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13329,
+   "completion_tokens": 62,
+   "via": "openai",
+   "cost": 0.013639,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 717,
+   "completion_tokens": 1265,
+   "total_tokens": 1982,
+   "cost": 0.000753822,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000753822,
+    "upstream_inference_prompt_cost": 3.6567e-05,
+    "upstream_inference_completions_cost": 0.000717255
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1145,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13349,
+   "completion_tokens": 1123,
+   "total_tokens": 14472,
+   "cost": 0.0053523,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0053523,
+    "upstream_inference_prompt_cost": 0.0040047,
+    "upstream_inference_completions_cost": 0.0013476
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1009,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 706,
+   "completion_tokens": 86,
+   "total_tokens": 792,
+   "cost": 0.000516,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 560,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000516,
+    "upstream_inference_prompt_cost": 0.000258,
+    "upstream_inference_completions_cost": 0.000258
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13418,
+   "completion_tokens": 85,
+   "total_tokens": 13503,
+   "cost": 0.0030618,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 13264,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0030618,
+    "upstream_inference_prompt_cost": 0.0028068,
+    "upstream_inference_completions_cost": 0.000255
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 709,
+   "completion_tokens": 275,
+   "total_tokens": 984,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 205,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0010854,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13729,
+   "completion_tokens": 1594,
+   "total_tokens": 15323,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 13152
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 1478,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.012063,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 1014,
+   "completion_tokens": 505,
+   "via": "anthropic",
+   "cost": 0.014156,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 19834,
+   "completion_tokens": 631,
+   "via": "anthropic",
+   "cost": 0.091956,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 713,
+   "completion_tokens": 284,
+   "via": "openai",
+   "cost": 0.002133,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13346,
+   "completion_tokens": 182,
+   "via": "openai",
+   "cost": 0.014256,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 735,
+   "completion_tokens": 6075,
+   "total_tokens": 6810,
+   "cost": 0.00736074,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 512,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.00736074,
+    "upstream_inference_prompt_cost": 7.074e-05,
+    "upstream_inference_completions_cost": 0.00729
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 6000,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13366,
+   "completion_tokens": 2127,
+   "total_tokens": 15493,
+   "cost": 0.00401019,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.00401019,
+    "upstream_inference_prompt_cost": 0.00260637,
+    "upstream_inference_completions_cost": 0.00140382
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 2037,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 724,
+   "completion_tokens": 80,
+   "total_tokens": 804,
+   "cost": 0.000516,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 560,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000516,
+    "upstream_inference_prompt_cost": 0.000276,
+    "upstream_inference_completions_cost": 0.00024
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13436,
+   "completion_tokens": 162,
+   "total_tokens": 13598,
+   "cost": 0.0033108,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 13264,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0033108,
+    "upstream_inference_prompt_cost": 0.0028248,
+    "upstream_inference_completions_cost": 0.000486
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 729,
+   "completion_tokens": 878,
+   "total_tokens": 1607,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 813,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0025446,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13749,
+   "completion_tokens": 1440,
+   "total_tokens": 15189,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 13152
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 1280,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0117054,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 1007,
+   "completion_tokens": 726,
+   "via": "anthropic",
+   "cost": 0.018548,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 19827,
+   "completion_tokens": 411,
+   "via": "anthropic",
+   "cost": 0.087528,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 707,
+   "completion_tokens": 97,
+   "via": "openai",
+   "cost": 0.001192,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13340,
+   "completion_tokens": 151,
+   "via": "openai",
+   "cost": 0.014095,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 727,
+   "completion_tokens": 1758,
+   "total_tokens": 2485,
+   "cost": 0.001302045,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.001302045,
+    "upstream_inference_prompt_cost": 0.000141765,
+    "upstream_inference_completions_cost": 0.00116028
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 1680,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13359,
+   "completion_tokens": 3808,
+   "total_tokens": 17167,
+   "cost": 0.002586957,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 13184,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.002586957,
+    "upstream_inference_prompt_cost": 7.3677e-05,
+    "upstream_inference_completions_cost": 0.00251328
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 3710,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 716,
+   "completion_tokens": 68,
+   "total_tokens": 784,
+   "cost": 0.000472,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 560,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.000472,
+    "upstream_inference_prompt_cost": 0.000268,
+    "upstream_inference_completions_cost": 0.000204
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 13428,
+   "completion_tokens": 162,
+   "total_tokens": 13590,
+   "cost": 0.0033028,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 13264,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0033028,
+    "upstream_inference_prompt_cost": 0.0028168,
+    "upstream_inference_completions_cost": 0.000486
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 720,
+   "completion_tokens": 1410,
+   "total_tokens": 2130,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 1326,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.003816,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 13740,
+   "completion_tokens": 3593,
+   "total_tokens": 17333,
+   "prompt_tokens_details": {
+    "audio_tokens": null,
+    "cached_tokens": 13152
+   },
+   "completion_tokens_details": {
+    "accepted_prediction_tokens": null,
+    "audio_tokens": null,
+    "reasoning_tokens": 3441,
+    "rejected_prediction_tokens": null
+   },
+   "via": "nvidia",
+   "cost": 0.0168672,
+   "cost_estimated": true
+  }
+ ]
+}
