@@ -5,6 +5,7 @@
     python3 marginalia.py extend runs/<dir> -n 2     # add layers to an existing page
     python3 marginalia.py extend runs/<dir> -n 1 --models openai/gpt-6.1-terra
     python3 marginalia.py render runs/<dir>          # rebuild page.html
+    python3 marginalia.py site                       # rebuild docs/ for GitHub Pages
 
 Model ids are OpenRouter ids by default. Prefix with "anthropic:", "openai:" or
 "nvidia:" to call that provider directly, or "mock:" for an offline stand-in.
@@ -577,6 +578,33 @@ def render(run_dir):
     (run_dir / "page.html").write_text(html, encoding="utf-8")
 
 
+HEAD = '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n'
+
+
+def cmd_site(a):
+    """Build docs/ for static hosting: one page per run plus an index."""
+    import html
+    docs = HERE / "docs"
+    docs.mkdir(exist_ok=True)
+    (docs / ".nojekyll").write_text("")
+    rows = []
+    for run in sorted((HERE / "runs").iterdir()):
+        if not (run / "page.json").exists():
+            continue
+        render(run)
+        d = json.loads((run / "page.json").read_text())
+        (docs / run.name).mkdir(exist_ok=True)
+        (docs / run.name / "index.html").write_text(HEAD + (run / "page.html").read_text(encoding="utf-8"), encoding="utf-8")
+        rows.append((run.name, d))
+    items = "".join(
+        f'<li><a href="{html.escape(n)}/">{html.escape(d["passage"]["title"])}</a>'
+        f'<span>{html.escape(", ".join(r["name"] for r in d["readers"]))}</span>'
+        f'<small>{html.escape(n)} · {len(d["comments"])} comments · {d["layers_done"]} rounds · {html.escape(d.get("started", "")[:10])}</small></li>'
+        for n, d in rows)
+    (docs / "index.html").write_text(HEAD + (HERE / "index.tpl.html").read_text(encoding="utf-8").replace("<!--RUNS-->", items), encoding="utf-8")
+    print(f"{len(rows)} page(s) -> {docs}")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -584,6 +612,7 @@ def main():
     e = sub.add_parser("extend"); e.add_argument("run"); e.add_argument("-n", type=int, default=1)
     e.add_argument("--models", help="comma-separated extra readers who join the existing page"); e.set_defaults(f=cmd_extend)
     v = sub.add_parser("render"); v.add_argument("run"); v.set_defaults(f=lambda a: (render(a.run), print(Path(a.run) / "page.html")))
+    sub.add_parser("site").set_defaults(f=cmd_site)
     a = ap.parse_args()
     a.f(a)
 

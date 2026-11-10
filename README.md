@@ -30,3 +30,8 @@ and point `passage.file` at it.
 | `temperature`, `seed` | null, 0 | sampling temperature; seed for turn order |
 
 Model ids are OpenRouter ids. Prefix with `openai:` to call OpenAI directly (`OPENAI_API_KEY`).
+
+## Website
+
+`python3 marginalia.py site` rebuilds `docs/` (an index plus one page per run). GitHub Pages serves it
+from the `main` branch, `/docs` folder.
