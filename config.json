@@ -23,6 +23,7 @@
     "cross_refs": true,
     "allow_self_reply": true,
     "max_comments_per_turn": null,
-    "seed": 0
+    "seed": 0,
+    "max_tokens": 16000
   }
 }
