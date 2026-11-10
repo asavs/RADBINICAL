@@ -7,6 +7,7 @@ from pathlib import Path
 from .config import PACKAGE, ROOT, TEMPLATES
 from .page import read_side
 from .providers import KNOWN
+from .table import run_dirs
 
 
 HEAD = '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n'
@@ -98,18 +99,17 @@ def index_items(rows, brands):
     return "".join(out)
 
 
-def build_site():
-    """Build docs/ for static hosting: one page per run plus an index."""
-    docs = ROOT / "docs"
-    docs.mkdir(exist_ok=True)
+def build_site(runs_dir=None, out=None):
+    """Build a static site (default docs/) from the runs under runs_dir (default runs/): one page
+    per run plus an index."""
+    docs = Path(out) if out else ROOT / "docs"
+    docs.mkdir(parents=True, exist_ok=True)
     (docs / ".nojekyll").write_text("", encoding="utf-8")
     rows = []
-    for run in sorted((ROOT / "runs").iterdir()):
-        if not (run / "page.json").exists():
-            continue
+    for run in run_dirs(runs_dir):
         render(run)
         d = json.loads((run / "page.json").read_text(encoding="utf-8"))
-        (docs / run.name).mkdir(exist_ok=True)
+        (docs / run.name).mkdir(parents=True, exist_ok=True)
         (docs / run.name / "index.html").write_text(HEAD + (run / "page.html").read_text(encoding="utf-8"), encoding="utf-8")
         rows.append((run.name, d))
     items = index_items(rows, load_brands())
