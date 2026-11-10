@@ -3,6 +3,7 @@
     python -m radbinical fork runs/<dir> --into 3                  # runs/<dir>-s1, -s2, -s3
     python -m radbinical fork runs/<dir> --into 3 -n 2             # then two rounds on each copy
     python -m radbinical fork runs/<dir> --into 2 -n 1 --models x-ai/grok-4.7 --unsigned
+    python -m radbinical fork runs/<dir> --into 1 --start 2 -n 1 --models x-ai/grok-4.7 --only-new   # <dir>-s2
 
 Each copy is the page as it stands: page.json, plus the side files in CARRIED (the record of
 the page's own text, such as amendments.json). Side files that judge or summarise the source
@@ -19,7 +20,9 @@ calls: copied log entries lose `usage` and gain `from`, and carried side files s
 
 With -n, every copy is extended that many rounds, the copies concurrently. --models adds readers
 to every copy (as extend --models does); --unsigned shows readers to each other as "Reader A",
-"Reader B" in the copies.
+"Reader B" in the copies; --only-new lets only the readers --models adds take the added rounds.
+--start numbers the copies from that number instead of 1, so a page can be forked again beside
+earlier copies; a copy's seed offset is its number.
 """
 import argparse
 import concurrent.futures as cf
@@ -35,18 +38,26 @@ from ..site import render
 CARRIED = ("amendments",)
 
 
-def fork(src, into, rounds=0, models=None, unsigned=False):
-    """Write `into` copies of the run at `src`; extend each `rounds` rounds. Returns [(Page, ok)]."""
+def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=False):
+    """Write `into` copies of the run at `src`, numbered from `start`; extend each `rounds` rounds,
+    by every model reader or, with `only_new`, by the readers `models` adds. Returns [(Page, ok)]."""
     src = Path(src)
     if into < 1:
         sys.exit("--into takes 1 or more")
+    if start < 1:
+        sys.exit("--start takes 1 or more")
+    if only_new and not models:
+        sys.exit("--only-new needs --models")
     source = Page.load(src)
-    dirs = [src.with_name(f"{src.name}-s{i}") for i in range(1, into + 1)]
+    if only_new and not {reader_entry(m.strip())["name"] for m in models.split(",")} - {r["name"] for r in source.d["readers"]}:
+        sys.exit("--only-new needs --models naming at least one reader not already on the page")
+    nums = range(start, start + into)
+    dirs = [src.with_name(f"{src.name}-s{i}") for i in nums]
     taken = [d.name for d in dirs if d.exists()]
     if taken:
         sys.exit(f"already exists: {', '.join(taken)}")
-    pages = []
-    for i, d in enumerate(dirs, 1):
+    pages, new = [], set()
+    for i, d in zip(nums, dirs):
         data = copy.deepcopy(source.d)
         data["lineage"], data["group"] = src.name, d.name
         data["forked_from"] = {"run": src.name, "round": data["layers_done"], "comments": data["counter"]}
@@ -61,6 +72,7 @@ def fork(src, into, rounds=0, models=None, unsigned=False):
                 if r["name"] not in have:
                     data["readers"].append(r)
                     have.add(r["name"])
+                    new.add(r["name"])
             data["cast"] = cast_of(data["readers"])
         if unsigned:
             data["flags"]["signed"] = False
@@ -83,7 +95,7 @@ def fork(src, into, rounds=0, models=None, unsigned=False):
 
     def extend(page):
         page.d.pop("at_rest", None)
-        return run_layers(page, rounds)
+        return run_layers(page, rounds, new if only_new else None)
 
     with cf.ThreadPoolExecutor(len(pages)) as ex:
         oks = list(ex.map(extend, pages))
@@ -91,7 +103,7 @@ def fork(src, into, rounds=0, models=None, unsigned=False):
 
 
 def main(a):
-    done = fork(a.run, a.into, a.n, a.models, a.unsigned)
+    done = fork(a.run, a.into, a.n, a.models, a.unsigned, a.start, a.only_new)
     for page, _ in done:
         print(f"{page.dir.name}: {len(page.d['comments'])} comments over {page.d['layers_done']} round(s)")
     sys.exit(0 if all(ok for _, ok in done) else 1)
@@ -105,4 +117,6 @@ def register(sub):
     p.add_argument("-n", type=int, default=0, help="rounds to add to each copy (default none)")
     p.add_argument("--models", help="comma-separated extra readers who join every copy")
     p.add_argument("--unsigned", action="store_true", help="hide reader names from each other in the copies")
+    p.add_argument("--start", type=int, default=1, help="number of the first copy (default 1)")
+    p.add_argument("--only-new", action="store_true", help="only the readers --models adds take the added rounds")
     p.set_defaults(f=main)

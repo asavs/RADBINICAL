@@ -105,6 +105,33 @@ class Fork(unittest.TestCase):
             self.assertTrue(any(e["reader"] == "he" for e in d["log"] if "from" not in e))
         self.assertTrue(load(self.src)["flags"]["signed"])
 
+    def test_start_and_only_new(self):
+        quiet(fork, self.src, 1, rounds=1, models="mock:he")
+        [(p, ok)] = quiet(fork, self.src, 1, rounds=1, models="mock:he", unsigned=True, start=2, only_new=True)
+        self.assertTrue(ok)
+        self.assertEqual(p.dir.name, "mill-s2")
+        d = load(p.dir)
+        self.assertEqual(d["flags"]["seed"], 7 + 2)
+        fresh = [e for e in d["log"] if "from" not in e]
+        self.assertEqual({e["reader"] for e in fresh}, {"he"})
+        self.assertEqual({e["layer"] for e in fresh}, {3})
+        self.assertTrue(all(c["author"] == "he" for c in d["comments"][len(self.before["comments"]):]))
+        s1 = load(self.runs / "mill-s1")
+        self.assertTrue(len({e["reader"] for e in s1["log"] if "from" not in e}) > 1)
+        with self.assertRaises(SystemExit):
+            quiet(fork, self.src, 1, rounds=1, models="mock:alef", start=3, only_new=True)
+        self.assertFalse((self.runs / "mill-s3").exists())
+
+    def test_extend_only_new(self):
+        with self.assertRaises(SystemExit) as e:
+            quiet(main, ["extend", str(self.src), "-n", "1", "--models", "mock:he", "--only-new"])
+        self.assertEqual(e.exception.code, 0)
+        d = load(self.src)
+        self.assertEqual({e["reader"] for e in d["log"] if e["layer"] == 3}, {"he"})
+        with self.assertRaises(SystemExit) as e:
+            quiet(main, ["extend", str(self.src), "-n", "1", "--only-new"])
+        self.assertNotEqual(e.exception.code, 0)
+
     def test_refuses_existing_copies(self):
         quiet(fork, self.src, 1)
         with self.assertRaises(SystemExit):

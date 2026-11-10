@@ -52,13 +52,14 @@ def take_turn(page, reader, layer, visible_fn, label, note):
     return made, err
 
 
-def run_layers(page, how_many):
+def run_layers(page, how_many, only=None):
+    """Run `how_many` rounds. With `only` (a set of reader names), only those readers take turns."""
     d, flags = page.d, page.d["flags"]
     rng = random.Random(f"{flags['seed']}-{d['layers_done']}")
     label = labeller(d)
     for _ in range(how_many):
         layer = d["layers_done"] + 1
-        readers = models_of(d)
+        readers = [r for r in models_of(d) if only is None or r["name"] in only]
         rng.shuffle(readers)
         live = flags["sequential"] and not (layer == 1 and flags["blind_first_layer"])
         if live:

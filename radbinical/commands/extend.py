@@ -2,8 +2,10 @@
 
     python -m radbinical extend runs/<dir> -n 2
     python -m radbinical extend runs/<dir> -n 1 --models x-ai/grok-4.7
+    python -m radbinical extend runs/<dir> -n 1 --models qwen/qwen3.8-27b --only-new
 
-New readers change the page's `cast`; its `group` stays.
+New readers change the page's `cast`; its `group` stays. With --only-new, only the readers that
+--models adds take the added rounds; the others sit them out.
 """
 import argparse
 import sys
@@ -14,15 +16,20 @@ from ..rounds import run_layers
 
 def main(a):
     page = Page.load(a.run)
+    new = set()
     if a.models:
         have = {r["name"] for r in page.d["readers"]}
         for m in a.models.split(","):
             r = reader_entry(m.strip())
             if r["name"] not in have:
                 page.d["readers"].append(r)
+                have.add(r["name"])
+                new.add(r["name"])
         page.d["cast"] = cast_of(page.d["readers"])
+    if a.only_new and not new:
+        sys.exit("--only-new needs --models naming at least one reader not already on the page")
     page.d.pop("at_rest", None)
-    ok = run_layers(page, a.n)
+    ok = run_layers(page, a.n, new if a.only_new else None)
     print(f"\n{len(page.d['comments'])} comments over {page.d['layers_done']} round(s)\n{page.dir / 'page.html'}")
     sys.exit(0 if ok else 1)
 
@@ -33,4 +40,5 @@ def register(sub):
     p.add_argument("run")
     p.add_argument("-n", type=int, default=1, help="rounds to add")
     p.add_argument("--models", help="comma-separated extra readers who join the existing page")
+    p.add_argument("--only-new", action="store_true", help="only the readers --models adds take the added rounds")
     p.set_defaults(f=main)
