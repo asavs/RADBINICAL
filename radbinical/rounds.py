@@ -4,6 +4,7 @@ import random
 
 from .forecast import Forecaster
 from .page import labeller, models_of, render_for_reader
+from .prices import complete
 from .prompts import system_prompt
 from .providers import open_session
 from .providers.http import add_usage
@@ -39,6 +40,7 @@ def take_turn(page, reader, layer, visible_fn, label, note):
             session.reply(results)
     except Exception as e:  # one reader failing should not sink the round
         err = f"{type(e).__name__}: {e}"[:600]
+    complete(reader["model"], usage)  # priced once on the summed tokens when the provider gave no cost
     entry = {"layer": layer, "reader": me, "model": reader["model"], "via": via, "comments": made, "usage": usage}
     if closing:
         entry["closing"] = closing[:2000]

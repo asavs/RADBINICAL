@@ -1,13 +1,18 @@
 import unittest
 
 from radbinical import ask as ask_mod
+from radbinical import prices
 from radbinical.ask import MOCK_DEFAULT, ask, ask_json, extract_json
 from test_routing import keys
 
 
 class Ask(unittest.TestCase):
+    def setUp(self):
+        prices.TABLE = {}  # no estimates, so usage is exactly what the provider reported
+
     def tearDown(self):
         ask_mod.HOOK = None
+        prices.TABLE = None
 
     def test_mock_reply_line(self):
         self.assertEqual(ask("mock:judge", "sys", "Some page.\nMOCK_REPLY:  caught in round 2 \nmore"),

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .config import ROOT
 from .page import is_human
+from .prices import complete, costs
 
 
 def run_dirs(runs_dir=None):
@@ -44,15 +45,16 @@ def comment_rows(run, page):
     return out
 
 
-def run_cost(d, page):
-    """Sum of `cost` over the page's log and the "usage" lists of its side files."""
-    usages = [e.get("usage") or {} for e in page["log"]]
+def usages(d, page):
+    """Every usage dict of a run: its log's, each priced as in radbinical/prices.py when it has
+    tokens but no cost, and those in the "usage" lists of its side files, as stored."""
+    out = [complete(e.get("model", ""), dict(e.get("usage") or {})) for e in page["log"]]
     for f in sorted(d.glob("*.json")):
         if f.name != "page.json":
             side = json.loads(f.read_text(encoding="utf-8"))
             if isinstance(side, dict):
-                usages += side.get("usage") or []
-    return round(sum(u.get("cost", 0) for u in usages if isinstance(u, dict)), 6)
+                out += [u for u in side.get("usage") or [] if isinstance(u, dict)]
+    return out
 
 
 def joined(page):
@@ -69,13 +71,16 @@ def joined(page):
 
 
 def run_row(d, page):
+    """One run's row. `cost` is every call's cost, reported or estimated; `cost_estimated` is the
+    part of it estimated from tokens."""
+    reported, estimated = costs(usages(d, page))
     j = joined(page)
     return {
         "run": d.name, "passage": page["passage"]["id"], "cast": page["cast"], "group": page["group"],
         "lineage": page.get("lineage"),
         "readers": [{"name": r["name"], "model": r["model"], "joined": j.get(r["name"])} for r in page["readers"]],
         "flags": page["flags"], "rounds": page["layers_done"], "comments": len(page["comments"]),
-        "cost": run_cost(d, page), "started": page.get("started"),
+        "cost": round(reported + estimated, 6), "cost_estimated": estimated, "started": page.get("started"),
     }
 
 

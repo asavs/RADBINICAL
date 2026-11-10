@@ -6,8 +6,9 @@
 The model id is routed exactly as a reader's is (providers.route): a prefix such as "openai:",
 "anthropic:", "google:", "nvidia:" or "mock:" picks the provider, and a bare OpenRouter id goes
 to its maker when the maker's key is set, else to OpenRouter. `usage` is the provider's usage
-dict (OpenRouter's includes `cost`) plus "via", the provider actually used; keep it, e.g. in a
-side file's "usage" list.
+dict plus "via", the provider actually used; keep it, e.g. in a side file's "usage" list. OpenRouter
+and Nous report `cost`; for the others it is estimated from the tokens (radbinical/prices.py) and
+marked `cost_estimated`.
 
 "mock:<anything>" makes no call and is deterministic: if the user message has a line
 `MOCK_REPLY: <text>`, the answer is <text> (the rest of that line, stripped); otherwise it is
@@ -21,6 +22,7 @@ ask (and ask_json) calls it instead of any model, mock included. Reset it to Non
 import json
 import re
 
+from .prices import complete
 from .providers import open_session, split_model
 
 
@@ -33,14 +35,15 @@ _MOCK_LINE = re.compile(r"^MOCK_REPLY:[ \t]*(.*)$", re.M)
 def ask(model, system, user, max_tokens=4000, temperature=None):
     """Ask once, with no tools. Returns (text, usage)."""
     if HOOK is not None:
-        return HOOK(model, system, user, max_tokens, temperature)
+        text, usage = HOOK(model, system, user, max_tokens, temperature)
+        return text, complete(model, usage)
     if split_model(model)[0] == "mock":
         m = _MOCK_LINE.search(user)
         return (m.group(1).strip() if m else MOCK_DEFAULT), {"via": "mock"}
     flags = {"max_tokens": max_tokens, "temperature": temperature, "cross_refs": False}
     session = open_session({"model": model}, system, user, flags, tools=False)
     _, text, usage = session.step()
-    return text, {**usage, "via": session.via}
+    return text, complete(model, {**usage, "via": session.via})
 
 
 def ask_json(model, system, user, max_tokens=4000, temperature=None):

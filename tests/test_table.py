@@ -66,7 +66,7 @@ class Table(unittest.TestCase):
         self.assertEqual(a["cast"], cast_of(["mock:bet", "mock:alef"]))
         self.assertEqual(a["readers"], [{"name": "alef", "model": "mock:alef", "joined": 1},
                                         {"name": "bet", "model": "mock:bet", "joined": 1}])
-        self.assertEqual(a["cost"], 0.875)   # log plus redactions.json
+        self.assertEqual((a["cost"], a["cost_estimated"]), (0.875, 0.0))   # log plus redactions.json
         self.assertEqual(b["cost"], 0.25)
         self.assertEqual(b["lineage"], "L1")
 
