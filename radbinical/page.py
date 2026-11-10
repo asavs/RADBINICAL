@@ -1,10 +1,50 @@
-"""The page: a passage, its comments, and how one reader sees them."""
+"""The page: a passage, its comments, and how one reader sees them.
+
+A run lives in one folder. `page.json` is the page itself: the passage (with `id`, the passage
+file's stem), the readers, `cast` (a short hash of the readers' model ids, see `cast_of`), `group`
+(shared by repeated runs of one config; otherwise the folder name), the flags, the comments and
+the log of every turn. A run may also carry an optional `lineage`.
+
+Anything else a later step produces about a run goes beside it as its own JSON file,
+`<run>/<name>.json` (`redactions.json`, `forecasts.json`, ...), never into `page.json`. Use
+`read_side` / `write_side`, or `Page.side` / `Page.save_side`. A side file that called models may
+carry a top-level `"usage"` list of usage dicts (as `ask` returns them); the table adds up their
+`cost` into the run's cost.
+"""
+import hashlib
 import json
 import re
 import threading
 from pathlib import Path
 
 from .anchoring import locate, snap_to_sentences
+from .providers import split_model
+
+
+def reader_entry(m):
+    """A reader record from a config entry: a bare model id or a dict with model, name, protocol..."""
+    if isinstance(m, str):
+        m = {"model": m}
+    name = m.get("name") or split_model(m["model"])[1].split("/")[-1]
+    return {**{k: m[k] for k in ("protocol", "max_tokens", "brand") if k in m}, "model": m["model"], "name": name}
+
+
+def cast_of(readers):
+    """Short stable id for a set of readers: a hash of their sorted model ids."""
+    ids = sorted(r["model"] if isinstance(r, dict) else r for r in readers)
+    return hashlib.sha1("\n".join(ids).encode("utf-8")).hexdigest()[:8]
+
+
+def read_side(run_dir, name):
+    """The side file `<run_dir>/<name>.json`, or None if it does not exist."""
+    f = Path(run_dir) / f"{name}.json"
+    return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
+
+
+def write_side(run_dir, name, obj):
+    if name == "page":
+        raise ValueError("page.json is the page itself, not a side file")
+    (Path(run_dir) / f"{name}.json").write_text(json.dumps(obj, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
 def load_passage(path):
@@ -51,12 +91,26 @@ class Page:
     def __init__(self, data, out_dir):
         self.d, self.dir, self.lock = data, Path(out_dir), threading.Lock()
 
+    @classmethod
+    def load(cls, run_dir):
+        return cls(json.loads((Path(run_dir) / "page.json").read_text(encoding="utf-8")), run_dir)
+
+    def side(self, name):
+        return read_side(self.dir, name)
+
+    def save_side(self, name, obj):
+        write_side(self.dir, name, obj)
+
     def save(self):
         with self.lock:
             (self.dir / "page.json").write_text(json.dumps(self.d, indent=1, ensure_ascii=False), encoding="utf-8")
 
-    def add(self, author, layer, args):
-        """Validate and record one annotation. Returns (ok, message for the model)."""
+    def add(self, author, layer, args, kind=None, meta=None):
+        """Validate and record one annotation. Returns (ok, message for the model).
+
+        `kind` marks a comment that is not a model's own reading ("plant", "human"); `meta` is a
+        dict of notes about it. Both are stored on the comment and never shown to readers.
+        """
         d, flags = self.d, self.d["flags"]
         target = str(args.get("target", "")).strip().strip("[]")
         text = str(args.get("text", "")).strip()
@@ -89,6 +143,10 @@ class Page:
             refs = [r for r in refs if r in by_id]
             if refs:
                 c["see_also"] = refs
+            if kind:
+                c["kind"] = kind
+            if meta:
+                c["meta"] = dict(meta)
             d["counter"] += 1
             c["n"] = d["counter"]
             c["id"] = f"c{c['n']}"

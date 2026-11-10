@@ -4,9 +4,8 @@ import unittest
 from pathlib import Path
 
 from radbinical.anchoring import locate, snap_to_sentences
-from radbinical.cli import reader_entry
 from radbinical.config import DEFAULT_FLAGS, ROOT
-from radbinical.page import Page, load_passage, render_for_reader
+from radbinical.page import Page, load_passage, reader_entry, render_for_reader
 from radbinical.providers import TextSession, split_model
 from radbinical.rounds import run_layers
 
@@ -68,6 +67,28 @@ class Annotating(unittest.TestCase):
         self.page.add("alef", 1, {"target": "passage", "quote": "laws of production", "text": "gloss"})
         view = render_for_reader(self.page.d, self.page.d["comments"], lambda a: a, "alef")
         self.assertIn("[c1] alef (you), on the passage", view)
+
+    def test_kind_and_meta_are_stored_but_never_shown(self):
+        ok, _ = self.page.add("alef", 1, {"target": "passage", "quote": "laws of production", "text": "slip"},
+                              kind="plant", meta={"truth": "SECRET-TRUTH"})
+        self.assertTrue(ok)
+        self.page.add("bet", 2, {"target": "c1", "text": "reply"}, kind="human", meta={"by": "SECRET-PERSON"})
+        c1, c2 = self.page.d["comments"]
+        self.assertEqual((c1["kind"], c1["meta"]), ("plant", {"truth": "SECRET-TRUTH"}))
+        self.assertEqual(c2["kind"], "human")
+        self.page.add("bet", 2, {"target": "c1", "text": "own"})
+        self.assertNotIn("kind", self.page.d["comments"][2])
+        view = render_for_reader(self.page.d, self.page.d["comments"], lambda a: a, "bet")
+        for hidden in ("plant", "SECRET", "kind", "meta"):  # "human" is in the passage itself
+            self.assertNotIn(hidden, view)
+
+    def test_side_files(self):
+        self.assertIsNone(self.page.side("redactions"))
+        self.page.save()
+        self.page.save_side("redactions", {"items": ["é"], "usage": [{"cost": 0.5}]})
+        self.assertEqual(Page.load(self.tmp.name).side("redactions")["items"], ["é"])
+        with self.assertRaises(ValueError):
+            self.page.save_side("page", {})
 
 
 class Providers(unittest.TestCase):
