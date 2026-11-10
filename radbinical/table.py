@@ -25,11 +25,14 @@ def page_of(d):
 
 def comment_rows(run, page):
     """Rows for one page. A reply's start and end are its root's span on the passage. In a fork,
-    `inherited` marks the comments copied from the run it was forked from."""
+    `inherited` marks the comments copied from the run it was forked from. `repeat_of` is the id of
+    the first earlier comment by the same reader with the same words (spacing aside), wherever on
+    the page either was put."""
     models = {r["name"]: r["model"] for r in page["readers"]}
     copied = (page.get("forked_from") or {}).get("comments", 0)
-    out = []
+    out, said = [], {}
     for c in sorted(page["comments"], key=lambda c: c["n"]):
+        first = said.setdefault((c["author"], " ".join(c["text"].split())), c["id"])
         chain = thread(page, c)
         root, depth = chain[0], len(chain) - 1
         out.append({
@@ -38,7 +41,7 @@ def comment_rows(run, page):
             "round": c["layer"], "id": c["id"], "parent": None if c["target"] == "passage" else c["target"],
             "root": root["id"], "depth": depth, "start": root["start"], "end": root["end"],
             "quote": c.get("quote"), "text": c["text"], "see_also": c.get("see_also", []), "kind": c.get("kind"), "stale": c.get("stale"),
-            "inherited": c["n"] <= copied,
+            "inherited": c["n"] <= copied, "repeat_of": None if first == c["id"] else first,
         })
     return out
 

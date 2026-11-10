@@ -87,13 +87,14 @@ flattens every run into two files that every analysis reads:
 
 | File | One row per | Holds |
 |---|---|---|
-| `data/comments.jsonl` | comment | run, passage, cast, group, lineage, model, reader, round, id, parent, root, depth, start, end, quote, text, see_also, kind, stale, inherited |
+| `data/comments.jsonl` | comment | run, passage, cast, group, lineage, model, reader, round, id, parent, root, depth, start, end, quote, text, see_also, kind, stale, inherited, repeat_of |
 | `data/runs.jsonl` | run | passage, cast, group, lineage, readers, flags, rounds, comments, cost, cost_estimated, started |
 
 A reply's start and end are its root's span on the passage. `kind` is `"plant"` or `"human"` for
 comments that are not a model's own, and empty otherwise. `stale` is the version of an amended
 text that lost a comment's quoted words. `inherited` marks the comments a fork copied from its
-source. Each reader in a run's row carries `joined`, the round it entered the page: a model
+source. `repeat_of` is the id of the first earlier comment in which the same reader wrote the same
+words, wherever on the page either was put; empty when the comment is not a repeat. Each reader in a run's row carries `joined`, the round it entered the page: a model
 reader's first turn in the log, whether or not it commented, and a person's first comment. `cost`
 adds up the cost of every call, on the page and in its side files, and `cost_estimated` is the
 part of it estimated from tokens (see Cost below). The table is rebuilt from `runs/` each time;

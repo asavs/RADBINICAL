@@ -5,7 +5,7 @@ from pathlib import Path
 
 from radbinical.config import DEFAULT_FLAGS
 from radbinical.page import Page, cast_of, reader_entry
-from radbinical.table import rows, runs, write_jsonl
+from radbinical.table import comment_rows, rows, runs, write_jsonl
 
 TEXT = "The laws of production are fixed. Distribution is a matter of human institution solely."
 
@@ -49,7 +49,7 @@ class Table(unittest.TestCase):
         self.assertEqual([x["run"] for x in r], ["a-run"] * 4 + ["b-run"] * 4)
         c1, c2, c3, c4 = r[:4]
         self.assertEqual(list(c1), ["run", "passage", "cast", "group", "lineage", "model", "reader", "round", "id",
-                                    "parent", "root", "depth", "start", "end", "quote", "text", "see_also", "kind", "stale", "inherited"])
+                                    "parent", "root", "depth", "start", "end", "quote", "text", "see_also", "kind", "stale", "inherited", "repeat_of"])
         self.assertEqual((c1["parent"], c1["root"], c1["depth"], c1["kind"], c1["model"]), (None, "c1", 0, None, "mock:alef"))
         self.assertEqual(TEXT[c1["start"]:c1["end"]], "laws of production")
         self.assertEqual(c2["kind"], "plant")
@@ -59,6 +59,15 @@ class Table(unittest.TestCase):
         self.assertEqual((c3["start"], c3["end"]), (c1["start"], c1["end"]))
         self.assertEqual((c4["start"], c4["end"]), (c1["start"], c1["end"]))
         self.assertEqual((r[0]["lineage"], r[4]["lineage"]), (None, "L1"))
+        self.assertFalse(any(x["repeat_of"] for x in r))
+
+    def test_repeat_of_names_the_first_time_a_reader_wrote_the_same_words(self):
+        page = Page.load(Path(self.base) / "a-run")
+        page.add("alef", 3, {"target": "c1", "text": "gloss"})              # its own c1 again, as a reply to it
+        page.add("alef", 3, {"target": "passage", "quote": "human institution", "text": " gloss\n"})
+        page.add("bet", 3, {"target": "c1", "text": "gloss"})               # another reader's words are not a repeat
+        got = {x["id"]: x["repeat_of"] for x in comment_rows("a-run", page.d)}
+        self.assertEqual(got, {"c1": None, "c2": None, "c3": None, "c4": None, "c5": "c1", "c6": "c1", "c7": None})
 
     def test_run_rows(self):
         a, b = runs(self.base)
