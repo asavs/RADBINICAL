@@ -128,8 +128,8 @@ the README to cover all of it.
 
 ### Phase 4: experiments
 
-Real models, through OpenRouter. Spending cap for the phase: 15 USD, tracked from the usage each
-call reports.
+Real models, through their makers' APIs, Nous and OpenRouter. Spending cap for the phase: 15 USD,
+tracked by `spend` from the cost each call reports or, for the makers' APIs, estimates from tokens.
 
 1. **Noise floor.** One cast, three times, on Mill.
 2. **Obscure passage.** A public-domain passage with no commentary tradition, same cast, three
