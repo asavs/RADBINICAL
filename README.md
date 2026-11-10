@@ -39,6 +39,11 @@ runs a config, rebuilds the website and commits the result.
 A reader whose model can't call tools can be given `"protocol": "text"`; it then writes its
 comments as tagged blocks in plain text. `"max_tokens"` can also be set per reader.
 
+Each reader is shown with its maker's logo and brand colour, worked out from the model id. The
+table is `radbinical/brands.json`; the logos are linked from the lobe-icons set, not stored here.
+A reader whose maker isn't in the table gets a plain coloured dot. To set the maker by hand, add
+`"brand": "nousresearch"` (any key from the table) to the reader.
+
 ## Your own passage
 
 Put the text in `passages/` as plain text with a blank line between paragraphs, and set

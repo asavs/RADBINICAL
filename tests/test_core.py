@@ -83,6 +83,18 @@ class Providers(unittest.TestCase):
         self.assertEqual(text, "Hm.")
 
 
+class Brands(unittest.TestCase):
+    def test_maker_is_found_from_the_model_id(self):
+        from radbinical.site import brand_of, load_brands
+        brands = load_brands()
+        for model, name in (("anthropic:claude-opus-5-5", "Anthropic"), ("openai/gpt-oss-120b", "OpenAI"),
+                            ("openai:gpt-6.1-sol", "OpenAI"), ("nvidia:nvidia/nemotron-3-ultra-550b-a55b", "NVIDIA"),
+                            ("qwen/qwen3.8-27b:batch", "Alibaba")):
+            self.assertEqual(brand_of({"model": model}, brands)["name"], name)
+        self.assertIsNone(brand_of({"model": "thinkingmachines/inkling"}, brands))
+        self.assertEqual(brand_of({"model": "some/finetune", "brand": "nousresearch"}, brands)["name"], "Nous Research")
+
+
 class EndToEnd(unittest.TestCase):
     def test_mock_run_writes_record_and_page(self):
         with tempfile.TemporaryDirectory() as tmp:

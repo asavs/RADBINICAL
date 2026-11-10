@@ -44,7 +44,9 @@ h1 { font-family: var(--text); font-weight: 600; font-size: clamp(1.6rem, 1.1rem
 .scrub output { font-family: var(--mono); font-size: 0.78rem; min-width: 5.5rem }
 .chips { display: flex; flex-wrap: wrap; gap: 0.4rem }
 .chip { display: inline-flex; align-items: center; gap: 0.4rem; background: none; border: 1px solid var(--rule); border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.8rem }
-.chip i { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--c) }
+.g { flex: none; display: inline-block; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--c) }
+img.g, .g.mark { width: 1.05em; height: 1.05em; border-radius: 0; background: none }
+.g.mark { background: var(--c); -webkit-mask: var(--u) center / contain no-repeat; mask: var(--u) center / contain no-repeat }
 .chip b { font-family: var(--mono); font-weight: 400; color: var(--ink-2); font-size: 0.72rem }
 .chip[aria-pressed="false"] { opacity: 0.45; text-decoration: line-through }
 .clear { background: none; border: none; text-decoration: underline; font-size: 0.8rem; color: var(--ink-2); padding: 0 }
@@ -64,7 +66,7 @@ h1 { font-family: var(--text); font-weight: 600; font-size: clamp(1.6rem, 1.1rem
 .thread.dim { opacity: 0.28 }
 .c { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; scroll-margin-top: 1rem }
 .c header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem }
-.who { font-weight: 600; color: var(--c); font-size: 0.82rem }
+.who { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.82rem }
 .meta { font-family: var(--mono); font-size: 0.7rem; color: var(--ink-2) }
 .c .body { overflow-wrap: anywhere }
 .c .body p { margin: 0 0 0.5em } .c .body p:last-child { margin: 0 }
@@ -83,6 +85,7 @@ details { border-top: 1px solid var(--rule); padding-top: 0.75rem; font-size: 0.
 summary { cursor: pointer; font-weight: 600 }
 .made { display: flex; flex-direction: column; gap: 1rem; padding-top: 0.75rem; max-width: 46rem }
 .made h2 { font-size: 0.75rem; font-family: var(--mono); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 0.3rem }
+.made p { margin: 0 } .made a { color: inherit }
 .made pre { white-space: pre-wrap; font-family: var(--mono); font-size: 0.78rem; margin: 0; overflow-wrap: anywhere }
 .tbl { overflow-x: auto }
 table { border-collapse: collapse; font-size: 0.8rem; font-variant-numeric: tabular-nums }
@@ -132,10 +135,26 @@ const lemmaOf = q => { const w = q.trim().split(/\s+/); return w.length > 9 ? w.
 function start() {
   if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
   const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
-  const ink = a => `var(--a${authors.indexOf(a) % 8})`;
+  const BRANDS = /*__BRANDS__*/{};
+  const ICONS = 'https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/';
+  const PREFIXES = ['openrouter', 'openai', 'nvidia', 'anthropic', 'mock'];
+  const vendorOf = model => {
+    const [head, ...rest] = model.split(':');
+    const id = PREFIXES.includes(head) && rest.length ? rest.join(':') : model;
+    return id.includes('/') ? id.split('/')[0] : (PREFIXES.includes(head) ? head : '');
+  };
+  const brandOf = a => { const r = D.readers.find(r => r.name === a); return (r && BRANDS[r.brand || vendorOf(r.model)]) || null };
+  // A reader's colour is its maker's brand colour; single-colour marks take the page ink; unknown makers get a palette colour.
+  const ink = a => { const b = brandOf(a); return b ? (b.color || 'var(--ink)') : `var(--a${authors.indexOf(a) % 8})` };
+  const glyph = a => {
+    const b = brandOf(a);
+    if (!b || !S.icons) return '<i class="g"></i>';
+    const u = ICONS + b.icon + '.svg';
+    return b.icon.endsWith('-color') ? `<img class="g" src="${u}" alt="" title="${esc(b.name)}">` : `<i class="g mark" style="--u:url(${u})" title="${esc(b.name)}"></i>`;
+  };
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
   const rounds = Math.max(1, D.layers_done || 1);
-  const S = { upTo: rounds, off: new Set(), sel: null };
+  const S = { upTo: rounds, off: new Set(), sel: null, icons: false };
   const two = matchMedia('(min-width: 1160px)');
 
   $('title').textContent = D.passage.title;
@@ -183,7 +202,7 @@ function start() {
                                   : `<span class="lemma" title="${esc(c.quote)}">${esc(lemmaOf(c.quote))}</span>`) : '';
     const body = md(c.text).replace('<p>', '<p>' + lemma);
     const refs = (c.see_also || []).filter(r => byId[r]).map(r => `<button data-go="${r}">${r}</button>`).join(', ');
-    return `<div class="c" id="${c.id}" style="--c:${ink(c.author)}"><header><span class="who">${esc(c.author)}</span><span class="meta">${c.id} · round ${c.layer}</span></header>
+    return `<div class="c" id="${c.id}" style="--c:${ink(c.author)}"><header><span class="who">${glyph(c.author)}${esc(c.author)}</span><span class="meta">${c.id} · round ${c.layer}</span></header>
       <div class="body">${body}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>
       ${kids.length ? `<div class="kids">${kids.map(k => commentHTML(k, vis)).join('')}</div>` : ''}`;
   }
@@ -206,7 +225,7 @@ function start() {
     $('clear').hidden = !S.sel;
     $('chips').innerHTML = authors.map(a => {
       const n = D.comments.filter(c => c.author === a && c.layer <= S.upTo).length;
-      return `<button class="chip" style="--c:${ink(a)}" aria-pressed="${!S.off.has(a)}" data-author="${esc(a)}"><i></i>${esc(a)}<b>${n}</b></button>`;
+      return `<button class="chip" style="--c:${ink(a)}" aria-pressed="${!S.off.has(a)}" data-author="${esc(a)}">${glyph(a)}${esc(a)}<b>${n}</b></button>`;
     }).join('');
     const deep = vis.reduce((m, c) => Math.max(m, depthOf(c)), 0);
     $('stats').textContent = `${vis.length} comment${vis.length === 1 ? '' : 's'} · ${vis.filter(c => c.target === 'passage').length} on the text · deepest reply chain ${deep} · ${D.at_rest ? 'ended when every reader passed' : 'stopped at the round limit'}`;
@@ -248,9 +267,15 @@ function start() {
     <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
     <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
     <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
+    ${authors.some(brandOf) ? '<div><h2>Logos</h2><p>Each reader is marked with its maker\'s logo and brand colour, to show whose model wrote what. The marks belong to their owners. Icons are linked from the <a href="https://github.com/lobehub/lobe-icons">lobe-icons</a> set.</p></div>' : ''}
     <div><h2>Round by round</h2><div class="tbl"><table><tr><th>Round</th><th>Reader</th><th>Comments</th><th>Note</th></tr>${
       D.log.map(l => `<tr><td>${l.layer}</td><td>${esc(l.reader)}</td><td>${l.comments}</td><td>${esc(l.error ? 'Failed: ' + l.error : (l.closing || ''))}</td></tr>`).join('')}</table></div></div>`;
   draw();
+  if (authors.some(brandOf)) { // logos are linked, not bundled: show them only once one is known to load
+    const probe = new Image();
+    probe.onload = () => { S.icons = true; draw() };
+    probe.src = ICONS + 'claude.svg';
+  }
 }
 start();
 </script>

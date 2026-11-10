@@ -11,7 +11,10 @@ a { color: inherit; text-decoration-color: var(--mark); text-decoration-thicknes
 ul { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink) }
 li { display: flex; flex-direction: column; gap: 0.15rem; padding: 0.9rem 0; border-bottom: 1px solid var(--rule) }
 li a { font: 600 1.25rem/1.3 "Source Serif 4", Georgia, serif }
-li span { color: var(--ink-2); font-size: 0.92rem }
+.marks { display: flex; gap: 0.45rem; align-items: center; padding-block: 0.15rem }
+.marks img, .marks i { width: 1.1rem; height: 1.1rem; display: block }
+.marks i { background: var(--ink); -webkit-mask: var(--u) center / contain no-repeat; mask: var(--u) center / contain no-repeat }
+li > span:not(.marks) { color: var(--ink-2); font-size: 0.92rem }
 small, .eyebrow { font: 0.75rem "IBM Plex Mono", ui-monospace, monospace; color: var(--ink-2) }
 .eyebrow { letter-spacing: 0.08em; text-transform: uppercase }
 </style>

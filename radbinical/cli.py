@@ -25,7 +25,7 @@ def reader_entry(m):
     if isinstance(m, str):
         m = {"model": m}
     name = m.get("name") or split_model(m["model"])[1].split("/")[-1]
-    return {**{k: m[k] for k in ("protocol", "max_tokens") if k in m}, "model": m["model"], "name": name}
+    return {**{k: m[k] for k in ("protocol", "max_tokens", "brand") if k in m}, "model": m["model"], "name": name}
 
 
 def cmd_run(a):
