@@ -92,21 +92,32 @@ def _key(provider):
     return api_key(provider) or "placeholder-key"
 
 
+ATTEMPTS = 8
+
+
 def _post(url, headers, body):
+    """POST and return the JSON answer. A 429 waits as long as the answer's retryDelay asks (Gemini's
+    free tier counts every text against a per-minute quota), else backs off; 5xx and network errors
+    back off too."""
     req = urllib.request.Request(url, data=json.dumps(body).encode(),
                                  headers={**headers, "Content-Type": "application/json"})
-    for attempt in range(4):
+    for attempt in range(ATTEMPTS):
+        wait = min(3 * 2 ** attempt, 60)
         try:
             with urllib.request.urlopen(req, timeout=120) as r:
                 return json.loads(r.read())
         except urllib.error.HTTPError as e:
-            msg = f"HTTP {e.code} from {url}: {e.read().decode(errors='replace')[:400]}"
-            if e.code != 429 and e.code < 500 or attempt == 3:
+            text = e.read().decode(errors="replace")
+            msg = f"HTTP {e.code} from {url}: {text[:400]}"
+            if e.code != 429 and e.code < 500 or attempt == ATTEMPTS - 1:
                 raise RuntimeError(msg) from None
+            asked = re.search(r'"retryDelay":\s*"(\d+(?:\.\d+)?)s"', text)
+            if asked:
+                wait = float(asked.group(1)) + 1
         except (urllib.error.URLError, TimeoutError, ConnectionError):
-            if attempt == 3:
+            if attempt == ATTEMPTS - 1:
                 raise
-        time.sleep(3 * 2 ** attempt)
+        time.sleep(wait)
 
 
 def words(text):

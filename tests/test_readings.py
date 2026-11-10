@@ -155,5 +155,30 @@ class Command(unittest.TestCase):
             self.assertEqual(len(runs(tmp)), 2)
 
 
+class EmbedRetry(unittest.TestCase):
+    def test_429_waits_as_long_as_asked(self):
+        import io
+        import urllib.error
+        from radbinical import embed as embed_mod
+        calls, waits = [], []
+        def urlopen(req, timeout=None):
+            calls.append(1)
+            if len(calls) < 3:
+                body = io.BytesIO(b'{"error": {"details": [{"retryDelay": "23s"}]}}')
+                raise urllib.error.HTTPError("u", 429, "quota", {}, body)
+            class R:
+                def __enter__(self): return self
+                def __exit__(self, *a): return False
+                def read(self): return b'{"ok": 1}'
+            return R()
+        real = embed_mod.urllib.request.urlopen, embed_mod.time.sleep
+        embed_mod.urllib.request.urlopen, embed_mod.time.sleep = urlopen, waits.append
+        try:
+            self.assertEqual(embed_mod._post("http://x", {}, {}), {"ok": 1})
+        finally:
+            embed_mod.urllib.request.urlopen, embed_mod.time.sleep = real
+        self.assertEqual(waits, [24.0, 24.0])
+
+
 if __name__ == "__main__":
     unittest.main()
