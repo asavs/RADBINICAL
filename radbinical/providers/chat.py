@@ -3,7 +3,7 @@ import json
 import re
 
 from ..prompts import annotate_tool
-from .http import post_json
+from .http import add_usage, post_json
 
 
 PROVIDERS = {  # endpoint, name of the output-limit field
@@ -56,6 +56,7 @@ class ChatSession:
 _BLOCK = re.compile(r"<annotate\b([^>]*)>(.*?)(?:</annotate\s*>|(?=<annotate\b)|\Z)", re.S | re.I)
 
 
+_ATTEMPT = re.compile(r"""["']?\btarget\b["']?\s*[:=]""", re.I)
 _ATTR = re.compile(r"""(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)')""")
 
 
@@ -75,9 +76,23 @@ class TextSession(ChatSession):
     def step(self):
         if self.done:
             return [], "", {}
-        msg, usage = self._send(with_tools=False)
-        text = msg.get("content") if isinstance(msg.get("content"), str) else ""
-        self.messages.append({"role": "assistant", "content": text or ""})
+        total = {}
+        while True:
+            msg, usage = self._send(with_tools=False)
+            add_usage(total, usage)
+            text = msg.get("content") if isinstance(msg.get("content"), str) else ""
+            self.messages.append({"role": "assistant", "content": text or ""})
+            calls = self._parse(text)
+            # Comments written in some other shape (JSON, say) are sent back once rather than lost.
+            if calls or self.retries >= self.RETRIES or not _ATTEMPT.search(text or ""):
+                return calls, _BLOCK.sub("", text or "").strip(), total
+            self.retries += 1
+            self.messages.append({"role": "user", "content": "Nothing was recorded: comments must be written as "
+                                  '<annotate target="..." quote="...">...</annotate> blocks, not as JSON or any other '
+                                  "format. Write them again as blocks, or reply without a block to end your turn."})
+
+    @staticmethod
+    def _parse(text):
         calls = []
         for i, m in enumerate(_BLOCK.finditer(text or "")):
             attrs = {k.lower(): (a or b) for k, a, b in _ATTR.findall(m.group(1))}
@@ -85,7 +100,7 @@ class TextSession(ChatSession):
             if attrs.get("see_also"):
                 args["see_also"] = re.split(r"[,\s]+", attrs["see_also"].strip())
             calls.append((str(i), args))
-        return calls, _BLOCK.sub("", text or "").strip(), usage
+        return calls
 
     def reply(self, results):
         if all(res.startswith("Recorded") for _, res in results) or self.retries >= self.RETRIES:

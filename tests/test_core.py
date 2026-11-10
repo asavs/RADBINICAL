@@ -126,6 +126,19 @@ class Providers(unittest.TestCase):
         self.assertEqual(s.step(), ([], "", {}))
         self.assertEqual(len(sent), 2)
 
+    def test_text_comments_in_another_shape_are_sent_back(self):
+        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
+        answers = iter(['{annotations: [{"target": "c3", "text": "x"}]}', '<annotate target="c3">x</annotate>'])
+        s._send = lambda with_tools=True: ({"content": next(answers)}, {"cost": 0.1})
+        calls, _, usage = s.step()
+        self.assertEqual(calls, [("0", {"target": "c3", "quote": "", "text": "x"})])
+        self.assertEqual(usage, {"cost": 0.2})
+        self.assertIn("Nothing was recorded", s.messages[-2]["content"])
+        s2 = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
+        s2._send = lambda with_tools=True: ({"content": "Nothing further this round."}, {})
+        self.assertEqual(s2.step()[0], [])
+        self.assertEqual(len(s2.messages), 3)
+
     def test_text_retries_are_capped(self):
         s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
         s._send = lambda with_tools=True: ({"content": '<annotate target="c9">B.</annotate>'}, {})
