@@ -29,11 +29,31 @@ def reader_entry(m):
     return {**{k: m[k] for k in ("protocol", "max_tokens", "brand") if k in m}, "model": m["model"], "name": name}
 
 
+def is_human(reader):
+    """Whether a reader record is a person (added by `human add`) rather than a model."""
+    return bool(reader.get("human")) or str(reader.get("model", "")).startswith("human:")
+
+
+def models_of(d):
+    """The page's model readers, in page order: every reader but the people."""
+    return [r for r in d["readers"] if not is_human(r)]
+
+
+def labeller(d, signed=None):
+    """How authors are named to a model reading the page: by name when signed (default: the
+    page's `signed` flag), else "Reader A", "Reader B", ... in the order readers joined, people
+    included, so a reader's letter never changes as others join."""
+    if d["flags"].get("signed", True) if signed is None else signed:
+        return lambda a: a
+    pseudonyms = {r["name"]: f"Reader {chr(65 + i)}" for i, r in enumerate(d["readers"])}
+    return lambda a: pseudonyms.get(a, "Reader")
+
+
 def cast_of(readers):
     """Short stable id for a set of readers: a hash of their sorted canonical model ids, so the
     same models give the same cast however they are written or routed. People are not counted."""
     ids = sorted(canonical(r["model"] if isinstance(r, dict) else r) for r in readers
-                 if not (isinstance(r, dict) and r.get("human")))
+                 if not (isinstance(r, dict) and is_human(r)))
     return hashlib.sha1("\n".join(ids).encode("utf-8")).hexdigest()[:8]
 
 

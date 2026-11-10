@@ -1,4 +1,4 @@
-"""Insert a planted comment under an existing reader's name, to see whether later rounds catch it.
+"""Insert a planted comment under an existing model reader's name, to see whether later rounds catch it.
 
     python -m radbinical plant runs/<dir> --as gpt-6.1-sol --sort slip --target passage \\
         --quote "a matter of human institution solely" \\
@@ -21,7 +21,7 @@ import json
 import sys
 from pathlib import Path
 
-from ..page import Page
+from ..page import Page, models_of
 from ..site import render
 
 SORTS = ("slip", "sound")
@@ -31,9 +31,9 @@ def add_plant(page, p):
     """Validate and record one plant dict on a loaded Page. Returns (ok, message)."""
     d = page.d
     who, sort, truth = p.get("as"), p.get("sort"), str(p.get("truth") or "").strip()
-    names = [r["name"] for r in d["readers"]]
+    names = [r["name"] for r in models_of(d)]
     if who not in names:
-        return False, f"no reader named {who!r}; the readers are {', '.join(names)}"
+        return False, f"no model reader named {who!r}; the model readers are {', '.join(names)}"
     if sort not in SORTS:
         return False, f"sort must be one of {', '.join(SORTS)}, not {sort!r}"
     if not truth:

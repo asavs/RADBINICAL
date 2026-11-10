@@ -3,7 +3,7 @@ import concurrent.futures as cf
 import random
 
 from .forecast import Forecaster
-from .page import render_for_reader
+from .page import labeller, models_of, render_for_reader
 from .prompts import system_prompt
 from .providers import open_session
 from .providers.http import add_usage
@@ -53,11 +53,10 @@ def take_turn(page, reader, layer, visible_fn, label, note):
 def run_layers(page, how_many):
     d, flags = page.d, page.d["flags"]
     rng = random.Random(f"{flags['seed']}-{d['layers_done']}")
-    pseudonyms = {r["name"]: f"Reader {chr(65 + i)}" for i, r in enumerate(d["readers"])}
-    label = (lambda a: a) if flags["signed"] else (lambda a: pseudonyms.get(a, "Reader"))
+    label = labeller(d)
     for _ in range(how_many):
         layer = d["layers_done"] + 1
-        readers = [r for r in d["readers"] if not r.get("human")]
+        readers = models_of(d)
         rng.shuffle(readers)
         live = flags["sequential"] and not (layer == 1 and flags["blind_first_layer"])
         if live:

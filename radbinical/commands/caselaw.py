@@ -4,7 +4,7 @@
     python -m radbinical caselaw runs/<dir> --cases cases/mill-property.json --models a,b,c --repeat 3
     python -m radbinical caselaw runs/<dir> --report        # reprint from rulings.json, no calls
 
-The cases file defaults to cases/<passage id>.json and the models to the page's readers. Each
+The cases file defaults to cases/<passage id>.json and the models to the page's model readers. Each
 model rules on each case under "bare" (the passage only) and "page" (passage and margins, citing
 comments by id). Writes rulings.json and prints agreement between models per condition,
 self-consistency across repeats, the most cited comments and how many rulings changed.
@@ -15,7 +15,7 @@ import sys
 
 from ..caselaw import load_cases, report, run, summarize
 from ..config import ROOT
-from ..page import Page, reader_entry
+from ..page import Page, models_of, reader_entry
 
 
 def main(a):
@@ -36,7 +36,7 @@ def main(a):
     if a.models:
         models = [(r["model"], r["name"]) for r in (reader_entry(m.strip()) for m in a.models.split(",") if m.strip())]
     else:
-        models = [(r["model"], r["name"]) for r in page.d["readers"]]
+        models = [(r["model"], r["name"]) for r in models_of(page.d)]
     if a.repeat < 1:
         sys.exit("--repeat takes 1 or more")
     n = len(cases) * len(models) * 2 * a.repeat

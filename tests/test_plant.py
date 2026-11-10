@@ -76,7 +76,7 @@ class Plant(unittest.TestCase):
     def test_errors_are_reported(self):
         page = Page.load(self.dir)
         cases = [
-            ({"as": "nobody", "sort": "slip", "target": "c1", "text": "x", "truth": "y"}, "no reader named"),
+            ({"as": "nobody", "sort": "slip", "target": "c1", "text": "x", "truth": "y"}, "no model reader named"),
             ({"as": "alef", "sort": "odd", "target": "c1", "text": "x", "truth": "y"}, "sort must be"),
             ({"as": "alef", "sort": "slip", "target": "c1", "text": "x", "truth": " "}, "truth is empty"),
             ({"as": "alef", "sort": "slip", "target": "passage", "quote": "not in the text at all", "text": "x", "truth": "y"}, "not found in the passage"),

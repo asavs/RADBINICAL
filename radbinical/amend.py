@@ -21,6 +21,9 @@ Steps:
     vote(page)        every reader votes on every open proposal; passed ones are applied
     cycle(page, n)    n annotation rounds, then propose and vote
 
+People added with `human add` annotate the statement like anyone else, but only the model
+readers draft, propose and vote, and "the readers" in the thresholds means the model readers.
+
 When the text changes, each comment on the passage is re-anchored (see `reanchor`); a comment
 whose quoted words are gone keeps its record and gains `stale`: the version that lost them.
 
@@ -38,7 +41,7 @@ from pathlib import Path
 from .anchoring import fold, locate
 from .ask import ask, extract_json
 from .config import DEFAULT_FLAGS
-from .page import Page, cast_of, reader_entry, render_for_reader
+from .page import Page, cast_of, labeller, models_of, reader_entry, render_for_reader
 from .prompts import system_prompt
 from .providers import split_model
 from .rounds import run_layers
@@ -57,17 +60,9 @@ def tidy(text):
     return "\n\n".join(" ".join(p.split()) for p in re.split(r"\n\s*\n", text or "") if p.strip())
 
 
-def labels(d):
-    """How readers are named to each other: themselves when signed, else Reader A, Reader B..."""
-    if d["flags"]["signed"]:
-        return lambda a: a
-    names = {r["name"]: f"Reader {chr(65 + i)}" for i, r in enumerate(d["readers"])}
-    return lambda a: names.get(a, "Reader")
-
-
 def order(d):
-    """The readers in the order the seed gives."""
-    readers = d["readers"][:]
+    """The model readers in the order the seed gives."""
+    readers = models_of(d)
     random.Random(f"{d['flags']['seed']}-draft").shuffle(readers)
     return readers
 
@@ -91,14 +86,16 @@ def _call(rec, d, reader, step, version, system, user, mock):
 
 
 def _each(rec, d, step, version, make):
-    """Ask every reader at once; make(reader) -> (system, user, mock).
-    Returns [(reader, parsed answer or None, log entry)] in reader order."""
+    """Ask every model reader at once (people annotate, but do not propose or vote);
+    make(reader) -> (system, user, mock). Returns [(reader, parsed answer or None, log entry)]
+    in reader order."""
     def one(r):
         return _call(rec, d, r, step, version, *make(r))
-    with cf.ThreadPoolExecutor(max(1, len(d["readers"]))) as ex:
-        results = list(ex.map(one, d["readers"]))
+    readers = models_of(d)
+    with cf.ThreadPoolExecutor(max(1, len(readers))) as ex:
+        results = list(ex.map(one, readers))
     out = []
-    for r, (obj, entry) in zip(d["readers"], results):
+    for r, (obj, entry) in zip(readers, results):
         rec["log"].append(entry)
         out.append((r, obj, entry))
     return out
@@ -195,7 +192,7 @@ def _stale_note(d):
 def _context(rec, d, me):
     v = rec["versions"][-1]["n"]
     return (f"The question: {rec['question']}\nThe passage below is version {v} of a position statement on it.\n\n"
-            + render_for_reader(d, d["comments"], labels(d), me) + _stale_note(d))
+            + render_for_reader(d, d["comments"], labeller(d), me) + _stale_note(d))
 
 
 # --- proposing -----------------------------------------------------------------------------
@@ -268,7 +265,7 @@ def propose(page):
     d, rec = page.d, record(page)
     v = rec["versions"][-1]
     known = {c["id"] for c in d["comments"]}
-    system = PROPOSE_SYSTEM.format(n=len(d["readers"]), threshold=rec["threshold"], max_words=rec["max_words"])
+    system = PROPOSE_SYSTEM.format(n=len(models_of(d)), threshold=rec["threshold"], max_words=rec["max_words"])
     answers = _each(rec, d, "propose", v["n"], lambda r: (
         system, _context(rec, d, r["name"]), _mock_proposals(v["text"], d, r["name"], v["n"])))
     new = []
@@ -428,8 +425,8 @@ def vote(page):
     if not props:
         page.save_side("amendments", rec)
         return None
-    label = labels(d)
-    system = VOTE_SYSTEM.format(n=len(d["readers"]), threshold=rec["threshold"])
+    label = labeller(d)
+    system = VOTE_SYSTEM.format(n=len(models_of(d)), threshold=rec["threshold"])
     answers = _each(rec, d, "vote", v["n"], lambda r: (
         system, _context(rec, d, r["name"]) + _ballot(props, label, r["name"]), _mock_votes(props, r["name"])))
     by_id = {p["id"]: p for p in props}
@@ -452,7 +449,7 @@ def vote(page):
         entry["votes"] = len(done)
         if bad:
             entry["error"] = "votes not counted: " + "; ".join(bad)
-    n = len(d["readers"])
+    n = len(models_of(d))
     for p in props:
         p["yes"], p["no"], p["abstain"], p["passed"] = tally(p["votes"], n, rec["threshold"])
         p["status"] = "closed"

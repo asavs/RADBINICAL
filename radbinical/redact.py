@@ -24,7 +24,7 @@ import re
 
 from . import ask as ask_mod
 from .anchoring import locate
-from .page import reader_entry, render_for_reader
+from .page import labeller, reader_entry, render_for_reader
 
 STATUSES = ("disputed", "settled", "unresolved")
 VERDICTS = ("supported", "distorted", "unsupported")
@@ -63,14 +63,6 @@ Rate the item:
 - "unsupported": the cited comments do not contain what the item claims.
 
 Answer with JSON only: {"verdict": "supported" | "distorted" | "unsupported", "why": "one line"}."""
-
-
-def labeller(d, signed):
-    """Author label as the redactor sees it: the reader's name, or "Reader A", "Reader B", ..."""
-    if signed:
-        return lambda a: a
-    pseudonyms = {r["name"]: f"Reader {chr(65 + i)}" for i, r in enumerate(d["readers"])}
-    return lambda a: pseudonyms.get(a, "Reader")
 
 
 def page_text(d, signed):

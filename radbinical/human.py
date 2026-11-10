@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 
 from .anchoring import locate
-from .page import Page, render_for_reader
+from .page import Page, is_human, render_for_reader
 from .site import render
 
 
@@ -29,10 +29,6 @@ def slug(name):
 def key_of(file):
     """What identifies one submission on a page: its file name."""
     return Path(file).name
-
-
-def is_human(reader):
-    return bool(reader.get("human")) or reader["model"].startswith("human:")
 
 
 def human_round(d):

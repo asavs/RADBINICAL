@@ -18,7 +18,7 @@ from collections import Counter
 from pathlib import Path
 
 from . import ask as ask_mod
-from .page import render_for_reader
+from .page import labeller, render_for_reader
 
 CONDITIONS = ("bare", "page")
 NOTE = ("Agreement going up with the page shows the page made rulings more consistent between "
@@ -70,9 +70,7 @@ def prompt(page, case, condition):
     d = page.d
     p = d["passage"]
     if condition == "page":
-        pseud = {r["name"]: f"Reader {letter(i)}" for i, r in enumerate(d["readers"])}
-        label = (lambda a: a) if d["flags"].get("signed", True) else (lambda a: pseud.get(a, "Reader"))
-        body = PRECEDENT + "\n\n" + render_for_reader(d, list(d["comments"]), label, None)
+        body = PRECEDENT + "\n\n" + render_for_reader(d, list(d["comments"]), labeller(d), None)
     else:
         body = "\n".join(["=== THE PASSAGE ===", p["title"] + (f" ({p['source']})" if p.get("source") else ""), "", p["text"]])
     opts = "\n".join(f"{letter(i)}. {o}" for i, o in enumerate(case["options"]))
