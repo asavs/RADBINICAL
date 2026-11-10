@@ -35,7 +35,7 @@ def comment_rows(run, page):
             "lineage": page.get("lineage"), "model": models.get(c["author"]), "reader": c["author"],
             "round": c["layer"], "id": c["id"], "parent": None if c["target"] == "passage" else c["target"],
             "root": root["id"], "depth": depth, "start": root["start"], "end": root["end"],
-            "quote": c.get("quote"), "text": c["text"], "see_also": c.get("see_also", []), "kind": c.get("kind"),
+            "quote": c.get("quote"), "text": c["text"], "see_also": c.get("see_also", []), "kind": c.get("kind"), "stale": c.get("stale"),
         })
     return out
 

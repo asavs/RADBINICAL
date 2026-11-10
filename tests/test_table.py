@@ -47,7 +47,7 @@ class Table(unittest.TestCase):
         self.assertEqual([x["run"] for x in r], ["a-run"] * 4 + ["b-run"] * 4)
         c1, c2, c3, c4 = r[:4]
         self.assertEqual(list(c1), ["run", "passage", "cast", "group", "lineage", "model", "reader", "round", "id",
-                                    "parent", "root", "depth", "start", "end", "quote", "text", "see_also", "kind"])
+                                    "parent", "root", "depth", "start", "end", "quote", "text", "see_also", "kind", "stale"])
         self.assertEqual((c1["parent"], c1["root"], c1["depth"], c1["kind"], c1["model"]), (None, "c1", 0, None, "mock:alef"))
         self.assertEqual(TEXT[c1["start"]:c1["end"]], "laws of production")
         self.assertEqual(c2["kind"], "plant")

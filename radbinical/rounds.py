@@ -68,7 +68,7 @@ def run_layers(page, how_many):
             note = ("The margins are empty. Every reader is annotating independently this round; you will see each other's comments next round."
                     if layer == 1 else "Everyone annotates at the same time this round; you will see this round's comments from the others next round.")
         print(f"round {layer}: {'in turn' if live else 'in parallel'}", flush=True)
-        fc = Forecaster(page, layer, label) if flags.get("forecast") and layer > 1 else None
+        fc = Forecaster(page, layer, label) if flags["forecast"] and layer > 1 else None
 
         def turn(r):
             if fc:

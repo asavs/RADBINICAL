@@ -71,6 +71,8 @@ def render_for_reader(page, visible, label, me):
         pad = "    " * depth
         who = label(c["author"]) + (" (you)" if c["author"] == me else "")
         where = "on the passage" if c["target"] == "passage" else f"on {c['target']}"
+        if c.get("stale"):
+            where += f" (its words were amended away in version {c['stale']})"
         q = f': "{c["quote"]}"' if c.get("quote") else ""
         out.append(f"{pad}[{c['id']}] {who}, {where}{q}")
         for line in c["text"].splitlines() or [""]:

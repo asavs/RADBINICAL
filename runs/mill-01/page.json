@@ -46,7 +46,8 @@
   "max_steps_per_turn": 16,
   "max_tokens": 16000,
   "temperature": null,
-  "seed": 0
+  "seed": 0,
+  "forecast": false
  },
  "comments": [
   {
