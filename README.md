@@ -4,7 +4,7 @@ Several language models read the same passage and write comments in its margins.
 each other's comments and write on those, round after round, until nobody has more to add or the
 round limit is reached. Nothing is scored.
 
-Pages so far: https://asavs.github.io/radbinical/
+Pages so far: https://asavs.github.io/RADBINICAL/
 
 ## Run it
 
