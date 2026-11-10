@@ -3,6 +3,10 @@
     python -m radbinical measure
     python -m radbinical measure --embed mock:bow --runs some/runs --out some/data
 
+Planted comments are not a reader's own, so they are left out of every count and share below; a
+reply to a plant is still a reply, and a plant can still be the parent or see_also target that a
+comment engages.
+
 Writes <out>/rounds.jsonl, one row per run and round:
 
     comments        comments made that round
@@ -16,14 +20,15 @@ Writes <out>/rounds.jsonl, one row per run and round:
     mean_length     mean characters per comment
     spans           distinct passage spans touched (a reply counts its root's span)
 
-and <out>/joiners.jsonl, one row per reader whose first comment in a run comes after the run's
-first round: the share of its comments that reply to or cite an existing comment, the share
-that gloss the passage with no see_also, and the age in rounds of the comments it engages.
+and <out>/joiners.jsonl, one row per reader who joined a run after its first round, by the
+`joined` round in the run's row of the table (its first turn, or a person's first comment): its
+comments, the share of them that reply to or cite an existing comment, the share that gloss the
+passage with no see_also, and the age in rounds of the comments it engages.
 Readings are clustered as by the readings command, with the same options.
 """
 import argparse
 
-from ..table import write_jsonl
+from ..table import runs, write_jsonl
 from .readings import add_options, build, safe
 
 
@@ -36,7 +41,7 @@ def rounds_rows(rs, members):
     rnd = {(r["run"], r["id"]): r["round"] for r in rs}
     out = []
     for run in dict.fromkeys(r["run"] for r in rs):
-        mine = [r for r in rs if r["run"] == run]
+        mine = [r for r in rs if r["run"] == run and r["kind"] != "plant"]
         first = {}
         for r in mine:
             g = reading_of.get((run, r["id"]))
@@ -62,20 +67,19 @@ def targets(r):
     return ([r["parent"]] if r["parent"] else []) + list(r["see_also"])
 
 
-def joiner_rows(rs):
+def joiner_rows(rs, run_rows):
+    """Rows for readers whose `joined` round (from the table's run rows) is after round 1."""
     rnd = {(r["run"], r["id"]): r["round"] for r in rs}
     out = []
-    for run in dict.fromkeys(r["run"] for r in rs):
-        mine = [r for r in rs if r["run"] == run]
-        start = min(r["round"] for r in mine)
-        for reader in dict.fromkeys(r["reader"] for r in mine):
-            cs = [r for r in mine if r["reader"] == reader]
-            joined = min(r["round"] for r in cs)
-            if joined == start:
+    for run in run_rows:
+        for reader in run["readers"]:
+            if not reader["joined"] or reader["joined"] <= 1:
                 continue
-            ages = [r["round"] - rnd[(run, t)] for r in cs for t in targets(r)]
+            cs = [r for r in rs if r["run"] == run["run"] and r["reader"] == reader["name"] and r["kind"] != "plant"]
+            ages = [r["round"] - rnd[(run["run"], t)] for r in cs for t in targets(r)]
             out.append({
-                "run": run, "reader": reader, "model": cs[0]["model"], "joined": joined, "comments": len(cs),
+                "run": run["run"], "reader": reader["name"], "model": reader["model"], "joined": reader["joined"],
+                "comments": len(cs),
                 "share_engaging": share(sum(bool(targets(r)) for r in cs), len(cs)),
                 "share_fresh": share(sum(not targets(r) for r in cs), len(cs)),
                 "mean_age": round(sum(ages) / len(ages), 2) if ages else None,
@@ -91,7 +95,7 @@ def pct(x):
 
 def main(a):
     out, rs, _, ms = build(a)
-    rr, jr = rounds_rows(rs, ms), joiner_rows(rs)
+    rr, jr = rounds_rows(rs, ms), joiner_rows(rs, runs(a.runs))
     write_jsonl(out / "rounds.jsonl", rr)
     write_jsonl(out / "joiners.jsonl", jr)
     for run in dict.fromkeys(r["run"] for r in rr):

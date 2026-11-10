@@ -24,7 +24,9 @@ def make_run(base, name, group, lineage=None):
     page.add("bet", 1, {"target": "passage", "quote": "human institution", "text": "other"}, kind="plant", meta={"truth": "x"})
     page.add("bet", 2, {"target": "c1", "quote": "gloss", "text": "reply", "see_also": ["c2"]})
     page.add("alef", 2, {"target": "c3", "text": "reply to reply"})
-    data["log"] = [{"usage": {"cost": 0.25}}, {"usage": {"prompt_tokens": 9}}, {"usage": {}}]
+    data["log"] = [{"layer": 1, "reader": "alef", "model": "mock:alef", "usage": {"cost": 0.25}},
+                   {"layer": 1, "reader": "bet", "model": "mock:bet", "usage": {"prompt_tokens": 9}},
+                   {"layer": 2, "reader": "alef", "model": "mock:alef", "usage": {}}]
     page.save()
     return page
 
@@ -62,7 +64,8 @@ class Table(unittest.TestCase):
         a, b = runs(self.base)
         self.assertEqual((a["run"], a["passage"], a["group"], a["rounds"], a["comments"]), ("a-run", "mill-property", "g1", 2, 4))
         self.assertEqual(a["cast"], cast_of(["mock:bet", "mock:alef"]))
-        self.assertEqual(a["readers"], [{"name": "alef", "model": "mock:alef"}, {"name": "bet", "model": "mock:bet"}])
+        self.assertEqual(a["readers"], [{"name": "alef", "model": "mock:alef", "joined": 1},
+                                        {"name": "bet", "model": "mock:bet", "joined": 1}])
         self.assertEqual(a["cost"], 0.875)   # log plus redactions.json
         self.assertEqual(b["cost"], 0.25)
         self.assertEqual(b["lineage"], "L1")

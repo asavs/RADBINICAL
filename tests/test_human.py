@@ -138,6 +138,10 @@ class Submissions(unittest.TestCase):
         r = [x for x in rows(self.root / "runs") if x["kind"] == "human"]
         self.assertEqual((r[0]["model"], r[0]["reader"]), ("human:ruth", "Ruth"))
         self.assertEqual(runs(self.root / "runs")[0]["comments"], 5)
+        self.assertEqual([(x["name"], x["joined"]) for x in runs(self.root / "runs")[0]["readers"]],
+                         [("alef", 1), ("bet", 1), ("Ruth", 3)])
+        human.add(self.run, sub(blind=True, name="Ada"), "ada.json")
+        self.assertEqual(runs(self.root / "runs")[0]["readers"][-1], {"name": "Ada", "model": "human:ada", "joined": 1})
 
 
 class Commands(unittest.TestCase):

@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 
 from .config import ROOT
+from .page import is_human
 
 
 def run_dirs(runs_dir=None):
@@ -17,7 +18,7 @@ def run_dirs(runs_dir=None):
     return [d for d in sorted(base.iterdir()) if (d / "page.json").exists()] if base.exists() else []
 
 
-def _page(d):
+def page_of(d):
     return json.loads((d / "page.json").read_text(encoding="utf-8"))
 
 
@@ -54,21 +55,36 @@ def run_cost(d, page):
     return round(sum(u.get("cost", 0) for u in usages if isinstance(u, dict)), 6)
 
 
+def joined(page):
+    """{reader name: the round it joined}. A model reader joins at its first turn in the log, a
+    turn with no comments included; a person at the round of their first comment. A reader that
+    has done neither is absent."""
+    people = {r["name"] for r in page["readers"] if is_human(r)}
+    first = {}
+    turns = [(e["reader"], e["layer"]) for e in page["log"] if e["reader"] not in people]
+    firsts = [(c["author"], c["layer"]) for c in page["comments"] if c["author"] in people and c.get("kind") == "human"]
+    for name, layer in turns + firsts:
+        first[name] = min(first.get(name, layer), layer)
+    return first
+
+
 def run_row(d, page):
+    j = joined(page)
     return {
         "run": d.name, "passage": page["passage"]["id"], "cast": page["cast"], "group": page["group"],
-        "lineage": page.get("lineage"), "readers": [{"name": r["name"], "model": r["model"]} for r in page["readers"]],
+        "lineage": page.get("lineage"),
+        "readers": [{"name": r["name"], "model": r["model"], "joined": j.get(r["name"])} for r in page["readers"]],
         "flags": page["flags"], "rounds": page["layers_done"], "comments": len(page["comments"]),
         "cost": run_cost(d, page), "started": page.get("started"),
     }
 
 
 def rows(runs_dir=None):
-    return [r for d in run_dirs(runs_dir) for r in comment_rows(d.name, _page(d))]
+    return [r for d in run_dirs(runs_dir) for r in comment_rows(d.name, page_of(d))]
 
 
 def runs(runs_dir=None):
-    return [run_row(d, _page(d)) for d in run_dirs(runs_dir)]
+    return [run_row(d, page_of(d)) for d in run_dirs(runs_dir)]
 
 
 def write_jsonl(path, items):
