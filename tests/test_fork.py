@@ -50,7 +50,7 @@ class Fork(unittest.TestCase):
             d = load(p.dir)
             self.assertTrue(ok)
             self.assertEqual((d["lineage"], d["group"]), ("mill", f"mill-s{i}"))
-            self.assertEqual(d["forked_from"], {"run": "mill", "round": 2})
+            self.assertEqual(d["forked_from"], {"run": "mill", "round": 2, "comments": self.before["counter"]})
             self.assertEqual(d["flags"]["seed"], 7 + i)
             self.assertEqual(d["comments"], self.before["comments"])
             self.assertTrue((p.dir / "page.html").exists())
@@ -84,6 +84,14 @@ class Fork(unittest.TestCase):
         for r in rows(self.runs):
             by_run.setdefault(r["run"], set()).add((r["lineage"], r["group"]))
         self.assertEqual(by_run, {"mill": {(None, "mill")}, "mill-s1": {("mill", "mill-s1")}, "mill-s2": {("mill", "mill-s2")}})
+
+    def test_table_marks_inherited_comments(self):
+        [(p, _)] = quiet(fork, self.src, 1, rounds=1)
+        rs = [r for r in rows(self.runs) if r["run"] == "mill-s1"]
+        n = len(self.before["comments"])
+        self.assertTrue(all(r["inherited"] for r in rs[:n]))
+        self.assertTrue(rs[n:] and not any(r["inherited"] for r in rs[n:]))
+        self.assertFalse(any(r["inherited"] for r in rows(self.runs) if r["run"] == "mill"))
 
     def test_models_and_unsigned_through_cli(self):
         with self.assertRaises(SystemExit) as e:

@@ -13,6 +13,9 @@ cosine to the other members). Its models are canonical ids, so one model routed 
 once. The default threshold depends on the embedding model
 (THRESHOLDS); cosines from different models are not on one scale.
 
+A fork's copies of its source's glosses are members of the source's readings, marked
+`inherited`, and are not clustered or counted again (see `readings`).
+
 Reply counts over a reading are computed from its members' threads and see_also pointers. What
 is counted is structural only: direct replies, all replies below, who replied, whether a
 member's author later replied in its own thread, and how often members are cited. Whether a
@@ -93,14 +96,35 @@ def descendants(key, children):
     return out
 
 
+def copied(rows):
+    """{(fork, id): (source run, id)} for the glosses a fork copied from a run that is among rows."""
+    keys = {(r["run"], r["id"]) for r in rows}
+    return {(g["run"], g["id"]): (g["lineage"], g["id"]) for g in glosses(rows)
+            if g.get("inherited") and (g["lineage"], g["id"]) in keys}
+
+
+def member(rid, g, **extra):
+    return {"reading": rid, "passage": g["passage"], "run": g["run"], "group": g["group"], "cast": g["cast"],
+            "id": g["id"], "reader": g["reader"], "model": g["model"], "round": g["round"],
+            "start": g["start"], "end": g["end"], **extra}
+
+
 def readings(rows, model, threshold=None, min_overlap=MIN_OVERLAP, cache_dir=None):
-    """-> (readings, members). See the module docstring for the method."""
+    """-> (readings, members). See the module docstring for the method.
+
+    A gloss a fork copied from its source is not clustered again: it is listed among the members
+    with `inherited: true` under its original's reading, and counts toward none of the reading's
+    figures except the replies made to it in the fork.
+    """
     threshold = default_threshold(model) if threshold is None else threshold
     children, cited = threads(rows)
+    copies = copied(rows)
+    by_key = {(r["run"], r["id"]): r for r in rows}
     by_passage = defaultdict(list)
     for g in glosses(rows):
-        by_passage[g["passage"]].append(g)
-    out, members = [], []
+        if (g["run"], g["id"]) not in copies:
+            by_passage[g["passage"]].append(g)
+    found, members, reading_of = [], [], {}
     for passage in sorted(by_passage):
         items = by_passage[passage]
         vectors = embed([g["text"] for g in items], model, cache_dir)
@@ -111,28 +135,38 @@ def readings(rows, model, threshold=None, min_overlap=MIN_OVERLAP, cache_dir=Non
             mean = {i: (sum(cosine(vectors[i], vectors[j]) for j in c if j != i) / (len(c) - 1) if len(c) > 1 else 1.0)
                     for i in c}
             mi = max(c, key=lambda i: (mean[i], -i))
-            out.append(reading_row(rid, passage, [items[i] for i in c], items[mi], children, cited))
+            found.append((rid, passage, [items[i] for i in c], items[mi]))
             for i in c:
-                g = items[i]
-                members.append({"reading": rid, "passage": passage, "run": g["run"], "group": g["group"],
-                                "cast": g["cast"], "id": g["id"], "reader": g["reader"], "model": g["model"],
-                                "round": g["round"], "start": g["start"], "end": g["end"],
-                                "cos_to_medoid": round(cosine(vectors[i], vectors[mi]), 4)})
+                reading_of[(items[i]["run"], items[i]["id"])] = rid
+                members.append(member(rid, items[i], cos_to_medoid=round(cosine(vectors[i], vectors[mi]), 4)))
+    extra = defaultdict(list)
+    for key in copies:
+        src, seen = copies[key], {key}
+        while src in copies and src not in seen:
+            seen.add(src)
+            src = copies[src]
+        if src in reading_of:
+            extra[reading_of[src]].append(by_key[key])
+            members.append(member(reading_of[src], by_key[key], inherited=True))
+    out = [reading_row(rid, passage, ms, medoid, children, cited, extra[rid]) for rid, passage, ms, medoid in found]
     return out, members
 
 
-def reading_row(rid, passage, ms, medoid, children, cited):
+def reading_row(rid, passage, ms, medoid, children, cited, copies=()):
+    """The row for one reading from its members `ms`. Replies are counted below the members and
+    below `copies` (forks' copies of members), leaving out comments a fork copied."""
     first = {}
     for m in ms:
         first[m["run"]] = min(first.get(m["run"], m["round"]), m["round"])
     direct = replies = cites = author_back = 0
     repliers = set()
-    for m in ms:
+    fresh = lambda xs: [x for x in xs if not x.get("inherited")]
+    for m in list(ms) + list(copies):
         key = (m["run"], m["id"])
-        below = descendants(key, children)
-        direct += len(children.get(key, []))
+        below = fresh(descendants(key, children))
+        direct += len(fresh(children.get(key, [])))
         replies += len(below)
-        cites += len(cited.get(key, []))
+        cites += len(fresh(cited.get(key, [])))
         repliers |= {d["reader"] for d in below if d["reader"] != m["reader"]}
         author_back += any(d["reader"] == m["reader"] for d in below)
     return {
@@ -153,7 +187,7 @@ def presence(members, unit, round1=False):
     """unit value -> set of reading ids with a member in that unit (optionally round 1 only)."""
     out = defaultdict(set)
     for m in members:
-        if not round1 or m["round"] == 1:
+        if not m.get("inherited") and (not round1 or m["round"] == 1):
             out[m[unit]].add(m["reading"])
     return out
 

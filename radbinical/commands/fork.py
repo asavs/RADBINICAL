@@ -10,7 +10,9 @@ page (redactions, plants, claims, rulings, forecasts) stay with the source; the 
 past what they describe.
 
 A copy carries `lineage` (the source run's folder name), `group` (its own folder name), its own
-`seed` (the source's seed plus its number) and `forked_from` {"run", "round"}. The usage of the
+`seed` (the source's seed plus its number) and `forked_from` {"run", "round", "comments"}, where
+"comments" is the source's comment counter at the fork: comments numbered up to it are the
+source's, copied (the table marks them `inherited`). The usage of the
 calls that built the page so far is left with the source, so a run's cost counts only its own
 calls: copied log entries lose `usage` and gain `from`, and carried side files start an empty
 `usage` list.
@@ -47,7 +49,7 @@ def fork(src, into, rounds=0, models=None, unsigned=False):
     for i, d in enumerate(dirs, 1):
         data = copy.deepcopy(source.d)
         data["lineage"], data["group"] = src.name, d.name
-        data["forked_from"] = {"run": src.name, "round": data["layers_done"]}
+        data["forked_from"] = {"run": src.name, "round": data["layers_done"], "comments": data["counter"]}
         data["flags"]["seed"] = data["flags"]["seed"] + i
         for e in data["log"]:
             e.pop("usage", None)

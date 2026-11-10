@@ -22,9 +22,11 @@ def _page(d):
 
 
 def comment_rows(run, page):
-    """Rows for one page. A reply's start and end are its root's span on the passage."""
+    """Rows for one page. A reply's start and end are its root's span on the passage. In a fork,
+    `inherited` marks the comments copied from the run it was forked from."""
     by_id = {c["id"]: c for c in page["comments"]}
     models = {r["name"]: r["model"] for r in page["readers"]}
+    copied = (page.get("forked_from") or {}).get("comments", 0)
     out = []
     for c in sorted(page["comments"], key=lambda c: c["n"]):
         root, depth = c, 0
@@ -36,6 +38,7 @@ def comment_rows(run, page):
             "round": c["layer"], "id": c["id"], "parent": None if c["target"] == "passage" else c["target"],
             "root": root["id"], "depth": depth, "start": root["start"], "end": root["end"],
             "quote": c.get("quote"), "text": c["text"], "see_also": c.get("see_also", []), "kind": c.get("kind"), "stale": c.get("stale"),
+            "inherited": c["n"] <= copied,
         })
     return out
 
