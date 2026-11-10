@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Marginalia on Of Property, §1</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans+SC:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans+SC:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=EB+Garamond:ital,wght@0,500;0,700;1,500&display=swap">
 <style>
 /* Layout: a printed commentary page. One dense sheet: the passage sits in the middle in a large book
    face; comments on the text run down the inner column, comments on comments down the outer column,
@@ -11,7 +11,7 @@
   --mark: #f0bf00; --warn: #8a5a00;
   --a0: #c2362b; --a1: #1565c0; --a2: #1b7f4b; --a3: #7b3fb5;
   --a4: #a85a00; --a5: #0b7c8c; --a6: #b02a78; --a7: #56606e;
-  --text: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --text: "EB Garamond", "Adobe Garamond Pro", Garamond, "Iowan Old Style", Georgia, serif;
   --gloss: "Alegreya", "Palatino Linotype", Palatino, Georgia, serif;
   --small: "Alegreya Sans SC", "IBM Plex Sans", system-ui, sans-serif;
   --ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
@@ -47,7 +47,7 @@ img.g.flip { filter: var(--flip) }
 /* the sheet */
 .daf { background: var(--sheet); border: 1px solid var(--rule); padding: 0.9rem 1.1rem 1.3rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.7rem 1.2rem }
 .runhead { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--ink); padding-bottom: 0.35rem }
-.runhead h1 { font-family: var(--text); font-weight: 600; font-size: clamp(1.25rem, 1rem + 1.2vw, 1.8rem); line-height: 1.15; margin: 0; text-align: center; text-wrap: balance }
+.runhead h1 { font-family: var(--text); font-weight: 700; font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2.1rem); letter-spacing: 0.01em; line-height: 1.15; margin: 0; text-align: center; text-wrap: balance }
 .runhead span { font-family: var(--small); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.06em; color: var(--ink-2) }
 .runhead span:last-child { text-align: right }
 
@@ -67,10 +67,10 @@ img.g.flip { filter: var(--flip) }
 .all { justify-self: start; border-color: var(--ink); padding: 0.4rem 1rem; font-weight: 700; font-size: 0.95rem }
 
 .passage { min-width: 0; max-width: 34rem; margin: 0 auto }
-.passage p { font-family: var(--text); font-size: 1.2rem; line-height: 1.5; margin: 0; text-align: justify; hyphens: auto; text-indent: 1.2em }
+.passage p { font-family: var(--text); font-weight: 500; font-size: 1.36rem; line-height: 1.36; margin: 0; text-align: justify; hyphens: auto; text-indent: 1.2em }
 .passage p:first-of-type { text-indent: 0 }
 .incipit { display: block; width: fit-content; margin: 0.35rem auto 0.7rem; padding: 0.2rem 1.5rem; border: 3px double var(--ink); outline: 1px solid var(--ink); outline-offset: 3px;
-  font-size: 1.55em; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-indent: 0; line-height: 1.3 }
+  font-size: 1.6em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-indent: 0; line-height: 1.3 }
 .seg { background-image: var(--ul); background-size: 100% 1px; background-position: 0 100%; background-repeat: no-repeat }
 .seg.lit { background-color: color-mix(in srgb, var(--c, var(--mark)) 22%, transparent); background-size: 100% 3px }
 sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0 }
@@ -95,13 +95,13 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 @media (prefers-reduced-motion: reduce) { .c.flash { animation: none; outline: 2px solid var(--mark) } }
 .push, .notch { display: none }
 .under { border-top: 1px solid var(--ink); padding-top: 0.5rem; font-size: 0.85rem }
-.colophon { font-family: var(--text); font-style: italic; color: var(--ink-2); font-size: 0.9rem; text-align: center }
+.colophon { font-family: var(--text); font-style: italic; font-weight: 500; color: var(--ink-2); font-size: 1.02rem; text-align: center }
 
 /* reading view: one thread at a comfortable size */
 dialog.sheet { margin: auto; width: min(44rem, calc(100% - 2rem)); max-height: 86dvh; padding: 0; border: 1px solid var(--ink); background: var(--sheet); color: var(--ink) }
 dialog.sheet::backdrop { background: rgb(0 0 0 / 0.5) }
 .sheet-head { position: sticky; top: 0; z-index: 1; display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; background: var(--sheet); border-bottom: 1px solid var(--rule); padding: 0.8rem 1.1rem 0.7rem }
-.sheet-title { font-family: var(--text); font-style: italic; font-size: 0.98rem; min-width: 0; background: none; border: none; padding: 0; text-align: left }
+.sheet-title { font-family: var(--text); font-style: italic; font-weight: 500; font-size: 1.1rem; min-width: 0; background: none; border: none; padding: 0; text-align: left }
 button.sheet-title:enabled:hover { text-decoration: underline }
 .sheet-body { display: flex; flex-direction: column; gap: 1.2rem; padding: 1rem 1.1rem 1.5rem }
 .thread { display: flex; flex-direction: column; gap: 0.7rem }
@@ -134,7 +134,7 @@ th { font-weight: 500; color: var(--ink-2) }
 @media (max-width: 699px) {
   .runhead { grid-template-columns: 1fr } .runhead span { display: none }
   .col, .under { display: none }
-  .passage p { font-size: 1.12rem; text-align: left }
+  .passage p { font-size: 1.28rem; line-height: 1.42; text-align: left }
   dialog.sheet { margin: auto 0 0; width: 100%; max-width: 100%; border: none; border-top: 2px solid var(--ink); border-radius: 0.9rem 0.9rem 0 0 }
   .sheet-head { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
   .sheet-body { padding: 1rem max(16px, env(safe-area-inset-right, 0px)) calc(1.5rem + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) }
@@ -153,7 +153,7 @@ th { font-weight: 500; color: var(--ink-2) }
   .push { width: 0; height: var(--lead) }
   .notch { width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 1.1rem) }
   #inner .push, #inner .notch { float: right; clear: right } #outer .push, #outer .notch { float: left; clear: left }
-  .passage p { font-size: 1.14rem }
+  .passage p { font-size: 1.3rem }
   .under { columns: 3; column-gap: 1.1rem }
 }
 </style>
