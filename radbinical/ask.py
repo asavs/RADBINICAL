@@ -44,13 +44,14 @@ def ask(model, system, user, max_tokens=4000, temperature=None):
     session = open_session({"model": model}, system, user, flags, tools=False)
     _, text, usage = session.step()
     usage = complete(model, {**usage, "via": session.via})
-    if not (text or "").strip() and getattr(session, "truncated", False):
-        raise Truncated(f"{model} reached max_tokens={max_tokens} before writing an answer", usage)
+    if getattr(session, "truncated", False):  # an answer cut off is incomplete, and its JSON usually broken
+        raise Truncated(f"{model} reached max_tokens={max_tokens} " + (
+            f"after {len(text)} characters of answer" if (text or "").strip() else "before writing an answer"), usage)
     return text, usage
 
 
 class Truncated(RuntimeError):
-    """An answer that stopped at the output limit with no text, typically all reasoning. `usage`
+    """An answer that stopped at the output limit, often after spending it all on reasoning. `usage`
     holds what the call cost, so a caller can still count it."""
     def __init__(self, msg, usage):
         super().__init__(msg)

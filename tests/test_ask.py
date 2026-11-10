@@ -77,6 +77,14 @@ class Ask(unittest.TestCase):
             chat_mod.post_json = real
         self.assertIn("max_tokens=50", str(e.exception))
         self.assertEqual(e.exception.usage["cost"], 0.3)
+        chat_mod.post_json = lambda url, env, body: {"choices": [{"message": {"content": '{"items": [{"a"'},
+                                                                  "finish_reason": "length"}], "usage": {}}
+        try:
+            with self.assertRaises(ask_mod.Truncated) as e:
+                ask("qwen/qwen3.8-27b", "s", "u", max_tokens=50)
+        finally:
+            chat_mod.post_json = real
+        self.assertIn("after 15 characters", str(e.exception))
 
 
 if __name__ == "__main__":
