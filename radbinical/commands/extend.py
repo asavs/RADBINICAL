@@ -5,7 +5,7 @@
     python -m radbinical extend runs/<dir> -n 1 --models qwen/qwen3.8-27b --only-new
 
 New readers change the page's `cast`; its `group` stays. With --only-new, only the readers that
---models adds take the added rounds; the others sit them out.
+--models adds take the added rounds; the others sit them out. --max-tokens sets the output limit of the readers --models adds.
 """
 import argparse
 import sys
@@ -21,6 +21,8 @@ def main(a):
         have = {r["name"] for r in page.d["readers"]}
         for m in a.models.split(","):
             r = reader_entry(m.strip())
+            if a.max_tokens:
+                r["max_tokens"] = a.max_tokens
             if r["name"] not in have:
                 page.d["readers"].append(r)
                 have.add(r["name"])
@@ -41,4 +43,5 @@ def register(sub):
     p.add_argument("-n", type=int, default=1, help="rounds to add")
     p.add_argument("--models", help="comma-separated extra readers who join the existing page")
     p.add_argument("--only-new", action="store_true", help="only the readers --models adds take the added rounds")
+    p.add_argument("--max-tokens", type=int, help="output limit per call for the readers --models adds")
     p.set_defaults(f=main)

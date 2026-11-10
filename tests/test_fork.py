@@ -116,6 +116,7 @@ class Fork(unittest.TestCase):
         self.assertEqual({e["reader"] for e in fresh}, {"he"})
         self.assertEqual({e["layer"] for e in fresh}, {3})
         self.assertTrue(all(c["author"] == "he" for c in d["comments"][len(self.before["comments"]):]))
+        self.assertNotIn("max_tokens", d["readers"][-1])
         s1 = load(self.runs / "mill-s1")
         self.assertTrue(len({e["reader"] for e in s1["log"] if "from" not in e}) > 1)
         with self.assertRaises(SystemExit):
@@ -124,9 +125,10 @@ class Fork(unittest.TestCase):
 
     def test_extend_only_new(self):
         with self.assertRaises(SystemExit) as e:
-            quiet(main, ["extend", str(self.src), "-n", "1", "--models", "mock:he", "--only-new"])
+            quiet(main, ["extend", str(self.src), "-n", "1", "--models", "mock:he", "--only-new", "--max-tokens", "32000"])
         self.assertEqual(e.exception.code, 0)
         d = load(self.src)
+        self.assertEqual(d["readers"][-1], {"model": "mock:he", "name": "he", "max_tokens": 32000})
         self.assertEqual({e["reader"] for e in d["log"] if e["layer"] == 3}, {"he"})
         with self.assertRaises(SystemExit) as e:
             quiet(main, ["extend", str(self.src), "-n", "1", "--only-new"])

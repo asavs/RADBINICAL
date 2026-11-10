@@ -21,7 +21,8 @@ calls: copied log entries lose `usage` and gain `from`, and carried side files s
 With -n, every copy is extended that many rounds, the copies concurrently. --models adds readers
 to every copy (as extend --models does); --unsigned shows readers to each other as "Reader A",
 "Reader B" in the copies; --only-new lets only the readers --models adds take the added rounds.
---start numbers the copies from that number instead of 1, so a page can be forked again beside
+--max-tokens sets the output limit of the readers --models adds, for a reasoning model that needs
+more room than the page's `max_tokens`. --start numbers the copies from that number instead of 1, so a page can be forked again beside
 earlier copies; a copy's seed offset is its number.
 """
 import argparse
@@ -38,7 +39,7 @@ from ..site import render
 CARRIED = ("amendments",)
 
 
-def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=False):
+def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=False, max_tokens=None):
     """Write `into` copies of the run at `src`, numbered from `start`; extend each `rounds` rounds,
     by every model reader or, with `only_new`, by the readers `models` adds. Returns [(Page, ok)]."""
     src = Path(src)
@@ -69,6 +70,8 @@ def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=Fal
             have = {r["name"] for r in data["readers"]}
             for m in models.split(","):
                 r = reader_entry(m.strip())
+                if max_tokens:
+                    r["max_tokens"] = max_tokens
                 if r["name"] not in have:
                     data["readers"].append(r)
                     have.add(r["name"])
@@ -103,7 +106,7 @@ def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=Fal
 
 
 def main(a):
-    done = fork(a.run, a.into, a.n, a.models, a.unsigned, a.start, a.only_new)
+    done = fork(a.run, a.into, a.n, a.models, a.unsigned, a.start, a.only_new, a.max_tokens)
     for page, _ in done:
         print(f"{page.dir.name}: {len(page.d['comments'])} comments over {page.d['layers_done']} round(s)")
     sys.exit(0 if all(ok for _, ok in done) else 1)
@@ -119,4 +122,5 @@ def register(sub):
     p.add_argument("--unsigned", action="store_true", help="hide reader names from each other in the copies")
     p.add_argument("--start", type=int, default=1, help="number of the first copy (default 1)")
     p.add_argument("--only-new", action="store_true", help="only the readers --models adds take the added rounds")
+    p.add_argument("--max-tokens", type=int, help="output limit per call for the readers --models adds")
     p.set_defaults(f=main)
