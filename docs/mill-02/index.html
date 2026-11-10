@@ -286,7 +286,9 @@ function start() {
 
   // Planted comments are marked only while Plants is on, so the sheet otherwise reads as its readers saw it.
   const plantOf = Object.fromEntries(((SIDE.plants || {}).plants || []).map(p => [p.id, p]));
-  const verdictOf = Object.fromEntries(Object.values(plantOf).flatMap(p => (p.replies || []).map(r => [r.id, r.verdict])));
+  // A reply by the reader a plant is filed under is judged but does not count toward its outcome.
+  const verdictOf = Object.fromEntries(Object.values(plantOf).flatMap(p => (p.replies || []).filter(r => r.verdict)
+    .map(r => [r.id, r.nominal_author ? `${r.verdict}, by its nominal author, not counted` : r.verdict])));
   const isPlant = c => c.kind === 'plant' || !!plantOf[c.id];
   const names = xs => xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
   // A judged slip is caught (or not) by readers; a judged sound reading is dismissed (or not). See radbinical/judge.py.
@@ -590,8 +592,10 @@ function start() {
     return `<div><h3>Planted comments</h3><p class="lead">Comments placed on the page under a reader's name, to see whether the others catch a slip or dismiss a sound reading${PL.judge ? `; judged by ${esc(PL.judge)}` : ''}.</p>${
       grid(['Comment', 'Sort', 'Under the name of', 'Round', 'Replies', 'Outcome', 'Rounds to catch'], PL.plants.map(p => {
         const o = outcome(p), counts = Object.entries(p.counts || {}).filter(([, n]) => n).map(([v, n]) => `${n} ${esc(v)}`).join(', ');
+        const reps = p.replies || [], own = reps.filter(r => r.nominal_author).length;
+        const note = [counts, own ? `${own} by its nominal author, not counted` : ''].filter(Boolean).join('; ');
         return [cites([p.id]) || esc(p.id), p.sort === 'sound' ? 'sound reading' : 'slip', esc(p.author || ''), fmt(p.round),
-          `${(p.replies || []).length}${counts ? ` <span class="on">${counts}</span>` : ''}`,
+          `${reps.length - own}${note ? ` <span class="on">${note}</span>` : ''}`,
           o ? esc(o.text) + (o.when ? ` in round ${esc(o.when)}` : '') : 'not judged', fmt(p.rounds_to_catch)];
       }))}${(PL.notes || []).length ? `<p class="on">${PL.notes.length} note${PL.notes.length === 1 ? '' : 's'} from judging, in plants.json.</p>` : ''}</div>`;
   }

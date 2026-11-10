@@ -86,13 +86,31 @@ flattens every run into two files that every analysis reads:
 | File | One row per | Holds |
 |---|---|---|
 | `data/comments.jsonl` | comment | run, passage, cast, group, lineage, model, reader, round, id, parent, root, depth, start, end, quote, text, see_also, kind, stale, inherited |
-| `data/runs.jsonl` | run | passage, cast, group, lineage, readers, flags, rounds, comments, cost, started |
+| `data/runs.jsonl` | run | passage, cast, group, lineage, readers, flags, rounds, comments, cost, cost_estimated, started |
 
 A reply's start and end are its root's span on the passage. `kind` is `"plant"` or `"human"` for
 comments that are not a model's own, and empty otherwise. `stale` is the version of an amended
 text that lost a comment's quoted words. `inherited` marks the comments a fork copied from its
-source. `cost` adds up the cost each call reported, on the page and in its side files. The table
-is rebuilt from `runs/` each time; `page.json` stays the record.
+source. Each reader in a run's row carries `joined`, the round it entered the page: a model
+reader's first turn in the log, whether or not it commented, and a person's first comment. `cost`
+adds up the cost of every call, on the page and in its side files, and `cost_estimated` is the
+part of it estimated from tokens (see Cost below). The table is rebuilt from `runs/` each time;
+`page.json` stays the record.
+
+## Cost
+
+OpenRouter and Nous report what each call cost. Anthropic, OpenAI, Google and NVIDIA report
+tokens only, so a call to one of them is priced from `radbinical/prices.json`, a snapshot of
+OpenRouter's public price list, and its usage is marked `cost_estimated`. A model the snapshot
+does not list gets no cost. The table prices logged turns that carry tokens but no cost the same
+way when it reads them; side files are taken as stored.
+
+    python3 -m radbinical prices                       # refresh prices.json from OpenRouter; no key
+    python3 -m radbinical spend                        # reported, estimated and sum, per run and in total
+    python3 -m radbinical spend --since 2026-11-10     # runs started at or after this
+
+`spend` counts the log and every side file's usage; its last line is `total <number> USD`. How
+each provider reports tokens, reasoning included, is in `radbinical/prices.py`.
 
 ## Instruments
 
@@ -123,7 +141,9 @@ sort `sound` is a sound but unfashionable reading and `--truth` says why it hold
 `passage` or a comment id; `--file` takes a JSON list of plants. Readers never see that it is a
 plant. `judge plants` has the judge label every reply to the plant, at any depth or by
 `see_also`: catches, accepts, ignores or dismisses. A slip is caught or not; a sound reading is
-dismissed or not. The viewer marks plants only while its Plants button is on.
+dismissed or not. The reader a plant is filed under did not write it, so that reader's replies are
+judged and listed, marked `nominal_author`, but do not decide whether, by whom or when it was
+caught or dismissed. The viewer marks plants only while its Plants button is on.
 
 ### Hedged claims
 
@@ -181,7 +201,7 @@ other folders; `--embed mock:bow` needs no key.
 |---|---|---|
 | `readings` | `readings.jsonl`, `reading_members.jsonl`, `noise.jsonl` | Glosses on overlapping words that say the same thing, clustered across runs of a passage. Each cluster is a reading: which models give it, in which runs, how much it is replied to. The noise floor is the share of readings that recur across repeats of one config. |
 | `graph` | `graph.jsonl`, `graph_runs.jsonl` | Replies and `see_also` as a graph: the comments most built on, depth, who replies to whom, reciprocity. |
-| `measure` | `rounds.jsonl`, `joiners.jsonl` | Per round: comments, share that reply, share that reach back past the previous round, readings introduced and still alive. Per late-joining reader: how much it engages what is already there. |
+| `measure` | `rounds.jsonl`, `joiners.jsonl` | Per round: comments, share that reply, share that reach back past the previous round, readings introduced and still alive. Per reader who joined after round 1 (by the table's `joined`): how much it engages what is already there. Plants are not counted as anyone's comments, though replies to them are. |
 
 Embeddings are cached in `data/embeddings/`, which git ignores. `google:` uses `GEMINI_API_KEY`,
 `openai:` uses `OPENAI_API_KEY`, a bare id goes through OpenRouter. Planted comments are not
@@ -297,6 +317,7 @@ submissions on every push and pull request.
 | `radbinical/ask.py` | One-shot calls for judges, redactors, forecasts and rulings |
 | `radbinical/providers/` | One file per way of reaching a model, and the routing |
 | `radbinical/table.py` | The row-per-comment table |
+| `radbinical/prices.py`, `prices.json` | Cost estimates from tokens, and the price snapshot |
 | `radbinical/judge.py`, `redact.py`, `forecast.py`, `caselaw.py` | The instruments |
 | `radbinical/readings.py`, `embed.py` | Readings, the noise floor, embeddings |
 | `radbinical/amend.py`, `human.py` | Amendment, and people as readers |
