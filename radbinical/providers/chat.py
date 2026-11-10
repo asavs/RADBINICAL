@@ -50,7 +50,8 @@ class ChatSession:
             self.messages.append({"role": "tool", "tool_call_id": cid, "content": res})
 
 
-_BLOCK = re.compile(r"<annotate\b([^>]*)>(.*?)</annotate>", re.S | re.I)
+# A block ends at its closing tag or, when a model leaves the tag open, where the next block or the reply ends.
+_BLOCK = re.compile(r"<annotate\b([^>]*)>(.*?)(?:</annotate\s*>|(?=<annotate\b)|\Z)", re.S | re.I)
 
 
 _ATTR = re.compile(r"""(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)')""")

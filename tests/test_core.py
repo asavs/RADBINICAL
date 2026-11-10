@@ -103,6 +103,13 @@ class Providers(unittest.TestCase):
         self.assertEqual(calls, [("0", {"target": "passage", "quote": "laws", "text": "A gloss.", "see_also": ["c1", "c2"]})])
         self.assertEqual(text, "Hm.")
 
+    def test_text_blocks_left_open(self):
+        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
+        s._send = lambda with_tools=True: ({"content": '<annotate target="c8" quote="x y">\nOne.\n\n<annotate target="passage" quote="laws">\nTwo.</annotate>\n<annotate target="c1">Three.'}, {})
+        calls, text, _ = s.step()
+        self.assertEqual([(a["target"], a["text"]) for _, a in calls], [("c8", "One."), ("passage", "Two."), ("c1", "Three.")])
+        self.assertEqual(text, "")
+
     def test_text_turn_ends_once_every_block_is_recorded(self):
         s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
         sent = []
