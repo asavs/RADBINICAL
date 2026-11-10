@@ -1,0 +1,38 @@
+{
+  "passage": {
+    "title": "Right of the Poor to Support",
+    "source": "Samuel Read, An Inquiry into the Natural Grounds of Right to Vendible Property, or Wealth (Edinburgh, 1829), Book II, ch. 9, sect. 3, pp. 364-366",
+    "file": "passages/read-poor-support.txt"
+  },
+  "models": [
+    {
+      "model": "anthropic/claude-opus-5.5",
+      "name": "Claude Opus 5.5"
+    },
+    {
+      "model": "openai/gpt-6.1-terra",
+      "name": "GPT-6.1 Terra"
+    },
+    {
+      "model": "google/gemini-3.5-flash",
+      "name": "Gemini 3.5 Flash"
+    },
+    {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "name": "Nemotron 3 Ultra"
+    }
+  ],
+  "flags": {
+    "max_layers": 4,
+    "stop_when_all_pass": true,
+    "blind_first_layer": true,
+    "sequential": false,
+    "signed": true,
+    "anchor": "span",
+    "cross_refs": true,
+    "allow_self_reply": true,
+    "max_comments_per_turn": null,
+    "seed": 0,
+    "max_tokens": 16000
+  }
+}
