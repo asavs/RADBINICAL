@@ -1,0 +1,37 @@
+{
+  "passage": {
+    "title": "Of Property, §1",
+    "source": "J. S. Mill, Principles of Political Economy, Book II, ch. 1 (Laughlin abridgement)",
+    "file": "passages/mill-property.txt"
+  },
+  "models": [
+    {
+      "model": "anthropic:claude-opus-5-5",
+      "name": "Claude Opus 5.5"
+    },
+    {
+      "model": "openai:gpt-6.1-sol",
+      "name": "GPT-6.1 Sol"
+    },
+    {
+      "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+      "name": "Nemotron 3 Ultra"
+    },
+    {
+      "model": "thinkingmachines/inkling",
+      "name": "Inkling"
+    },
+    {
+      "model": "qwen/qwen3.8-27b",
+      "name": "Qwen 3.8 27b"
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "name": "gpt-oss-120b"
+    }
+  ],
+  "flags": {
+    "max_layers": 3,
+    "max_tokens": 6000
+  }
+}

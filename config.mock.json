@@ -1,0 +1,9 @@
+{
+  "passage": {
+    "title": "Of Property, §1",
+    "source": "J. S. Mill, Principles of Political Economy, Book II, ch. 1 (Laughlin abridgement)",
+    "file": "passages/mill-property.txt"
+  },
+  "models": ["mock:alef", "mock:bet", "mock:gimel", "mock:dalet"],
+  "flags": {"max_layers": 3}
+}
