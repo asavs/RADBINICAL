@@ -1,0 +1,42 @@
+name: Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      config:
+        description: Config file to run
+        default: config.json
+      name:
+        description: Folder name for the run under runs/ (blank uses the date and time)
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      CONFIG: ${{ inputs.config }}
+      NAME: ${{ inputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install anthropic
+      - name: Run the page
+        run: python3 radbinical.py run "$CONFIG" --out "runs/${NAME:-$(date -u +%Y%m%d-%H%M%S)}"
+      - name: Rebuild the website
+        run: python3 radbinical.py site
+      - name: Commit the result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runs docs
+          git commit -m "Add run from $CONFIG" || exit 0
+          git push

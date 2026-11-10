@@ -307,7 +307,7 @@ class AnthropicSession:
     def __init__(self, name, system, user, flags, max_tokens):
         import anthropic
         # base_url is pinned so an ANTHROPIC_BASE_URL set for other tooling cannot redirect the call.
-        self.client = anthropic.Anthropic(api_key=os.environ.get("RADBINICAL_ANTHROPIC_KEY") or os.environ.get("ANTHROPIC_API_KEY") or "placeholder-key",
+        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY") or "placeholder-key",
                                           base_url="https://api.anthropic.com")
         self.name, self.system, self.max_tokens, self.flags = name, system, max_tokens, flags
         self.messages = [{"role": "user", "content": user}]
@@ -605,7 +605,23 @@ def cmd_site(a):
     print(f"{len(rows)} page(s) -> {docs}")
 
 
+def load_dotenv():
+    """Read KEY=value lines from .env beside this script. Variables already set win."""
+    f = HERE / ".env"
+    if not f.exists():
+        return
+    for line in f.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        k, v = k.strip().removeprefix("export ").strip(), v.strip().strip("'\"")
+        if k and v and k not in os.environ:
+            os.environ[k] = v
+
+
 def main():
+    load_dotenv()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("run"); r.add_argument("config"); r.add_argument("--out"); r.set_defaults(f=cmd_run)

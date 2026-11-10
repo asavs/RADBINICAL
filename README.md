@@ -24,12 +24,17 @@ open in a browser. Python 3.10 or later; no packages needed unless you call Anth
 Each entry under `models` in the config is one reader. A bare id goes through OpenRouter; a prefix
 sends it elsewhere.
 
-| Reader written as | Goes to | Key read from |
+| Reader written as | Goes to | Key |
 |---|---|---|
 | `qwen/qwen3.8-27b` | OpenRouter | `OPENROUTER_API_KEY` |
 | `openai:gpt-6.1-sol` | OpenAI | `OPENAI_API_KEY` |
 | `nvidia:nvidia/nemotron-3-ultra-550b-a55b` | NVIDIA | `NVIDIA_API_KEY` |
-| `anthropic:claude-opus-5-5` | Anthropic | `RADBINICAL_ANTHROPIC_KEY`, then `ANTHROPIC_API_KEY` |
+| `anthropic:claude-opus-5-5` | Anthropic | `ANTHROPIC_API_KEY` |
+
+All four keys are read the same way. On your machine, copy `.env.example` to `.env` and fill in
+the ones you use; `.env` is ignored by git. On GitHub, add them under Settings → Secrets and
+variables → Actions with the same names, then start the "Run" workflow from the Actions tab. It
+runs a config, rebuilds the website and commits the result.
 
 A reader whose model can't call tools can be given `"protocol": "text"`; it then writes its
 comments as tagged blocks in plain text. `"max_tokens"` can also be set per reader.
