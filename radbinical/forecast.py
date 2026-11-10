@@ -111,7 +111,7 @@ class Forecaster:
         me = reader["name"]
         user = f"Round {self.layer}. {note}\n\n" + render_for_reader(self.page.d, visible, self.label, me) + ASK
         entry = {"round": self.layer, "reader": me, "model": reader["model"], "seen": [c["id"] for c in visible]}
-        self.jobs.append((entry, self.pool.submit(ask_mod.ask, reader["model"], SYSTEM, user, 8000)))
+        self.jobs.append((entry, self.pool.submit(ask_mod.ask, reader["model"], SYSTEM, user, 16000)))
 
     def finish(self):
         """Wait for the answers, score them, append them to forecasts.json; returns the entries."""
