@@ -3,12 +3,26 @@ name: Run
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: "run: start a new page from a config. extend: add rounds to an existing page."
+        type: choice
+        options: [run, extend]
+        default: run
       config:
-        description: Config file to run
+        description: Config file (run)
         default: config.json
       name:
-        description: Folder name for the run under runs/ (blank uses the date and time)
+        description: Run folder under runs/ (run - blank uses the date and time; extend - required, e.g. mill-01)
         default: ""
+      rounds:
+        description: Rounds to add (extend), or most rounds (run - blank keeps the config's max_layers)
+        default: ""
+      models:
+        description: Comma-separated readers who join the page (extend)
+        default: ""
+      repeat:
+        description: Run the config this many times as <name>-a, -b, ... (run)
+        default: "1"
 
 permissions:
   contents: write
@@ -21,22 +35,60 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      MODE: ${{ inputs.mode }}
       CONFIG: ${{ inputs.config }}
       NAME: ${{ inputs.name }}
+      ROUNDS: ${{ inputs.rounds }}
+      MODELS: ${{ inputs.models }}
+      REPEAT: ${{ inputs.repeat }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install anthropic
+      - name: Check the inputs
+        run: |
+          set -eu
+          if [ -n "$NAME" ] && ! printf '%s' "$NAME" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._-]*$'; then echo "name: letters, digits, . _ - only"; exit 1; fi
+          if [ -n "$ROUNDS" ] && ! printf '%s' "$ROUNDS" | grep -Eq '^[1-9][0-9]?$'; then echo "rounds: a number from 1 to 99"; exit 1; fi
+          if ! printf '%s' "${REPEAT:-1}" | grep -Eq '^[1-9][0-9]?$'; then echo "repeat: a number from 1 to 26"; exit 1; fi
+          if [ "$MODE" = extend ] && [ ! -f "runs/$NAME/page.json" ]; then echo "extend needs the name of an existing run under runs/"; exit 1; fi
       - name: Run the page
-        run: python3 -m radbinical run "$CONFIG" --out "runs/${NAME:-$(date -u +%Y%m%d-%H%M%S)}"
-      - name: Rebuild the website
-        run: python3 -m radbinical site
+        if: inputs.mode == 'run'
+        run: |
+          set -eu
+          cfg="$CONFIG"
+          if [ -n "$ROUNDS" ]; then
+            cfg="$(dirname "$CONFIG")/.workflow-config.json"
+            python3 - "$CONFIG" "$cfg" "$ROUNDS" <<'EOF'
+          import json, sys
+          c = json.load(open(sys.argv[1], encoding="utf-8"))
+          c.setdefault("flags", {})["max_layers"] = int(sys.argv[3])
+          json.dump(c, open(sys.argv[2], "w", encoding="utf-8"))
+          EOF
+          fi
+          python3 -m radbinical run "$cfg" --out "runs/${NAME:-$(date -u +%Y%m%d-%H%M%S)}" --repeat "${REPEAT:-1}"
+          rm -f "$(dirname "$CONFIG")/.workflow-config.json"
+      - name: Extend the page
+        if: inputs.mode == 'extend'
+        run: |
+          set -eu
+          if [ -n "$MODELS" ]; then
+            python3 -m radbinical extend "runs/$NAME" -n "${ROUNDS:-1}" --models "$MODELS"
+          else
+            python3 -m radbinical extend "runs/$NAME" -n "${ROUNDS:-1}"
+          fi
+      - name: Rebuild the table and the website
+        run: |
+          python3 -m radbinical table
+          python3 -m radbinical site
       - name: Commit the result
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runs docs
-          git commit -m "Add run from $CONFIG" || exit 0
+          git add runs data docs
+          if [ "$MODE" = extend ]; then msg="Extend $NAME"; else msg="Add run from $CONFIG"; fi
+          git commit -m "$msg" || exit 0
           git push
