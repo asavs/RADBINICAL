@@ -100,10 +100,10 @@ class EndToEnd(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             page = new_page(tmp, text=load_passage(ROOT / "passages" / "mill-property.txt"))
             self.assertTrue(run_layers(page, 2))
-            saved = json.loads((Path(tmp) / "page.json").read_text())
+            saved = json.loads((Path(tmp) / "page.json").read_text(encoding="utf-8"))
             self.assertGreaterEqual(saved["layers_done"], 1)
             self.assertGreater(len(saved["comments"]), 0)
-            self.assertIn("const D = {", (Path(tmp) / "page.html").read_text())
+            self.assertIn("const D = {", (Path(tmp) / "page.html").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

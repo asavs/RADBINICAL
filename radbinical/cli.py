@@ -29,7 +29,7 @@ def reader_entry(m):
 
 
 def cmd_run(a):
-    cfg = json.loads(Path(a.config).read_text())
+    cfg = json.loads(Path(a.config).read_text(encoding="utf-8"))
     flags = {**DEFAULT_FLAGS, **cfg.get("flags", {})}
     unknown = set(flags) - set(DEFAULT_FLAGS)
     if unknown:
@@ -60,7 +60,7 @@ def cmd_run(a):
 
 def cmd_extend(a):
     out = Path(a.run)
-    page = Page(json.loads((out / "page.json").read_text()), out)
+    page = Page(json.loads((out / "page.json").read_text(encoding="utf-8")), out)
     if a.models:
         have = {r["name"] for r in page.d["readers"]}
         for m in a.models.split(","):

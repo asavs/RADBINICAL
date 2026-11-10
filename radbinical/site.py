@@ -43,7 +43,7 @@ def marks(readers, brands):
 
 def render(run_dir):
     run_dir = Path(run_dir)
-    data = json.loads((run_dir / "page.json").read_text())
+    data = json.loads((run_dir / "page.json").read_text(encoding="utf-8"))
     tpl = (TEMPLATES / "viewer.html").read_text(encoding="utf-8")
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     title = "Marginalia on " + re.sub(r"[<>&]", "", data["passage"]["title"])
@@ -56,13 +56,13 @@ def build_site():
     """Build docs/ for static hosting: one page per run plus an index."""
     docs = ROOT / "docs"
     docs.mkdir(exist_ok=True)
-    (docs / ".nojekyll").write_text("")
+    (docs / ".nojekyll").write_text("", encoding="utf-8")
     rows = []
     for run in sorted((ROOT / "runs").iterdir()):
         if not (run / "page.json").exists():
             continue
         render(run)
-        d = json.loads((run / "page.json").read_text())
+        d = json.loads((run / "page.json").read_text(encoding="utf-8"))
         (docs / run.name).mkdir(exist_ok=True)
         (docs / run.name / "index.html").write_text(HEAD + (run / "page.html").read_text(encoding="utf-8"), encoding="utf-8")
         rows.append((run.name, d))
