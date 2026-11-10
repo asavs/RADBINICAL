@@ -20,6 +20,8 @@ open in a browser. Python 3.10 or later; no packages needed unless you call Anth
     python3 -m radbinical run config.json --out runs/mill-03         # choose the folder
     python3 -m radbinical extend runs/<name> -n 2                    # two more rounds
     python3 -m radbinical extend runs/<name> -n 1 --models x-ai/grok-4.7   # another reader joins
+    python3 -m radbinical extend runs/<name> -n 1 --models qwen/qwen3.8-27b --only-new --max-tokens 40000
+    python3 -m radbinical extend runs/<name> -n 2 --sit-out "Kimi K3"      # Kimi skips these rounds
     python3 -m radbinical render runs/<name>                         # rebuild page.html
     python3 -m radbinical site                                       # rebuild docs/ for the website
 
@@ -216,6 +218,11 @@ more rounds without seeing the others. The copies share `lineage` (the source's 
 record `forked_from`. Plants and people's comments come along; side files that judge the source
 stay with it. `--models` adds readers to every copy; `--unsigned` hides names in the copies. The
 website lists forks under the run they came from.
+
+`--start k` numbers the copies from `-sk`, so a page can be forked again beside earlier copies.
+`--only-new` lets only the readers `--models` adds take the added rounds, `--sit-out` names readers
+who skip them, and `--max-tokens` gives the added readers their own output limit. `extend` takes
+the same three.
 
     {"question": "Should courts publish dissents?", "models": ["mock:alef", "mock:bet", "mock:gimel"],
      "flags": {"max_layers": 3}, "amend": {"threshold": 0.66, "max_words": 250}}

@@ -21,7 +21,7 @@ calls: copied log entries lose `usage` and gain `from`, and carried side files s
 With -n, every copy is extended that many rounds, the copies concurrently. --models adds readers
 to every copy (as extend --models does); --unsigned shows readers to each other as "Reader A",
 "Reader B" in the copies; --only-new lets only the readers --models adds take the added rounds.
---max-tokens sets the output limit of the readers --models adds, for a reasoning model that needs
+--sit-out names readers who skip the added rounds. --max-tokens sets the output limit of the readers --models adds, for a reasoning model that needs
 more room than the page's `max_tokens`. --start numbers the copies from that number instead of 1, so a page can be forked again beside
 earlier copies; a copy's seed offset is its number.
 """
@@ -31,7 +31,7 @@ import copy
 import sys
 from pathlib import Path
 
-from ..page import Page, cast_of, reader_entry
+from ..page import Page, cast_of, reader_entry, taking_turns
 from ..prompts import system_prompt
 from ..rounds import run_layers
 from ..site import render
@@ -39,7 +39,7 @@ from ..site import render
 CARRIED = ("amendments",)
 
 
-def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=False, max_tokens=None):
+def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=False, max_tokens=None, sit_out=()):
     """Write `into` copies of the run at `src`, numbered from `start`; extend each `rounds` rounds,
     by every model reader or, with `only_new`, by the readers `models` adds. Returns [(Page, ok)]."""
     src = Path(src)
@@ -50,6 +50,8 @@ def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=Fal
     if only_new and not models:
         sys.exit("--only-new needs --models")
     source = Page.load(src)
+    if sit_out:
+        taking_turns(source.d, sit_out)  # exits on an unknown name before anything is written
     if only_new and not {reader_entry(m.strip())["name"] for m in models.split(",")} - {r["name"] for r in source.d["readers"]}:
         sys.exit("--only-new needs --models naming at least one reader not already on the page")
     nums = range(start, start + into)
@@ -96,9 +98,11 @@ def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=Fal
     if rounds <= 0:
         return [(p, True) for p in pages]
 
+    who = taking_turns(pages[0].d, sit_out, new if only_new else None)
+
     def extend(page):
         page.d.pop("at_rest", None)
-        return run_layers(page, rounds, new if only_new else None)
+        return run_layers(page, rounds, who)
 
     with cf.ThreadPoolExecutor(len(pages)) as ex:
         oks = list(ex.map(extend, pages))
@@ -106,7 +110,8 @@ def fork(src, into, rounds=0, models=None, unsigned=False, start=1, only_new=Fal
 
 
 def main(a):
-    done = fork(a.run, a.into, a.n, a.models, a.unsigned, a.start, a.only_new, a.max_tokens)
+    done = fork(a.run, a.into, a.n, a.models, a.unsigned, a.start, a.only_new, a.max_tokens,
+                [s.strip() for s in (a.sit_out or "").split(",") if s.strip()])
     for page, _ in done:
         print(f"{page.dir.name}: {len(page.d['comments'])} comments over {page.d['layers_done']} round(s)")
     sys.exit(0 if all(ok for _, ok in done) else 1)
@@ -123,4 +128,5 @@ def register(sub):
     p.add_argument("--start", type=int, default=1, help="number of the first copy (default 1)")
     p.add_argument("--only-new", action="store_true", help="only the readers --models adds take the added rounds")
     p.add_argument("--max-tokens", type=int, help="output limit per call for the readers --models adds")
+    p.add_argument("--sit-out", help="comma-separated names of readers who skip the added rounds")
     p.set_defaults(f=main)

@@ -39,6 +39,19 @@ def models_of(d):
     return [r for r in d["readers"] if not is_human(r)]
 
 
+def taking_turns(d, sit_out=(), only=None):
+    """The names of the model readers who take the next rounds: `only` (when given) less `sit_out`,
+    or None when that is every model reader. Exits naming any name that is not a model reader."""
+    names = [r["name"] for r in models_of(d)]
+    unknown = [n for n in list(sit_out) + list(only or ()) if n not in names]
+    if unknown:
+        raise SystemExit(f"no model reader named {', '.join(map(repr, unknown))}; the model readers are {', '.join(names)}")
+    who = {n for n in names if (only is None or n in only) and n not in sit_out}
+    if not who:
+        raise SystemExit("no model reader is left to take the rounds")
+    return None if who == set(names) else who
+
+
 def labeller(d, signed=None):
     """How authors are named to a model reading the page: by name when signed (default: the
     page's `signed` flag), else "Reader A", "Reader B", ... in the order readers joined, people

@@ -134,6 +134,19 @@ class Fork(unittest.TestCase):
             quiet(main, ["extend", str(self.src), "-n", "1", "--only-new"])
         self.assertNotEqual(e.exception.code, 0)
 
+    def test_sit_out(self):
+        [(p, ok)] = quiet(fork, self.src, 1, rounds=1, sit_out=["alef"])
+        self.assertTrue(ok)
+        fresh = [e["reader"] for e in load(p.dir)["log"] if "from" not in e]
+        self.assertTrue(fresh and "alef" not in fresh)
+        with self.assertRaises(SystemExit):
+            quiet(fork, self.src, 1, rounds=1, start=2, sit_out=["nobody"])
+        self.assertFalse((self.runs / "mill-s2").exists())
+        with self.assertRaises(SystemExit) as e:
+            quiet(main, ["extend", str(self.src), "-n", "1", "--sit-out", "alef,bet"])
+        self.assertEqual(e.exception.code, 0)
+        self.assertEqual({e["reader"] for e in load(self.src)["log"] if e["layer"] == 3}, {"gimel", "dalet"})
+
     def test_refuses_existing_copies(self):
         quiet(fork, self.src, 1)
         with self.assertRaises(SystemExit):
