@@ -13,3 +13,5 @@ jobs:
         with:
           python-version: "3.12"
       - run: python3 -m unittest discover -s tests
+      - name: Check people's submissions
+        run: python3 -m radbinical human check humans
