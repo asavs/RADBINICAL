@@ -31,8 +31,9 @@ def reader_entry(m):
 
 def cast_of(readers):
     """Short stable id for a set of readers: a hash of their sorted canonical model ids, so the
-    same models give the same cast however they are written or routed."""
-    ids = sorted(canonical(r["model"] if isinstance(r, dict) else r) for r in readers)
+    same models give the same cast however they are written or routed. People are not counted."""
+    ids = sorted(canonical(r["model"] if isinstance(r, dict) else r) for r in readers
+                 if not (isinstance(r, dict) and r.get("human")))
     return hashlib.sha1("\n".join(ids).encode("utf-8")).hexdigest()[:8]
 
 

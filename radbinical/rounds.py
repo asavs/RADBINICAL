@@ -57,7 +57,7 @@ def run_layers(page, how_many):
     label = (lambda a: a) if flags["signed"] else (lambda a: pseudonyms.get(a, "Reader"))
     for _ in range(how_many):
         layer = d["layers_done"] + 1
-        readers = d["readers"][:]
+        readers = [r for r in d["readers"] if not r.get("human")]
         rng.shuffle(readers)
         live = flags["sequential"] and not (layer == 1 and flags["blind_first_layer"])
         if live:
