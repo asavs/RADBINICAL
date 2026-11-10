@@ -102,7 +102,7 @@ th { font-weight: 500; color: var(--ink-2) }
 
 <div class="wrap">
   <header class="head">
-    <div class="eyebrow">Marginalia</div>
+    <div class="eyebrow">Radbinical</div>
     <h1 id="title"></h1>
     <div class="source" id="source"></div>
     <div class="stats" id="stats"></div>
@@ -131,7 +131,7 @@ const md = s => esc(s).split(/\n\s*\n/).map(p => '<p>' + p
 const lemmaOf = q => { const w = q.trim().split(/\s+/); return w.length > 9 ? w.slice(0, 8).join(' ') + '…' : q.trim() };
 
 function start() {
-  if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 marginalia.py render runs/<dir>'; return }
+  if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 radbinical.py render runs/<dir>'; return }
   const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
   const ink = a => `var(--a${authors.indexOf(a) % 8})`;
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
@@ -161,7 +161,7 @@ function start() {
     text.split('\n\n').forEach(p => { paras.push([pos, pos + p.length]); cuts.add(pos); cuts.add(pos + p.length); pos += p.length + 2 });
     const pts = [...cuts].sort((a, b) => a - b);
     const lit = S.sel ? new Set(S.sel) : null;
-    let html = `<div class="folio"><span>${esc(D.readers.length)} readers</span><span>round ${S.upTo} of ${rounds}</span></div>`;
+    let html = `<div class="folio"><span>round ${S.upTo} of ${rounds}</span></div>`;
     for (const [a, b] of paras) {
       html += '<p>';
       for (let i = 0; i < pts.length - 1; i++) {

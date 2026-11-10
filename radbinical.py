@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""marginalia: several models annotate one passage, then annotate each other.
+"""radbinical: several models annotate one passage, then annotate each other.
 
-    python3 marginalia.py run config.json            # start a new page
-    python3 marginalia.py extend runs/<dir> -n 2     # add layers to an existing page
-    python3 marginalia.py extend runs/<dir> -n 1 --models openai/gpt-6.1-terra
-    python3 marginalia.py render runs/<dir>          # rebuild page.html
-    python3 marginalia.py site                       # rebuild docs/ for GitHub Pages
+    python3 radbinical.py run config.json            # start a new page
+    python3 radbinical.py extend runs/<dir> -n 2     # add layers to an existing page
+    python3 radbinical.py extend runs/<dir> -n 1 --models openai/gpt-6.1-terra
+    python3 radbinical.py render runs/<dir>          # rebuild page.html
+    python3 radbinical.py site                       # rebuild docs/ for GitHub Pages
 
 Model ids are OpenRouter ids by default. Prefix with "anthropic:", "openai:" or
 "nvidia:" to call that provider directly, or "mock:" for an offline stand-in.
@@ -184,7 +184,7 @@ def post_json(url, env, body):
     # network proxy swaps in the real credential for the host.
     key = os.environ.get(env) or "placeholder-key"
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={
-        "Authorization": f"Bearer {key}", "Content-Type": "application/json", "X-Title": "marginalia"})
+        "Authorization": f"Bearer {key}", "Content-Type": "application/json", "X-Title": "radbinical"})
     last = None
     for attempt in range(5):
         try:
@@ -307,7 +307,7 @@ class AnthropicSession:
     def __init__(self, name, system, user, flags, max_tokens):
         import anthropic
         # base_url is pinned so an ANTHROPIC_BASE_URL set for other tooling cannot redirect the call.
-        self.client = anthropic.Anthropic(api_key=os.environ.get("MARGINALIA_ANTHROPIC_KEY") or os.environ.get("ANTHROPIC_API_KEY") or "placeholder-key",
+        self.client = anthropic.Anthropic(api_key=os.environ.get("RADBINICAL_ANTHROPIC_KEY") or os.environ.get("ANTHROPIC_API_KEY") or "placeholder-key",
                                           base_url="https://api.anthropic.com")
         self.name, self.system, self.max_tokens, self.flags = name, system, max_tokens, flags
         self.messages = [{"role": "user", "content": user}]
