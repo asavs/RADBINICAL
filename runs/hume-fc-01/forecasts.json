@@ -1,0 +1,675 @@
+{
+ "forecasts": [
+  {
+   "round": 2,
+   "reader": "Hermes 4",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22"
+   ],
+   "predicted": [
+    "c8",
+    "c9",
+    "c11"
+   ],
+   "replied": [
+    "c5",
+    "c7",
+    "c9",
+    "c11",
+    "c12"
+   ],
+   "hits": [
+    "c9",
+    "c11"
+   ],
+   "by_forecaster": [],
+   "precision": 0.6667,
+   "recall": 0.4,
+   "chance": 0.2273
+  },
+  {
+   "round": 2,
+   "reader": "Claude Opus 5.5",
+   "model": "anthropic/claude-opus-5.5",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22"
+   ],
+   "predicted": [
+    "c8",
+    "c11",
+    "c9",
+    "c10",
+    "c4",
+    "c12",
+    "c6"
+   ],
+   "probabilities": {
+    "c8": 0.45,
+    "c11": 0.45,
+    "c9": 0.4,
+    "c10": 0.35,
+    "c4": 0.35,
+    "c12": 0.35,
+    "c6": 0.3
+   },
+   "replied": [
+    "c5",
+    "c7",
+    "c9",
+    "c11",
+    "c12"
+   ],
+   "hits": [
+    "c11",
+    "c9",
+    "c12"
+   ],
+   "by_forecaster": [
+    "c9",
+    "c11"
+   ],
+   "precision": 0.4286,
+   "recall": 0.6,
+   "chance": 0.2273
+  },
+  {
+   "round": 2,
+   "reader": "GPT-6.1 Terra",
+   "model": "openai/gpt-6.1-terra",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22"
+   ],
+   "predicted": [
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12"
+   ],
+   "replied": [
+    "c5",
+    "c7",
+    "c9",
+    "c11",
+    "c12"
+   ],
+   "hits": [
+    "c5",
+    "c9",
+    "c11",
+    "c12"
+   ],
+   "by_forecaster": [
+    "c5",
+    "c12"
+   ],
+   "precision": 0.4,
+   "recall": 0.8,
+   "chance": 0.2273
+  },
+  {
+   "round": 2,
+   "reader": "DeepSeek v4.1",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22"
+   ],
+   "predicted": [
+    "c2",
+    "c5",
+    "c6",
+    "c8",
+    "c9",
+    "c10",
+    "c11"
+   ],
+   "probabilities": {
+    "c2": 0.4,
+    "c5": 0.45,
+    "c6": 0.4,
+    "c8": 0.55,
+    "c9": 0.5,
+    "c10": 0.5,
+    "c11": 0.45
+   },
+   "replied": [
+    "c5",
+    "c7",
+    "c9",
+    "c11",
+    "c12"
+   ],
+   "hits": [
+    "c5",
+    "c9",
+    "c11"
+   ],
+   "by_forecaster": [
+    "c7"
+   ],
+   "precision": 0.4286,
+   "recall": 0.6,
+   "chance": 0.2273
+  },
+  {
+   "round": 3,
+   "reader": "Hermes 4",
+   "model": "openrouter:nousresearch/hermes-4-405b",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22",
+    "c23",
+    "c24",
+    "c25",
+    "c26",
+    "c27",
+    "c28",
+    "c29",
+    "c30",
+    "c31",
+    "c32",
+    "c33",
+    "c34",
+    "c35",
+    "c36",
+    "c37",
+    "c38",
+    "c39"
+   ],
+   "predicted": [
+    "c11",
+    "c12"
+   ],
+   "replied": [
+    "c24",
+    "c25",
+    "c26",
+    "c28"
+   ],
+   "hits": [],
+   "by_forecaster": [],
+   "precision": 0.0,
+   "recall": 0.0,
+   "chance": 0.1026
+  },
+  {
+   "round": 3,
+   "reader": "DeepSeek v4.1",
+   "model": "deepseek/deepseek-v4.1-flash",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22",
+    "c23",
+    "c24",
+    "c25",
+    "c26",
+    "c27",
+    "c28",
+    "c29",
+    "c30",
+    "c31",
+    "c32",
+    "c33",
+    "c34",
+    "c35",
+    "c36",
+    "c37",
+    "c38",
+    "c39"
+   ],
+   "predicted": [
+    "c24",
+    "c23",
+    "c6",
+    "c3",
+    "c4",
+    "c2",
+    "c10"
+   ],
+   "probabilities": {
+    "c24": 0.5,
+    "c23": 0.45,
+    "c6": 0.45,
+    "c3": 0.4,
+    "c4": 0.35,
+    "c2": 0.3,
+    "c10": 0.3
+   },
+   "replied": [
+    "c24",
+    "c25",
+    "c26",
+    "c28"
+   ],
+   "hits": [
+    "c24"
+   ],
+   "by_forecaster": [
+    "c26",
+    "c28"
+   ],
+   "precision": 0.1429,
+   "recall": 0.25,
+   "chance": 0.1026
+  },
+  {
+   "round": 3,
+   "reader": "GPT-6.1 Terra",
+   "model": "openai/gpt-6.1-terra",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22",
+    "c23",
+    "c24",
+    "c25",
+    "c26",
+    "c27",
+    "c28",
+    "c29",
+    "c30",
+    "c31",
+    "c32",
+    "c33",
+    "c34",
+    "c35",
+    "c36",
+    "c37",
+    "c38",
+    "c39"
+   ],
+   "predicted": [
+    "c24",
+    "c23",
+    "c25",
+    "c26",
+    "c27",
+    "c28",
+    "c29"
+   ],
+   "probabilities": {
+    "c24": 0.7,
+    "c23": 0.5,
+    "c25": 0.7,
+    "c26": 0.65,
+    "c27": 0.65,
+    "c28": 0.75,
+    "c29": 0.75
+   },
+   "replied": [
+    "c24",
+    "c25",
+    "c26",
+    "c28"
+   ],
+   "hits": [
+    "c24",
+    "c25",
+    "c26",
+    "c28"
+   ],
+   "by_forecaster": [
+    "c24"
+   ],
+   "precision": 0.5714,
+   "recall": 1.0,
+   "chance": 0.1026
+  },
+  {
+   "round": 3,
+   "reader": "Claude Opus 5.5",
+   "model": "anthropic/claude-opus-5.5",
+   "seen": [
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "c11",
+    "c12",
+    "c13",
+    "c14",
+    "c15",
+    "c16",
+    "c17",
+    "c18",
+    "c19",
+    "c20",
+    "c21",
+    "c22",
+    "c23",
+    "c24",
+    "c25",
+    "c26",
+    "c27",
+    "c28",
+    "c29",
+    "c30",
+    "c31",
+    "c32",
+    "c33",
+    "c34",
+    "c35",
+    "c36",
+    "c37",
+    "c38",
+    "c39"
+   ],
+   "predicted": [
+    "c28",
+    "c29",
+    "c27",
+    "c25",
+    "c26",
+    "c24"
+   ],
+   "probabilities": {
+    "c28": 0.6,
+    "c29": 0.55,
+    "c27": 0.5,
+    "c25": 0.45,
+    "c26": 0.4,
+    "c24": 0.35
+   },
+   "replied": [
+    "c24",
+    "c25",
+    "c26",
+    "c28"
+   ],
+   "hits": [
+    "c28",
+    "c25",
+    "c26",
+    "c24"
+   ],
+   "by_forecaster": [
+    "c24",
+    "c25"
+   ],
+   "precision": 0.6667,
+   "recall": 1.0,
+   "chance": 0.1026
+  }
+ ],
+ "usage": [
+  {
+   "prompt_tokens": 3843,
+   "completion_tokens": 16,
+   "total_tokens": 3859,
+   "cost": 0.003891,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.003891,
+    "upstream_inference_prompt_cost": 0.003843,
+    "upstream_inference_completions_cost": 4.8e-05
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 5765,
+   "completion_tokens": 405,
+   "via": "anthropic",
+   "cost": 0.03116,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 3792,
+   "completion_tokens": 231,
+   "via": "openai",
+   "cost": 0.004947,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 3821,
+   "completion_tokens": 3061,
+   "total_tokens": 6882,
+   "cost": 0.002230163,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.002230163,
+    "upstream_inference_prompt_cost": 0.000393563,
+    "upstream_inference_completions_cost": 0.0018366
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 2961,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 6100,
+   "completion_tokens": 12,
+   "total_tokens": 6112,
+   "cost": 0.0060464,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 112,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0060464,
+    "upstream_inference_prompt_cost": 0.0060104,
+    "upstream_inference_completions_cost": 3.6e-05
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 6048,
+   "completion_tokens": 3069,
+   "total_tokens": 9117,
+   "cost": 0.0032049,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0032049,
+    "upstream_inference_prompt_cost": 0.00117936,
+    "upstream_inference_completions_cost": 0.00202554
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 2969,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   },
+   "via": "openrouter"
+  },
+  {
+   "prompt_tokens": 6020,
+   "completion_tokens": 234,
+   "via": "openai",
+   "cost": 0.00719,
+   "cost_estimated": true
+  },
+  {
+   "prompt_tokens": 9139,
+   "completion_tokens": 460,
+   "via": "anthropic",
+   "cost": 0.045756,
+   "cost_estimated": true
+  }
+ ]
+}
