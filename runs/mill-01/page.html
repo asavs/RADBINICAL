@@ -48,7 +48,13 @@ img.g, .g.mark { width: 0.95em; height: 0.95em; border-radius: 0; background: no
 .runhead span { font-family: var(--small); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.06em; color: var(--ink-2) }
 .runhead span:last-child { text-align: right }
 
-.key, .ctl { display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; align-items: center; font-family: var(--small); font-size: 0.85rem; min-width: 0 }
+.bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.3rem 1.5rem; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2;
+  background: var(--sheet); border-bottom: 1px solid var(--rule); padding-block: 0.3rem; margin-top: -0.7rem }
+.key, .ctl { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; align-items: center; font-family: var(--small); font-size: 0.85rem; min-width: 0 }
+/* a maker's mark names its model when pointed at */
+.who { position: relative; white-space: nowrap }
+.who:hover::after { content: attr(data-name); position: absolute; left: 0; bottom: 100%; z-index: 3; padding: 0.1rem 0.45rem; background: var(--ink); color: var(--sheet);
+  font: 500 0.8rem/1.4 var(--small); letter-spacing: 0.02em; text-indent: 0; pointer-events: none }
 .key button { display: inline-flex; align-items: center; gap: 0.35rem; background: none; border: none; padding: 0.1rem 0; text-align: left; line-height: 1.2 }
 .key button b { font-weight: 500; color: var(--ink-2); font-variant-numeric: tabular-nums }
 .key button[aria-pressed="false"] { opacity: 0.4; text-decoration: line-through }
@@ -68,10 +74,11 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 
 /* run-on commentary */
 .col, .under { font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; min-width: 0; overflow-wrap: break-word }
-.c { cursor: pointer; border-radius: 2px; scroll-margin: 5rem }
+.c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem }
 .c:hover, .c.lit { background: color-mix(in srgb, var(--c) 13%, transparent) }
 .c.kin { background: color-mix(in srgb, var(--c) 7%, transparent) }
 .c .n { font-family: var(--small); font-weight: 700; font-size: 0.72em; color: var(--c); vertical-align: 0.35em; line-height: 0; margin: 0 0.2em 0 0.1em }
+.c .hd { white-space: nowrap }
 .c .on { font-family: var(--small); font-size: 0.8em; color: var(--ink-2) }
 .c .lemma { font-weight: 700 }
 .c .end { color: var(--ink-2) }
@@ -131,13 +138,8 @@ th { font-weight: 500; color: var(--ink-2) }
   .body > .passage { grid-column: 1 / -1 }
   .under { columns: 2; column-gap: 1.1rem }
 }
-/* Desktop: the full page. Narrow outer margins hold the reader key and the round control;
-   the passage is lifted into the middle and both columns flow around it. */
+/* Desktop: the full page. The passage is lifted into the middle and both columns flow around it. */
 @media (min-width: 1100px) {
-  .daf { grid-template-columns: 8.5rem minmax(0, 1fr) 8.5rem; grid-template-areas: "head head head" "key body ctl" "key under ctl" }
-  .runhead { grid-area: head } .key { grid-area: key } .ctl { grid-area: ctl } .body { grid-area: body } .under { grid-area: under }
-  .key, .ctl { flex-direction: column; flex-wrap: nowrap; align-items: stretch; align-self: start; gap: 0.15rem; font-size: 0.8rem; position: sticky; top: 1rem }
-  .ctl label { flex-direction: column; align-items: stretch; gap: 0.2rem } .ctl input { width: 100% } .ctl button { align-self: start; margin-top: 0.3rem }
   .body { position: relative; container-type: inline-size; --pw: clamp(17rem, 40cqw, 27rem) }
   .body > .passage { position: absolute; top: calc(var(--lead) + 0.5rem); left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
   .push, .notch { display: block }
@@ -153,16 +155,18 @@ th { font-weight: 500; color: var(--ink-2) }
   <div class="banner" id="mock" hidden>Placeholder run. These comments came from an offline stand-in used to test the page, not from real models.</div>
   <main class="daf">
     <header class="runhead"><span>On the text</span><h1 id="title"></h1><span>On the comments</span></header>
-    <aside class="key" id="key" aria-label="Readers"></aside>
+    <div class="bar">
+      <aside class="key" id="key" aria-label="Readers"></aside>
+      <aside class="ctl" aria-label="Rounds">
+        <label for="layer">Rounds <input type="range" id="layer" min="1" max="1" step="1" value="1"></label>
+        <button id="play" hidden>Play</button>
+      </aside>
+    </div>
     <div class="body" id="body">
       <section class="passage" id="passage" aria-label="Passage"></section>
       <section class="col" id="inner" aria-label="Comments on the text"></section>
       <section class="col" id="outer" aria-label="Comments on comments"></section>
     </div>
-    <aside class="ctl" aria-label="Rounds">
-      <label for="layer">Rounds <input type="range" id="layer" min="1" max="1" step="1" value="1"></label>
-      <button id="play" hidden>Play</button>
-    </aside>
     <button class="all" id="all" hidden></button>
     <section class="under" id="under" hidden></section>
   </main>
@@ -200,9 +204,9 @@ function start() {
   const shared = a => { const b = brandOf(a); return !!b && authors.some(o => o !== a && brandOf(o) === b) };
   const glyph = (a, named) => {
     const b = brandOf(a), tag = !named && shared(a) ? `<i class="tag">${esc(a.split(/[\s]+/).pop())}</i>` : '';
-    if (!b || !S.icons) return `<i class="g" title="${esc(a)}"></i>${tag}`;
-    const u = ICONS + b.icon + '.svg';
-    return (b.icon.endsWith('-color') ? `<img class="g" src="${u}" alt="" title="${esc(a)}">` : `<i class="g mark" style="--u:url(${u})" title="${esc(a)}"></i>`) + tag;
+    const u = b && ICONS + b.icon + '.svg';
+    const mark = !b || !S.icons ? '<i class="g"></i>' : b.icon.endsWith('-color') ? `<img class="g" src="${u}" alt="">` : `<i class="g mark" style="--u:url(${u})"></i>`;
+    return named ? mark : `<span class="who" data-name="${esc(a)}">${mark}${tag}</span>`;
   };
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
   const num = id => id.replace(/^c/, '');
@@ -241,7 +245,7 @@ function start() {
         if (s < a || e > b) continue;
         let chunk = esc(text.slice(s, e)), box = '';
         if (first) { chunk = chunk.replace(/^(\S+)\s*/, (_, w) => { box = `<span class="incipit">${w}</span>`; return '' }); first = false }
-        html += box + tops.filter(c => c.start === s).map(c => `<sup class="m" data-m="${c.id}" style="--c:${ink(c.author)}" title="${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
+        html += box + tops.filter(c => c.start === s).map(c => `<sup class="m" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
         const on = tops.filter(c => c.start <= s && c.end >= e);
         html += on.length ? `<span class="seg" data-ids="${on.map(c => c.id).join(' ')}">${chunk}</span>` : chunk;
       }
@@ -256,7 +260,7 @@ function start() {
     const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 6 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
     const on = top ? '' : `<span class="on">on ${num(c.target)}</span> `;
     const body = c.text.split(/\n\s*\n/).map(inline).join(' ').replace(/\n/g, ' ');
-    return `<span class="c" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}">${glyph(c.author)}<span class="n">${num(c.id)}</span>${on}${lemma}${body}<span class="end"> :</span></span> `;
+    return `<span class="c" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${on}${lemma}${body}<span class="end"> :</span></span> `;
   }
 
   function drawCols(vis) {
