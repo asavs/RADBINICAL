@@ -25,7 +25,12 @@ open in a browser. Python 3.10 or later; no packages needed unless you call Anth
     python3 -m radbinical render runs/<name>                         # rebuild page.html
     python3 -m radbinical site                                       # rebuild docs/ for the website
 
-Every command explains itself with `-h`.
+    python3 -m radbinical check config.json                          # can every reader be reached?
+
+Every command explains itself with `-h`. `run` and `extend` first ask every reader for one word,
+with the output limit a round would use, and start nothing if one cannot be reached: a provider
+out of credit, a key with no quota for the model, or a model its provider has retired would
+otherwise fail every turn and leave the page a voice short. `--no-check` skips that.
 
 ## A turn
 

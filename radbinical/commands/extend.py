@@ -6,11 +6,15 @@
 
 New readers change the page's `cast`; its `group` stays. With --only-new, only the readers that
 --models adds take the added rounds; the others sit them out. --sit-out names readers who skip the added rounds. --max-tokens sets the output limit of the readers --models adds.
+
+Before the rounds start, every reader who will take them is asked for one word (see `check`); if
+one cannot be reached, nothing is run and the page is left as it was. --no-check skips that.
 """
 import argparse
 import sys
 
-from ..page import Page, cast_of, reader_entry, taking_turns
+from ..page import Page, cast_of, models_of, reader_entry, taking_turns
+from ..preflight import require
 from ..rounds import run_layers
 
 
@@ -32,6 +36,8 @@ def main(a):
         sys.exit("--only-new needs --models naming at least one reader not already on the page")
     sit_out = [s.strip() for s in (a.sit_out or "").split(",") if s.strip()]
     who = taking_turns(page.d, sit_out, new if a.only_new else None)
+    if not a.no_check:
+        require([r for r in models_of(page.d) if who is None or r["name"] in who], page.d["flags"])
     page.d.pop("at_rest", None)
     ok = run_layers(page, a.n, who)
     print(f"\n{len(page.d['comments'])} comments over {page.d['layers_done']} round(s)\n{page.dir / 'page.html'}")
@@ -47,4 +53,5 @@ def register(sub):
     p.add_argument("--only-new", action="store_true", help="only the readers --models adds take the added rounds")
     p.add_argument("--max-tokens", type=int, help="output limit per call for the readers --models adds")
     p.add_argument("--sit-out", help="comma-separated names of readers who skip the added rounds")
+    p.add_argument("--no-check", action="store_true", help="start without first asking every reader for one word")
     p.set_defaults(f=main)
