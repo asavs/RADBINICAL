@@ -8,6 +8,7 @@ from .http import post_json
 
 PROVIDERS = {  # endpoint, name of the output-limit field
     "openrouter": ("https://openrouter.ai/api/v1/chat/completions", "max_tokens"),
+    "nous": ("https://inference-api.nousresearch.com/v1/chat/completions", "max_tokens"),  # takes OpenRouter-style ids
     "openai": ("https://api.openai.com/v1/chat/completions", "max_completion_tokens"),
     "nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", "max_tokens"),
     "google": ("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "max_tokens"),

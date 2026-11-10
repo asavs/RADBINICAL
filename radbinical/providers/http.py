@@ -9,6 +9,7 @@ import urllib.request
 
 KEYS = {  # environment variables holding each provider's key, first set one wins
     "openrouter": ("OPENROUTER_API_KEY",),
+    "nous": ("NOUS_API_KEY",),
     "openai": ("OPENAI_API_KEY",),
     "anthropic": ("ANTHROPIC_API_KEY",),
     "google": ("GEMINI_API_KEY",),
