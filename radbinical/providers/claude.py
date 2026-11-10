@@ -14,6 +14,7 @@ class AnthropicSession:
         self.messages = [{"role": "user", "content": user}]
         t = annotate_tool(flags)["function"]
         self.tools = [{"name": t["name"], "description": t["description"], "input_schema": t["parameters"]}] if tools else []
+        self.truncated = False
 
     def step(self):
         # No `thinking` parameter: each model runs with its own default, which keeps one
@@ -24,6 +25,7 @@ class AnthropicSession:
             kw["temperature"] = self.flags["temperature"]
         r = self.client.messages.create(model=self.name, max_tokens=self.max_tokens, system=self.system,
                                         messages=self.messages, **kw)
+        self.truncated = r.stop_reason == "max_tokens"
         self.messages.append({"role": "assistant", "content": r.content})
         calls = [(b.id, b.input if isinstance(b.input, dict) else None) for b in r.content if b.type == "tool_use"]
         text = "\n".join(b.text for b in r.content if b.type == "text")

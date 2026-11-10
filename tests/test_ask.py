@@ -65,6 +65,19 @@ class Ask(unittest.TestCase):
         self.assertNotIn("tools", b1)
         self.assertNotIn("tools", b2)
 
+    def test_answer_cut_off_while_reasoning_raises(self):
+        import radbinical.providers.chat as chat_mod
+        real = chat_mod.post_json
+        chat_mod.post_json = lambda url, env, body: {"choices": [{"message": {"content": None, "reasoning": "..."},
+                                                                  "finish_reason": "length"}], "usage": {"cost": 0.3}}
+        try:
+            with self.assertRaises(ask_mod.Truncated) as e:
+                ask("qwen/qwen3.8-27b", "s", "u", max_tokens=50)
+        finally:
+            chat_mod.post_json = real
+        self.assertIn("max_tokens=50", str(e.exception))
+        self.assertEqual(e.exception.usage["cost"], 0.3)
+
 
 if __name__ == "__main__":
     unittest.main()

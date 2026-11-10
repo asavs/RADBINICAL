@@ -14,6 +14,7 @@ class ResponsesSession:
         self.input = [{"role": "user", "content": user}]
         t = annotate_tool(flags)["function"]
         self.tools = [{"type": "function", "name": t["name"], "description": t["description"], "parameters": t["parameters"]}] if tools else []
+        self.truncated = False
 
     def step(self):
         body = {"model": self.name, "instructions": self.system, "input": self.input,
@@ -23,6 +24,7 @@ class ResponsesSession:
         if self.flags["temperature"] is not None:
             body["temperature"] = self.flags["temperature"]
         data = post_json(self.URL, "openai", body)
+        self.truncated = data.get("status") == "incomplete"
         self.input += data["output"]  # reasoning items are replayed as returned
         calls, text = [], []
         for item in data["output"]:

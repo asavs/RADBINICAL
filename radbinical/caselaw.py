@@ -129,11 +129,12 @@ def rule(page, case, model, name, condition, rep, temperature=None):
     base = {"case": case["id"], "model": model, "name": name, "condition": condition, "rep": rep}
     usage = None
     try:
-        text, usage = ask_mod.ask(model, SYSTEM, prompt(page, case, condition), 1500, temperature)
+        text, usage = ask_mod.ask(model, SYSTEM, prompt(page, case, condition), 8000, temperature)
         obj = ask_mod.extract_json(text, model)
         fields, err = validate(obj, case, condition, {c["id"] for c in page.d["comments"]})
     except Exception as e:
         fields, err = {"option": None, "reason": "", "cites": []}, f"{type(e).__name__}: {e}"
+        usage = getattr(e, "usage", usage)
     r = {**base, **fields}
     if err:
         r["error"] = err[:600]

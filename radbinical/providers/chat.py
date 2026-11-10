@@ -23,6 +23,7 @@ class ChatSession:
         self.name, self.flags, self.max_tokens = name, flags, max_tokens
         self.messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         self.tools = [annotate_tool(flags)] if tools else []
+        self.truncated = False  # the last answer stopped at the output limit
 
     def _send(self, with_tools=True):
         body = {"model": self.name, "messages": self.messages, self.cap: self.max_tokens}
@@ -31,6 +32,7 @@ class ChatSession:
         if self.flags["temperature"] is not None:
             body["temperature"] = self.flags["temperature"]
         data = post_json(self.url, self.provider, body)
+        self.truncated = data["choices"][0].get("finish_reason") == "length"
         return data["choices"][0]["message"], data.get("usage") or {}
 
     def step(self):

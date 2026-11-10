@@ -25,6 +25,8 @@ def take_turn(page, reader, layer, visible_fn, label, note):
             add_usage(usage, u)
             if not calls:
                 closing = text.strip() or None
+                if getattr(session, "truncated", False):
+                    err = f"stopped at max_tokens={reader.get('max_tokens') or flags['max_tokens']} without finishing its turn"
                 break
             results = []
             for cid, args in calls:

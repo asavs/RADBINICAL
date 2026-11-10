@@ -111,7 +111,7 @@ class Forecaster:
         me = reader["name"]
         user = f"Round {self.layer}. {note}\n\n" + render_for_reader(self.page.d, visible, self.label, me) + ASK
         entry = {"round": self.layer, "reader": me, "model": reader["model"], "seen": [c["id"] for c in visible]}
-        self.jobs.append((entry, self.pool.submit(ask_mod.ask, reader["model"], SYSTEM, user, 2000)))
+        self.jobs.append((entry, self.pool.submit(ask_mod.ask, reader["model"], SYSTEM, user, 8000)))
 
     def finish(self):
         """Wait for the answers, score them, append them to forecasts.json; returns the entries."""
@@ -129,6 +129,8 @@ class Forecaster:
                 score(entry, self.page.d["comments"])
             except Exception as e:  # one reader's failed forecast should not sink the round
                 entry["error"] = f"{type(e).__name__}: {e}"[:600]
+                if isinstance(getattr(e, "usage", None), dict):
+                    usage.append(e.usage)
             done.append(entry)
         self.pool.shutdown()
         side = self.page.side("forecasts") or {"forecasts": [], "usage": []}

@@ -32,6 +32,8 @@ def call_json(model, system, user, usage, notes, what, max_tokens=6000):
         obj, u = ask_mod.ask_json(model, system, user, max_tokens=max_tokens)
     except Exception as e:  # a failed call costs its items, not the run
         notes.append(f"{what}: {type(e).__name__}: {clip(e, 300)}")
+        if isinstance(getattr(e, "usage", None), dict):  # a call cut off at the output limit still cost money
+            usage.append(e.usage)
         return None
     usage.append(u)
     return obj

@@ -130,11 +130,11 @@ def redact_one(d, model, signed):
     r = {"model": model, "name": reader_entry(model)["name"], "signed": signed, "items": []}
     usage = None
     try:
-        text, usage = ask_mod.ask(model, SYSTEM, page_text(d, signed), max_tokens=8000)
+        text, usage = ask_mod.ask(model, SYSTEM, page_text(d, signed), max_tokens=24000)
         items, notes = parse_items(ask_mod.extract_json(text, model))
     except Exception as e:  # one model failing should not sink the others
         r["error"] = f"{type(e).__name__}: {e}"[:600]
-        return r, usage
+        return r, getattr(e, "usage", usage)
     by_id = {c["id"]: c for c in d["comments"]}
     for it in items:
         it["check"] = mechanical(it, by_id)
@@ -195,13 +195,13 @@ def judge_prompt(item, d, signed):
 
 def judge_one(judge, item, d, signed):
     try:
-        obj, usage = ask_mod.ask_json(judge, JUDGE_SYSTEM, judge_prompt(item, d, signed), max_tokens=1000)
+        obj, usage = ask_mod.ask_json(judge, JUDGE_SYSTEM, judge_prompt(item, d, signed), max_tokens=4000)
         verdict = str(obj.get("verdict", "")).strip().lower() if isinstance(obj, dict) else ""
         if verdict not in VERDICTS:
             return {"verdict": None, "why": f"unusable answer from the judge: {str(obj)[:200]}"}, usage
         return {"verdict": verdict, "why": " ".join(str(obj.get("why", "")).split())}, usage
     except Exception as e:
-        return {"verdict": None, "why": f"{type(e).__name__}: {e}"[:300]}, None
+        return {"verdict": None, "why": f"{type(e).__name__}: {e}"[:300]}, getattr(e, "usage", None)
 
 
 def judge_items(page, judge):

@@ -43,7 +43,18 @@ def ask(model, system, user, max_tokens=4000, temperature=None):
     flags = {"max_tokens": max_tokens, "temperature": temperature, "cross_refs": False}
     session = open_session({"model": model}, system, user, flags, tools=False)
     _, text, usage = session.step()
-    return text, complete(model, {**usage, "via": session.via})
+    usage = complete(model, {**usage, "via": session.via})
+    if not (text or "").strip() and getattr(session, "truncated", False):
+        raise Truncated(f"{model} reached max_tokens={max_tokens} before writing an answer", usage)
+    return text, usage
+
+
+class Truncated(RuntimeError):
+    """An answer that stopped at the output limit with no text, typically all reasoning. `usage`
+    holds what the call cost, so a caller can still count it."""
+    def __init__(self, msg, usage):
+        super().__init__(msg)
+        self.usage = usage
 
 
 def ask_json(model, system, user, max_tokens=4000, temperature=None):
