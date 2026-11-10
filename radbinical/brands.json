@@ -4,6 +4,7 @@
   "openai": {"name": "OpenAI", "icon": "openai"},
   "google": {"name": "Google", "icon": "gemini-color", "color": "#3186FF"},
   "x-ai": {"name": "xAI", "icon": "grok"},
+  "xai": {"name": "xAI", "icon": "grok"},
   "deepseek": {"name": "DeepSeek", "icon": "deepseek-color", "color": "#4D6BFE"},
   "moonshotai": {"name": "Moonshot AI", "icon": "kimi-color", "color": "#1783FF", "flip": true},
   "nvidia": {"name": "NVIDIA", "icon": "nvidia-color", "color": "#74B71B"},

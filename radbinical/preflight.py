@@ -20,7 +20,7 @@ def probe(reader, flags):
         session.step()
         return session.via, None
     except Exception as e:
-        return None, f"{type(e).__name__}: {e}"[:300]
+        return None, " ".join(f"{type(e).__name__}: {e}".split())[:300]
 
 
 def preflight(readers, flags):

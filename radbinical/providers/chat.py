@@ -1,4 +1,4 @@
-"""OpenAI-style chat completions: OpenRouter, Nous, NVIDIA and Google."""
+"""OpenAI-style chat completions: OpenRouter, Nous, NVIDIA, Google and xAI."""
 from .http import post_json
 
 
@@ -7,12 +7,13 @@ PROVIDERS = {  # endpoint, name of the output-limit field
     "nous": ("https://inference-api.nousresearch.com/v1/chat/completions", "max_tokens"),  # takes OpenRouter-style ids
     "openai": ("https://api.openai.com/v1/chat/completions", "max_completion_tokens"),
     "nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", "max_tokens"),
+    "xai": ("https://api.x.ai/v1/chat/completions", "max_tokens"),
     "google": ("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "max_tokens"),
 }
 
 
 class ChatSession:
-    """OpenAI-style chat completions (OpenRouter, Nous, NVIDIA, Google)."""
+    """OpenAI-style chat completions (OpenRouter, Nous, NVIDIA, Google, xAI)."""
     def __init__(self, provider, name, system, user, flags, max_tokens):
         self.provider = provider
         self.url, self.cap = PROVIDERS[provider]

@@ -13,6 +13,7 @@ KEYS = {  # environment variables holding each provider's key, first set one win
     "openai": ("OPENAI_API_KEY",),
     "anthropic": ("ANTHROPIC_API_KEY",),
     "google": ("GEMINI_API_KEY",),
+    "xai": ("XAI_API_KEY",),
     "nvidia": ("NVIDIA_API_KEY", "NVIDIA_NIM_API_KEY"),
 }
 

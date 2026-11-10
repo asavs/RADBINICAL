@@ -7,13 +7,19 @@
 
 `route(model)` decides where a model id goes, and is the only place that does:
 
-- An explicit prefix wins: "openai:", "anthropic:", "google:", "nvidia:", "openrouter:", "nous:",
-  "mock:". If a maker's key is not set, the call goes through a shared provider when one has a
-  key and the id has an OpenRouter form; otherwise route raises, naming the missing key.
-- A bare OpenRouter id "vendor/name" whose vendor is openai, anthropic, google or nvidia goes
-  straight to the maker when the maker's key is set ("anthropic/claude-opus-5.5" is sent to
-  Anthropic as "claude-opus-5-5"). Ids with an OpenRouter variant suffix (":free", ":batch"),
-  and OpenAI's open-weight gpt-oss models, which OpenAI's own API does not serve, stay shared.
+- An explicit prefix wins: "openai:", "anthropic:", "google:", "xai:", "nvidia:", "openrouter:",
+  "nous:", "mock:".
+- A bare OpenRouter id "vendor/name" whose vendor is openai, anthropic, google, x-ai or nvidia
+  goes straight to the maker ("anthropic/claude-opus-5.5" is sent to Anthropic as
+  "claude-opus-5-5", "x-ai/grok-4.7" to xAI as "grok-4.7"). Ids with an OpenRouter variant
+  suffix (":free", ":batch"), and OpenAI's open-weight gpt-oss models, which OpenAI's own API
+  does not serve, stay shared.
+- OpenAI's, Anthropic's, Google's and xAI's models are native: they go to their maker or nowhere.
+  When the maker's key is not set, route raises, naming it, and does not fall back to a shared
+  provider; a failure at the maker's API is likewise not retried elsewhere. Only an id that
+  itself says "openrouter:" or "nous:" sends one of them through a shared provider.
+- NVIDIA's models go through a shared provider when NVIDIA's key is not set and the id has an
+  OpenRouter form.
 - Anything else goes to a shared provider. OpenRouter and Nous both carry many makers' models
   under the same ids; Nous is used when its key is set, OpenRouter when only OpenRouter's is.
 
@@ -28,7 +34,9 @@ from .mock import MockSession
 from .responses import ResponsesSession
 
 
-DIRECT = ("openai", "anthropic", "google", "nvidia")
+DIRECT = ("openai", "anthropic", "google", "xai", "nvidia")
+NATIVE = ("openai", "anthropic", "google", "xai")  # sent to their maker's own API, never to a shared provider in its place
+VENDOR = {"x-ai": "xai"}  # OpenRouter's vendor name, where it differs from the provider's
 SHARED = ("nous", "openrouter")  # carry many makers' models under OpenRouter-style ids; first with a key wins
 KNOWN = set(PROVIDERS) | {"anthropic", "mock"}
 _OPENROUTER_ONLY = re.compile(r"^openai/gpt-oss")
@@ -58,6 +66,8 @@ def _openrouter_id(provider, name):
         return "anthropic/" + re.sub(r"(?<=\d)-(?=\d)", ".", name)
     if provider == "nvidia":
         return name if name.startswith("nvidia/") else None
+    if provider == "xai":
+        return f"x-ai/{name}"
     return f"{provider}/{name}"
 
 
@@ -68,17 +78,25 @@ def route(model):
         return head, name
     if head == "openrouter":  # a bare id
         vendor, slash, rest = model.partition("/")
-        if slash and vendor in DIRECT and ":" not in rest and not _OPENROUTER_ONLY.match(model) and api_key(vendor):
-            return vendor, _direct_name(vendor, rest)
+        maker = VENDOR.get(vendor, vendor)
+        if slash and maker in DIRECT and ":" not in rest and not _OPENROUTER_ONLY.match(model):
+            if api_key(maker):
+                return maker, _direct_name(maker, rest)
+            if maker in NATIVE:
+                raise RuntimeError(_no_key(model, maker))
         return shared(), model
     if api_key(head):
         return head, name
     back = _openrouter_id(head, name)
-    if back and any(api_key(p) for p in SHARED):
+    if head not in NATIVE and back and any(api_key(p) for p in SHARED):
         return shared(), back
-    names = " or ".join(KEYS[head])
-    raise RuntimeError(f"{model}: set {names}" + (", or OPENROUTER_API_KEY or NOUS_API_KEY to go through one of them" if back else
-                                                   " (this id has no OpenRouter equivalent)"))
+    raise RuntimeError(_no_key(model, head) if head in NATIVE else f"{model}: set {' or '.join(KEYS[head])}" + (
+        ", or OPENROUTER_API_KEY or NOUS_API_KEY to go through one of them" if back else " (this id has no OpenRouter equivalent)"))
+
+
+def _no_key(model, maker):
+    return (f"{model}: set {' or '.join(KEYS[maker])}. This model is only sent to its maker's own API; "
+            'write "openrouter:" or "nous:" before a vendor/name id to send it through a shared provider on purpose.')
 
 
 def canonical(model):

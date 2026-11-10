@@ -7,7 +7,7 @@
   "models": [
     {"model": "anthropic/claude-opus-5.5", "name": "Claude Opus 5.5"},
     {"model": "openai/gpt-6.1-terra", "name": "GPT-6.1 Terra"},
-    {"model": "nous:google/gemini-4-argon", "name": "Gemini 4 Argon"},
+    {"model": "google/gemini-4-argon", "name": "Gemini 4 Argon"},
     {"model": "x-ai/grok-4.7", "name": "Grok 4.7"},
     {"model": "deepseek/deepseek-v4.1-flash", "name": "DeepSeek v4.1"},
     {"model": "moonshotai/kimi-k3", "name": "Kimi K3"},

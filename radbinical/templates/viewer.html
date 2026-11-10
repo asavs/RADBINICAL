@@ -253,7 +253,7 @@ function start() {
   const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
   const BRANDS = /*__BRANDS__*/{};
   const ICONS = 'https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/';
-  const PREFIXES = ['openrouter', 'nous', 'openai', 'google', 'nvidia', 'anthropic', 'mock'];
+  const PREFIXES = ['openrouter', 'nous', 'openai', 'google', 'xai', 'nvidia', 'anthropic', 'mock'];
   const vendorOf = model => {
     const [head, ...rest] = model.split(':');
     const id = PREFIXES.includes(head) && rest.length ? rest.join(':') : model;

@@ -62,13 +62,23 @@ wrote one answer of blocks; all the runs of Phases 1 to 4 are of that kind.
 ## Readers and keys
 
 Each entry under `models` in the config is one reader. A prefix sends it to that provider; a bare
-OpenRouter-style id (`vendor/model`) goes to its maker when the maker's key is set, and otherwise
-through a shared provider: OpenRouter if its key is set, else Nous.
+OpenRouter-style id (`vendor/model`) goes to its maker's own API when the maker is OpenAI,
+Anthropic, Google, xAI or NVIDIA, and otherwise through a shared provider: Nous if its key is set,
+else OpenRouter.
+
+OpenAI's, Anthropic's, Google's and xAI's models are native: they are sent to their maker or not
+at all. Without the maker's key such a reader stops with a message naming it, and a failure at the
+maker's API is not retried through a shared provider. Only an id that itself begins `openrouter:`
+or `nous:` sends one of them through a shared provider.
 
 | Reader written as | Goes to | Key |
 |---|---|---|
-| `qwen/qwen3.8-27b` | OpenRouter, or Nous | `OPENROUTER_API_KEY`, `NOUS_API_KEY` |
-| `anthropic/claude-opus-5.5` | Anthropic if its key is set, else as above | `ANTHROPIC_API_KEY` |
+| `qwen/qwen3.8-27b` | Nous, or OpenRouter | `NOUS_API_KEY`, `OPENROUTER_API_KEY` |
+| `anthropic/claude-opus-5.5` | Anthropic, only | `ANTHROPIC_API_KEY` |
+| `openai/gpt-6.1-terra` | OpenAI, only | `OPENAI_API_KEY` |
+| `google/gemini-4-argon` | Google, only | `GEMINI_API_KEY` |
+| `x-ai/grok-4.7` | xAI, only | `XAI_API_KEY` |
+| `nvidia/nemotron-3-ultra-550b-a55b` | NVIDIA if its key is set, else as the first row | `NVIDIA_API_KEY` |
 | `openai:gpt-6.1-sol` | OpenAI | `OPENAI_API_KEY` |
 | `anthropic:claude-opus-5-5` | Anthropic | `ANTHROPIC_API_KEY` |
 | `google:gemini-4-argon` | Google | `GEMINI_API_KEY` |
@@ -77,10 +87,8 @@ through a shared provider: OpenRouter if its key is set, else Nous.
 | `nous:nousresearch/hermes-4-405b` | Nous, always | `NOUS_API_KEY` |
 | `mock:anything` | No call; placeholder comments | none |
 
-Bare ids are sent to their maker only for OpenAI, Anthropic, Google and NVIDIA. Ids with a variant
-suffix such as `:free`, and OpenAI's open-weight `gpt-oss` models, always go through the shared
-provider. A prefixed reader whose maker's key is missing goes through a shared provider when one
-has a key and the model has an OpenRouter id. Each turn records the provider it went through as `via` in the page's log. The rules
+Ids with a variant suffix such as `:free`, and OpenAI's open-weight `gpt-oss` models, which their
+makers' own APIs do not serve, always go through the shared provider. Each turn records the provider it went through as `via` in the page's log. The rules
 live in `radbinical/providers/__init__.py`.
 
 On your machine, copy `.env.example` to `.env` and fill in the keys you use; `.env` is ignored by
