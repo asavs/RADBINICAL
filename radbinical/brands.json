@@ -1,11 +1,11 @@
 {
-  "_source": "Logos and colours from the lobe-icons set (@lobehub/icons-static-svg 1.101.0), linked from jsDelivr. A slug ending in -color is shown as is; other marks are single-colour and drawn in the page's ink.",
+  "_source": "Logos and colours from the lobe-icons set (@lobehub/icons-static-svg 1.101.0), linked from jsDelivr. A slug ending in -color is shown as is; other marks are single-colour and drawn in the page's ink. \"flip\" marks a logo with black parts that should turn white on a dark page.",
   "anthropic": {"name": "Anthropic", "icon": "claude-color", "color": "#D97757"},
   "openai": {"name": "OpenAI", "icon": "openai"},
   "google": {"name": "Google", "icon": "gemini-color", "color": "#3186FF"},
   "x-ai": {"name": "xAI", "icon": "grok"},
   "deepseek": {"name": "DeepSeek", "icon": "deepseek-color", "color": "#4D6BFE"},
-  "moonshotai": {"name": "Moonshot AI", "icon": "kimi", "color": "#1783FF"},
+  "moonshotai": {"name": "Moonshot AI", "icon": "kimi-color", "color": "#1783FF", "flip": true},
   "nvidia": {"name": "NVIDIA", "icon": "nvidia-color", "color": "#74B71B"},
   "qwen": {"name": "Alibaba", "icon": "qwen-color", "color": "#082DFF"},
   "meta-llama": {"name": "Meta", "icon": "meta-color", "color": "#0082FB"},

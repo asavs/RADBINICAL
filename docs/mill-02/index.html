@@ -16,17 +16,18 @@
   --small: "Alegreya Sans SC", "IBM Plex Sans", system-ui, sans-serif;
   --ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --lead: 3.9rem;   /* three commentary lines run above the passage */
+  --flip: none;     /* dark theme: turns the black parts of a two-colour logo white and keeps its colour */
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --paper: #0f1216; --sheet: #171b21; --ink: #e7eaef; --ink-2: #9ba5b3; --rule: #333b46;
   --mark: #d9a800; --warn: #e6b450;
   --a0: #ff8a7a; --a1: #7fb4ff; --a2: #6fd39a; --a3: #c39bff;
-  --a4: #f0a856; --a5: #5fd0de; --a6: #ff8cc6; --a7: #aab4c2; color-scheme: dark } }
+  --a4: #f0a856; --a5: #5fd0de; --a6: #ff8cc6; --a7: #aab4c2; --flip: invert(1) hue-rotate(180deg); color-scheme: dark } }
 :root[data-theme="dark"] {
   --paper: #0f1216; --sheet: #171b21; --ink: #e7eaef; --ink-2: #9ba5b3; --rule: #333b46;
   --mark: #d9a800; --warn: #e6b450;
   --a0: #ff8a7a; --a1: #7fb4ff; --a2: #6fd39a; --a3: #c39bff;
-  --a4: #f0a856; --a5: #5fd0de; --a6: #ff8cc6; --a7: #aab4c2; color-scheme: dark }
+  --a4: #f0a856; --a5: #5fd0de; --a6: #ff8cc6; --a7: #aab4c2; --flip: invert(1) hue-rotate(180deg); color-scheme: dark }
 
 * { box-sizing: border-box }
 body { background: var(--paper); color: var(--ink); font-family: var(--ui); font-size: 0.9375rem; line-height: 1.5;
@@ -39,6 +40,7 @@ button { font: inherit; color: inherit; cursor: pointer }
 /* maker's marks */
 .g { flex: none; display: inline-block; width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--c); vertical-align: baseline }
 img.g, .g.mark { width: 0.95em; height: 0.95em; border-radius: 0; background: none; vertical-align: -0.12em }
+img.g.flip { filter: var(--flip) }
 .g.mark { background: var(--c); -webkit-mask: var(--u) center / contain no-repeat; mask: var(--u) center / contain no-repeat }
 .tag { font-family: var(--small); font-style: normal; font-size: 0.78em; color: var(--ink-2); margin-left: 0.15em }
 
@@ -69,15 +71,19 @@ img.g, .g.mark { width: 0.95em; height: 0.95em; border-radius: 0; background: no
 .passage p:first-of-type { text-indent: 0 }
 .incipit { display: block; width: fit-content; margin: 0.35rem auto 0.7rem; padding: 0.2rem 1.5rem; border: 3px double var(--ink); outline: 1px solid var(--ink); outline-offset: 3px;
   font-size: 1.55em; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-indent: 0; line-height: 1.3 }
-.seg.lit { background: color-mix(in srgb, var(--c, var(--mark)) 22%, transparent); box-shadow: 0 2px 0 var(--c, var(--mark)) }
+.seg { background-image: var(--ul); background-size: 100% 1px; background-position: 0 100%; background-repeat: no-repeat }
+.seg.lit { background-color: color-mix(in srgb, var(--c, var(--mark)) 22%, transparent); background-size: 100% 3px }
 sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0 }
 sup.m:hover, sup.m.lit { text-decoration: underline }
 
 /* run-on commentary */
 .col, .under { font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; min-width: 0; overflow-wrap: break-word }
 .c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem }
-.c:hover, .c.lit { background: color-mix(in srgb, var(--c) 13%, transparent) }
-.c.kin { background: color-mix(in srgb, var(--c) 7%, transparent) }
+.c { background: color-mix(in srgb, var(--c) 6%, transparent); -webkit-box-decoration-break: clone; box-decoration-break: clone }
+.c:hover, .c.lit { background: color-mix(in srgb, var(--c) 17%, transparent) }
+.c.kin { background: color-mix(in srgb, var(--c) 12%, transparent) }
+.q { text-decoration: underline 1px var(--c); text-underline-offset: 2.5px }
+.q.lit { text-decoration-thickness: 2.5px; background: color-mix(in srgb, var(--c) 22%, transparent) }
 .c .n { font-family: var(--small); font-weight: 700; font-size: 0.72em; color: var(--c); vertical-align: 0.35em; line-height: 0; margin: 0 0.2em 0 0.1em }
 .c .hd { white-space: nowrap }
 .c .on { font-family: var(--small); font-size: 0.8em; color: var(--ink-2) }
@@ -190,7 +196,7 @@ const lemmaOf = (q, n = 8) => { const w = q.trim().split(/\s+/); return w.length
 function start() {
   if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
   const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
-  const BRANDS = {"anthropic": {"name": "Anthropic", "icon": "claude-color", "color": "#D97757"}, "openai": {"name": "OpenAI", "icon": "openai"}, "google": {"name": "Google", "icon": "gemini-color", "color": "#3186FF"}, "x-ai": {"name": "xAI", "icon": "grok"}, "deepseek": {"name": "DeepSeek", "icon": "deepseek-color", "color": "#4D6BFE"}, "moonshotai": {"name": "Moonshot AI", "icon": "kimi", "color": "#1783FF"}, "nvidia": {"name": "NVIDIA", "icon": "nvidia-color", "color": "#74B71B"}, "qwen": {"name": "Alibaba", "icon": "qwen-color", "color": "#082DFF"}, "meta-llama": {"name": "Meta", "icon": "meta-color", "color": "#0082FB"}, "mistralai": {"name": "Mistral AI", "icon": "mistral-color", "color": "#FA500F"}, "nousresearch": {"name": "Nous Research", "icon": "nousresearch"}};
+  const BRANDS = {"anthropic": {"name": "Anthropic", "icon": "claude-color", "color": "#D97757"}, "openai": {"name": "OpenAI", "icon": "openai"}, "google": {"name": "Google", "icon": "gemini-color", "color": "#3186FF"}, "x-ai": {"name": "xAI", "icon": "grok"}, "deepseek": {"name": "DeepSeek", "icon": "deepseek-color", "color": "#4D6BFE"}, "moonshotai": {"name": "Moonshot AI", "icon": "kimi-color", "color": "#1783FF", "flip": true}, "nvidia": {"name": "NVIDIA", "icon": "nvidia-color", "color": "#74B71B"}, "qwen": {"name": "Alibaba", "icon": "qwen-color", "color": "#082DFF"}, "meta-llama": {"name": "Meta", "icon": "meta-color", "color": "#0082FB"}, "mistralai": {"name": "Mistral AI", "icon": "mistral-color", "color": "#FA500F"}, "nousresearch": {"name": "Nous Research", "icon": "nousresearch"}};
   const ICONS = 'https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/';
   const PREFIXES = ['openrouter', 'openai', 'nvidia', 'anthropic', 'mock'];
   const vendorOf = model => {
@@ -206,7 +212,7 @@ function start() {
   const glyph = (a, named) => {
     const b = brandOf(a), tag = !named && shared(a) ? `<i class="tag">${esc(a.split(/[\s]+/).pop())}</i>` : '';
     const u = b && ICONS + b.icon + '.svg';
-    const mark = !b || !S.icons ? '<i class="g"></i>' : b.icon.endsWith('-color') ? `<img class="g" src="${u}" alt="">` : `<i class="g mark" style="--u:url(${u})"></i>`;
+    const mark = !b || !S.icons ? '<i class="g"></i>' : b.icon.endsWith('-color') ? `<img class="g${b.flip ? ' flip' : ''}" src="${u}" alt="">` : `<i class="g mark" style="--u:url(${u})"></i>`;
     return named ? mark : `<span class="who" data-name="${esc(a)}">${mark}${tag}</span>`;
   };
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
@@ -230,6 +236,12 @@ function start() {
   }
   const topsOf = vis => vis.filter(c => c.target === 'passage').sort((a, b) => a.start - b.start || a.n - b.n);
 
+  // One thin underline per span, striped in the colours of the models that commented on it.
+  const underline = on => {
+    const inks = [...new Set(on.map(c => ink(c.author)))];
+    return `repeating-linear-gradient(90deg, ${inks.map((c, i) => `${c} ${i * 14}px ${(i + 1) * 14}px`).join(', ')})`;
+  };
+
   // The passage: clean text, with a small numbered mark where each comment on it begins.
   function drawPassage(vis) {
     const text = D.passage.text, tops = topsOf(vis);
@@ -248,28 +260,41 @@ function start() {
         if (first) { chunk = chunk.replace(/^(\S+)\s*/, (_, w) => { box = `<span class="incipit">${w}</span>`; return '' }); first = false }
         html += box + tops.filter(c => c.start === s).map(c => `<sup class="m" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
         const on = tops.filter(c => c.start <= s && c.end >= e);
-        html += on.length ? `<span class="seg" data-ids="${on.map(c => c.id).join(' ')}">${chunk}</span>` : chunk;
+        html += on.length ? `<span class="seg" style="--ul:${underline(on)}" data-ids="${on.map(c => c.id).join(' ')}">${chunk}</span>` : chunk;
       }
       html += '</p>';
     }
     $('passage').innerHTML = html;
   }
 
+  // A comment's text as one run. Where a reply quotes part of it, that part is underlined in the replier's colour.
+  function bodyHTML(c, vis) {
+    const raw = c.text.replace(/\s+/g, ' ').trim(), spans = [];
+    for (const k of vis.filter(k => k.target === c.id && k.quote)) {
+      const q = k.quote.replace(/\s+/g, ' ').trim(), i = q ? raw.indexOf(q) : -1;
+      if (i >= 0 && !spans.some(s => i < s[1] && i + q.length > s[0])) spans.push([i, i + q.length, k]);
+    }
+    spans.sort((x, y) => y[0] - x[0]); // right to left, so earlier offsets stay valid
+    let out = raw;
+    for (const [i, j, k] of spans) out = out.slice(0, i) + '\uE000' + k.id + '\uE001' + out.slice(i, j) + '\uE002' + out.slice(j);
+    return inline(out).replace(/\uE000(\w+)\uE001/g, (_, id) => `<span class="q" data-by="${id}" style="--c:${ink(byId[id].author)}">`).replace(/\uE002/g, '</span>');
+  }
+
   // One comment as a run of text inside a column: mark, number, opening words in bold, then the comment.
-  function runHTML(c) {
+  // Comments on the text need only a few opening words, since the number already locates them.
+  function runHTML(c, vis) {
     const top = c.target === 'passage';
-    const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 6 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
+    const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 3 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
     const on = top ? '' : `<span class="on">on ${num(c.target)}</span> `;
-    const body = c.text.split(/\n\s*\n/).map(inline).join(' ').replace(/\n/g, ' ');
-    return `<span class="c" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${on}${lemma}${body}<span class="end"> :</span></span> `;
+    return `<span class="c" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${on}${lemma}${bodyHTML(c, vis)}<span class="end"> :</span></span> `;
   }
 
   function drawCols(vis) {
     const tops = topsOf(vis);
     const below = c => vis.filter(k => k.target === c.id).flatMap(k => [k, ...below(k)]);
     const replies = tops.flatMap(below);
-    $('inner').innerHTML = '<i class="push"></i><i class="notch"></i>' + tops.map(runHTML).join('');
-    $('outer').innerHTML = '<i class="push"></i><i class="notch"></i>' + replies.map(runHTML).join('');
+    $('inner').innerHTML = '<i class="push"></i><i class="notch"></i>' + tops.map(c => runHTML(c, vis)).join('');
+    $('outer').innerHTML = '<i class="push"></i><i class="notch"></i>' + replies.map(c => runHTML(c, vis)).join('');
     $('outer').hidden = !replies.length && !daf.matches;
     $('all').hidden = !phone.matches || !tops.length;
     $('all').textContent = `Read all ${vis.length} comments`;
@@ -329,6 +354,7 @@ function start() {
     document.querySelectorAll('.seg').forEach(s => { if (s.dataset.ids.split(' ').includes(root)) { s.classList.toggle('lit', on); s.style.setProperty('--c', ink(byId[root].author)) } });
     document.querySelectorAll(`sup.m[data-m="${root}"]`).forEach(m => m.classList.toggle('lit', on));
     document.querySelectorAll(`.c[data-on="${id}"]`).forEach(k => k.classList.toggle('kin', on));
+    document.querySelectorAll(`.q[data-by="${id}"]`).forEach(q => q.classList.toggle('lit', on));
     if (c.target !== 'passage' && $(c.target)) $(c.target).classList.toggle('kin', on);
   }
   function flash(el) {
@@ -346,6 +372,7 @@ function start() {
 
   const hover = on => e => {
     const c = e.target.closest('.c'); if (c) light(c.id, on);
+    const q = e.target.closest('.q'); if (q && $(q.dataset.by)) $(q.dataset.by).classList.toggle('lit', on); // a quoted phrase lights the reply that quotes it
     const m = e.target.closest('sup.m'); if (m) { light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
   };
   document.querySelector('.daf').addEventListener('mouseover', hover(true));

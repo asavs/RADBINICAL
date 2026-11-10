@@ -35,7 +35,8 @@ def marks(readers, brands):
             continue
         seen.add(b["icon"])
         url, name = ICONS + b["icon"] + ".svg", html.escape(b["name"])
-        out.append(f'<img src="{url}" alt="{name}" title="{name}">' if b["icon"].endswith("-color")
+        flip = ' class="flip"' if b.get("flip") else ""
+        out.append(f'<img{flip} src="{url}" alt="{name}" title="{name}">' if b["icon"].endswith("-color")
                    else f'<i role="img" aria-label="{name}" title="{name}" style="--u:url({url})"></i>')
     return f'<span class="marks">{"".join(out)}</span>' if out else ""
 
