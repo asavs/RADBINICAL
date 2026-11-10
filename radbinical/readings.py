@@ -27,8 +27,11 @@ from itertools import combinations
 from .embed import cosine, embed
 from .providers import canonical
 
-THRESHOLDS = {"mock": 0.3}   # per provider prefix
-THRESHOLD = 0.8              # for real embedding models
+THRESHOLDS = {"mock": 0.3, "google": 0.84}   # per provider prefix
+# google:gemini-embedding-2 was calibrated by reading cross-run gloss pairs on overlapping spans of
+# Mill and Read: at 0.84 and above nearly every pair gave the same reading, between 0.80 and 0.84
+# about half did, below 0.80 few did. Other real models keep the uncalibrated 0.8.
+THRESHOLD = 0.8
 MIN_OVERLAP = 0.5
 
 

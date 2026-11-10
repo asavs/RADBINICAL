@@ -26,7 +26,7 @@ def add_options(p):
     p.add_argument("--runs", help="folder of runs (default runs/)")
     p.add_argument("--out", help="folder to write into (default data/)")
     p.add_argument("--embed", default=DEFAULT, help=f"embedding model (default {DEFAULT})")
-    p.add_argument("--threshold", type=float, help="cosine needed to merge clusters (default per model: 0.3 for mock:, 0.8 otherwise)")
+    p.add_argument("--threshold", type=float, help="cosine needed to merge clusters (default per model: 0.3 for mock:, 0.84 for google:, 0.8 otherwise)")
     p.add_argument("--min-overlap", type=float, default=MIN_OVERLAP,
                    help=f"span overlap, over the shorter span, below which two glosses never count as similar (default {MIN_OVERLAP})")
 
