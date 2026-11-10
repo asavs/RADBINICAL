@@ -3,9 +3,11 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans+SC:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=EB+Garamond:ital,wght@0,500;0,700;1,500&display=swap">
 <style>
-/* Layout: a printed commentary page. One dense sheet: the passage sits in the middle in a large book
-   face; comments on the text run down the inner column, comments on comments down the outer column,
-   and both wrap above and beneath the passage. Type size and position carry the hierarchy. */
+/* Layout: a printed commentary page, built from one shape. A node is a text with a margin, and
+   whatever is written on the text sits in that margin as a node of its own. The passage is the
+   outermost node, with a margin on either side of it. A comment's margin lies on its far side from
+   the passage, so every reply sits one step further out than what it answers. Where a margin is too
+   narrow to stand beside its text, it runs beneath it instead. */
 :root {
   --paper: #eef1f4; --sheet: #fdfdfb; --ink: #14181f; --ink-2: #505a69; --rule: #c9d0d9;
   --mark: #f0bf00; --warn: #8a5a00;
@@ -15,7 +17,7 @@
   --gloss: "Alegreya", "Palatino Linotype", Palatino, Georgia, serif;
   --small: "Alegreya Sans SC", "IBM Plex Sans", system-ui, sans-serif;
   --ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --lead: 3.9rem;   /* three commentary lines run above the passage */
+  --col: 13.5rem;   /* the least width of a text or of a margin; two fit side by side or the margin goes beneath */
   --flip: none;     /* dark theme: turns the black parts of a two-colour logo white and keeps its colour */
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -50,10 +52,8 @@ img.g.flip { filter: var(--flip) }
 
 /* the sheet */
 .daf { background: var(--sheet); border: 1px solid var(--rule); padding: 0.9rem 1.1rem 1.3rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.7rem 1.2rem }
-.runhead { display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline; gap: 1rem; border-bottom: 1px solid var(--ink); padding-bottom: 0.35rem }
+.runhead { border-bottom: 1px solid var(--ink); padding-bottom: 0.35rem }
 .runhead h1 { font-family: var(--text); font-weight: 700; font-size: clamp(1.4rem, 1.1rem + 1.4vw, 2.1rem); letter-spacing: 0.01em; line-height: 1.15; margin: 0; text-align: center; text-wrap: balance }
-.runhead span { font-family: var(--small); font-weight: 700; font-size: 0.82rem; letter-spacing: 0.06em; color: var(--ink-2) }
-.runhead span:last-child { text-align: right }
 
 .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.3rem 1.5rem; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2;
   background: var(--sheet); border-bottom: 1px solid var(--rule); padding-block: 0.3rem; margin-top: -0.7rem }
@@ -83,19 +83,27 @@ img.g.flip { filter: var(--flip) }
 sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0 }
 sup.m:hover, sup.m.lit { text-decoration: underline }
 
-/* run-on commentary */
-.col, .under { font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; min-width: 0; overflow-wrap: break-word }
-.c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem }
-.c { background: color-mix(in srgb, var(--c) 6%, transparent); -webkit-box-decoration-break: clone; box-decoration-break: clone }
+/* nodes and margins: a comment, then the margin of comments on it, beside it when both fit */
+.node { --rg: 0.4rem; display: flex; flex-wrap: wrap; gap: var(--rg) 0; min-width: 0 }
+.node > * { flex: 1 1 var(--col); min-width: 0 }
+.node > .c, .node > .t { align-self: flex-start }
+.margin { display: flex; flex-direction: column; gap: 0.5rem; margin-left: 0.15rem; padding-left: 0.55rem; border-left: 1px solid var(--rule) }
+.margin:empty { display: none }
+/* the passage's own margin, either side of it, in as many columns as fit; on the left, outward is leftward */
+.side { display: flex; align-items: flex-start; gap: 1.1rem; min-width: 0; font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; overflow-wrap: break-word }
+.col { display: flow-root; flex: 1 1 0; min-width: 0 }
+.col > .node { margin-bottom: 0.6rem }
+#left, #left .node { flex-direction: row-reverse }
+#left .margin { margin-left: 0; padding-left: 0; border-left: none; margin-right: 0.15rem; padding-right: 0.55rem; border-right: 1px solid var(--rule) }
+.notch { display: none }
+.c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem; padding: 0.1rem 0.3rem; background: color-mix(in srgb, var(--c) 6%, transparent) }
 .c:hover, .c.lit { background: color-mix(in srgb, var(--c) 17%, transparent) }
 .c.kin { background: color-mix(in srgb, var(--c) 12%, transparent) }
 .q { text-decoration: underline 1px var(--c); text-underline-offset: 2.5px }
 .q.lit { text-decoration-thickness: 2.5px; background: color-mix(in srgb, var(--c) 22%, transparent) }
 .c .n { font-family: var(--small); font-weight: 700; font-size: 0.72em; color: var(--c); vertical-align: 0.35em; line-height: 0; margin: 0 0.2em 0 0.1em }
 .c .hd { white-space: nowrap }
-.c .on { font-family: var(--small); font-size: 0.8em; color: var(--ink-2) }
 .c .lemma { font-weight: 700 }
-.c .end { color: var(--ink-2) }
 .c code { font-size: 0.9em }
 .c.flash { animation: flash 1.6s ease-out }
 @keyframes flash { from { background: color-mix(in srgb, var(--mark) 55%, transparent) } to { background: transparent } }
@@ -107,19 +115,18 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 .truth { font-style: italic; color: var(--warn) }
 .t .truth { display: block; margin-top: 0.3rem }
 .c.stale, .t.stale { opacity: 0.55 } .c.stale .lemma, .t.stale .lemma { text-decoration: line-through }
-.push, .notch { display: none }
-.under { border-top: 1px solid var(--ink); padding-top: 0.5rem; font-size: 0.85rem }
 .colophon { font-family: var(--text); font-style: italic; font-weight: 500; color: var(--ink-2); font-size: 1.02rem; text-align: center }
 
-/* reading view: one thread at a comfortable size */
+/* reading view: whole threads at a comfortable size, every margin beneath its text */
 dialog.sheet { margin: auto; width: min(44rem, calc(100% - 2rem)); max-height: 86dvh; padding: 0; border: 1px solid var(--ink); background: var(--sheet); color: var(--ink) }
 dialog.sheet::backdrop { background: rgb(0 0 0 / 0.5) }
 .sheet-head { position: sticky; top: 0; z-index: 1; display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; background: var(--sheet); border-bottom: 1px solid var(--rule); padding: 0.8rem 1.1rem 0.7rem }
 .sheet-title { font-family: var(--text); font-style: italic; font-weight: 500; font-size: 1.1rem; min-width: 0; background: none; border: none; padding: 0; text-align: left }
 button.sheet-title:enabled:hover { text-decoration: underline }
 .sheet-body { display: flex; flex-direction: column; gap: 1.2rem; padding: 1rem 1.1rem 1.5rem }
-.thread { display: flex; flex-direction: column; gap: 0.7rem }
-.thread + .thread { border-top: 1px solid var(--rule); padding-top: 1rem }
+.sheet .node { --col: 100%; --rg: 0.7rem }
+.sheet .margin { gap: 0.7rem; margin-left: 0.2rem; padding-left: 0.8rem }
+.sheet-body > .node + .node { border-top: 1px solid var(--rule); padding-top: 1rem }
 .t { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0 }
 .t header { display: flex; align-items: baseline; gap: 0.5rem; font-weight: 600; font-size: 0.85rem }
 .t header a { font-family: var(--small); font-weight: 500; color: var(--ink-2); text-decoration: none }
@@ -128,7 +135,6 @@ button.sheet-title:enabled:hover { text-decoration: underline }
 .t .tb p { margin: 0 0 0.5em } .t .tb p:last-child { margin: 0 }
 .t .lemma { font-weight: 700 } .t .lemma::after { content: "\00a0\2014\00a0"; font-weight: 400; color: var(--ink-2) }
 .t.flash { animation: flash 1.6s ease-out }
-.kids { display: flex; flex-direction: column; gap: 0.7rem; margin-left: 0.2rem; padding-left: 0.8rem; border-left: 1px solid var(--rule) }
 .refs { font-family: var(--small); font-size: 0.85rem; color: var(--ink-2) }
 .refs button { background: none; border: none; padding: 0; text-decoration: underline 2px; text-underline-offset: 3px }
 html.sheet-open { overflow: hidden }
@@ -159,52 +165,42 @@ th { font-weight: 500; color: var(--ink-2) }
 
 /* Phone: the passage alone; commentary opens from the bottom. */
 @media (max-width: 699px) {
-  .runhead { grid-template-columns: 1fr } .runhead span { display: none }
-  .col, .under { display: none }
+  .side { display: none }
   .passage p { font-size: 1.28rem; line-height: 1.42; text-align: left }
   dialog.sheet { margin: auto 0 0; width: 100%; max-width: 100%; border: none; border-top: 2px solid var(--ink); border-radius: 0.9rem 0.9rem 0 0 }
   .sheet-head { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
   .sheet-body { padding: 1rem max(16px, env(safe-area-inset-right, 0px)) calc(1.5rem + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)) }
 }
-/* Tablet: passage on top, the two commentary columns beneath it. */
+/* Tablet: passage on top, the two sides of its margin beneath it. */
 @media (min-width: 700px) {
   .body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.9rem 1.1rem; align-items: start }
   .body > .passage { grid-column: 1 / -1 }
-  .under { columns: 2; column-gap: 1.1rem }
 }
-/* Desktop: the full page. The passage is lifted into the middle and both columns flow around it. */
+/* Desktop: the full page. The passage is lifted into the middle; each side of its margin stands
+   beside it and widens beneath it. */
 @media (min-width: 1100px) {
   .body { position: relative; container-type: inline-size; --pw: clamp(17rem, 40cqw, 27rem) }
-  .body > .passage { position: absolute; top: calc(var(--lead) + 0.5rem); left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
-  .push, .notch { display: block }
-  .push { width: 0; height: var(--lead) }
-  .notch { width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 1.1rem) }
-  #inner .push, #inner .notch { float: right; clear: right } #outer .push, #outer .notch { float: left; clear: left }
+  .body > .passage { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
+  .notch { display: block; width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 0.9rem) }
+  #left .notch { float: right } #right .notch { float: left }
   .passage p { font-size: 1.3rem }
-  .under { columns: 3; column-gap: 1.1rem }
 }
 /* Print: the full page as one poster sheet. Before printing, the script lays the sheet out at the
    paper's width (html.printing) and picks the largest type that fits it on one page; the paper
-   size is set once, in PAPER in the script. Print from a window at least 1100px wide. */
+   size is set once, in PAPER in the script. */
 html.printing { font-size: var(--print-fs) }
 html.printing body { padding: 0 }
 html.printing .wrap { width: var(--print-w); max-width: none; gap: 0.5rem }
 html.printing .bar, html.printing .all, html.printing details, html.printing .apparatus, html.printing dialog { display: none }
 html.printing .daf { border: none; padding: 0 }
-html.printing .under .c { display: inline-block; width: 100% } /* a comment in the run beneath stays in one column */
 /* the desktop sheet, whatever width the browser reports for the paper */
-html.printing .col { display: block }
-html.printing .under:not([hidden]) { display: block; columns: 3; column-gap: 1.1rem }
+html.printing .side { display: flex }
 html.printing .body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.9rem 1.1rem; align-items: start;
   position: relative; container-type: inline-size; --pw: clamp(17rem, 40cqw, 27rem) }
-html.printing .body > .passage { grid-column: 1 / -1; position: absolute; top: calc(var(--lead) + 0.5rem); left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
+html.printing .body > .passage { grid-column: 1 / -1; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
 html.printing .passage p { font-size: 1.3rem; text-align: justify }
-html.printing .push, html.printing .notch { display: block }
-html.printing .push { width: 0; height: var(--lead) }
-html.printing .notch { width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 1.1rem) }
-html.printing #inner .push, html.printing #inner .notch { float: right; clear: right }
-html.printing #outer .push, html.printing #outer .notch { float: left; clear: left }
-html.printing .runhead { grid-template-columns: 1fr auto 1fr } html.printing .runhead span { display: inline }
+html.printing .notch { display: block; width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 0.9rem) }
+html.printing #left .notch { float: right } html.printing #right .notch { float: left }
 @media print {
   :root:root:root { --paper: #fff; --sheet: #fff; --ink: #14181f; --ink-2: #505a69; --rule: #c9d0d9; --mark: #f0bf00; --warn: #8a5a00;
     --a0: #c2362b; --a1: #1565c0; --a2: #1b7f4b; --a3: #7b3fb5; --a4: #a85a00; --a5: #0b7c8c; --a6: #b02a78; --a7: #56606e; --flip: none; color-scheme: light }
@@ -218,7 +214,7 @@ html.printing .runhead { grid-template-columns: 1fr auto 1fr } html.printing .ru
 <div class="wrap">
   <div class="banner" id="mock" hidden>Placeholder run. These comments came from an offline stand-in used to test the page, not from real models.</div>
   <main class="daf">
-    <header class="runhead"><span>On the text</span><h1 id="title"></h1><span>On the comments</span></header>
+    <header class="runhead"><h1 id="title"></h1></header>
     <div class="bar">
       <aside class="key" id="key" aria-label="Readers"></aside>
       <aside class="ctl" aria-label="Rounds">
@@ -231,11 +227,10 @@ html.printing .runhead { grid-template-columns: 1fr auto 1fr } html.printing .ru
     </div>
     <div class="body" id="body">
       <section class="passage" id="passage" aria-label="Passage"></section>
-      <section class="col" id="inner" aria-label="Comments on the text"></section>
-      <section class="col" id="outer" aria-label="Comments on comments"></section>
+      <section class="side" id="left" aria-label="Commentary, left margin"></section>
+      <section class="side" id="right" aria-label="Commentary, right margin"></section>
     </div>
     <button class="all" id="all" hidden></button>
-    <section class="under" id="under" hidden></section>
   </main>
   <div class="colophon" id="source"></div>
   <section class="apparatus" id="apparatus" aria-label="Apparatus" hidden></section>
@@ -306,8 +301,7 @@ function start() {
   const marked = c => S.plants && isPlant(c);
   const kinds = c => (people.has(c.author) ? ' human' : '') + (marked(c) ? ' plant' : '') + (c.stale ? ' stale' : '');
   const staleNote = c => c.stale ? ` title="Its quoted words were amended away in version ${esc(c.stale)}"` : '';
-  const daf = matchMedia('(min-width: 1100px)'), phone = matchMedia('(max-width: 699px)');
-  const full = () => daf.matches || document.documentElement.classList.contains('printing'); // the whole sheet: wide screens, and paper
+  const phone = matchMedia('(max-width: 699px)');
   const sheet = $('sheet');
 
   $('title').textContent = D.passage.title;
@@ -316,13 +310,15 @@ function start() {
   $('layer').max = rounds; $('layer').value = rounds; $('layer').disabled = rounds < 2;
 
   const rootOf = c => { while (c && c.target !== 'passage') c = byId[c.target]; return c };
+  // What is on show, as a tree. A node is the passage ('passage') or a comment, and kids(id) are the
+  // comments written on it: the passage's in the order of the words they are on, a comment's as made.
   function shown() {
-    const ok = new Set();
+    const K = { passage: [] };
     for (const c of D.comments) // stored in the order they were written, so parents come first
-      if (c.layer <= S.upTo && !S.off.has(c.author) && (c.target === 'passage' || ok.has(c.target))) ok.add(c.id);
-    return D.comments.filter(c => ok.has(c.id));
+      if (c.layer <= S.upTo && !S.off.has(c.author) && K[c.target]) { K[c.target].push(c); K[c.id] = [] }
+    K.passage.sort((a, b) => a.start - b.start || a.n - b.n);
+    return { size: Object.keys(K).length - 1, has: id => id !== 'passage' && id in K, kids: id => K[id] || [] };
   }
-  const topsOf = vis => vis.filter(c => c.target === 'passage').sort((a, b) => a.start - b.start || a.n - b.n);
 
   // One thin underline per span, striped in the colours of the models that commented on it.
   const underline = on => {
@@ -331,8 +327,8 @@ function start() {
   };
 
   // The passage: clean text, with a small numbered mark where each comment on it begins.
-  function drawPassage(vis) {
-    const text = D.passage.text, tops = topsOf(vis);
+  function drawPassage(V) {
+    const text = D.passage.text, tops = V.kids('passage');
     const cuts = new Set([0, text.length]);
     tops.forEach(c => { cuts.add(c.start); cuts.add(c.end) });
     let pos = 0; const paras = [];
@@ -356,9 +352,9 @@ function start() {
   }
 
   // A comment's text as one run. Where a reply quotes part of it, that part is underlined in the replier's colour.
-  function bodyHTML(c, vis) {
+  function bodyHTML(c, V) {
     const raw = c.text.replace(/\s+/g, ' ').trim(), spans = [];
-    for (const k of vis.filter(k => k.target === c.id && k.quote)) {
+    for (const k of V.kids(c.id).filter(k => k.quote)) {
       const q = k.quote.replace(/\s+/g, ' ').trim(), i = q ? raw.indexOf(q) : -1;
       if (i >= 0 && !spans.some(s => i < s[1] && i + q.length > s[0])) spans.push([i, i + q.length, k]);
     }
@@ -368,39 +364,40 @@ function start() {
     return inline(out).replace(/\uE000(\w+)\uE001/g, (_, id) => `<span class="q" data-by="${id}" style="--c:${ink(byId[id].author)}">`).replace(/\uE002/g, '</span>');
   }
 
-  // One comment as a run of text inside a column: mark, number, opening words in bold, then the comment.
-  // Comments on the text need only a few opening words, since the number already locates them.
-  function runHTML(c, vis) {
+  // A comment as it stands in a margin: mark, number, the opening words it is on in bold, then the comment.
+  // Comments on the passage need only a few opening words, since the number already locates them.
+  function runHTML(c, V) {
     const top = c.target === 'passage';
     const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 3 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
-    const on = top ? '' : `<span class="on">on ${num(c.target)}</span> `;
     const truth = marked(c) ? ` <span class="truth">${plantNote(c)}</span>` : '';
-    return `<span class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"${staleNote(c)}><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${on}${lemma}${bodyHTML(c, vis)}${truth}<span class="end"> :</span></span> `;
+    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"${staleNote(c)}><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}${bodyHTML(c, V)}${truth}</div>`;
   }
 
-  function drawCols(vis) {
-    const tops = topsOf(vis);
-    const below = c => vis.filter(k => k.target === c.id).flatMap(k => [k, ...below(k)]);
-    const replies = tops.flatMap(below);
-    $('inner').innerHTML = '<i class="push"></i><i class="notch"></i>' + tops.map(c => runHTML(c, vis)).join('');
-    $('outer').innerHTML = '<i class="push"></i><i class="notch"></i>' + replies.map(c => runHTML(c, vis)).join('');
-    $('outer').hidden = !replies.length && !full();
+  // A node: a comment drawn by `content`, then its margin, holding a node for each comment on it.
+  const nodeHTML = (c, V, content) => `<section class="node">${content(c, V)}<div class="margin">${V.kids(c.id).map(k => nodeHTML(k, V, content)).join('')}</div></section>`;
+
+  // The passage's own margin has two sides, each of one or more columns. The innermost column of a
+  // side stands beside the passage and widens beneath it. Threads go down the columns in the order of
+  // the words they are on, each to whichever is shortest so far. A side takes more columns only where
+  // it has room for them (a poster sheet), and then as many as make the page shortest: fewer, wider
+  // columns let a long thread spread outward instead of running down.
+  function drawMargins(V) {
+    const sides = [$('left'), $('right')], tops = V.kids('passage'), body = $('body');
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const most = Math.max(1, Math.floor(sides[0].offsetWidth / (30 * rem))); // 30rem: two of --col and what lies between
+    const foot = m => { const t = m.lastElementChild; return t && t.matches('.node') ? t.offsetTop + t.offsetHeight : 0 };
+    const lay = n => {
+      sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
+      const cols = Array.from({ length: n }, (_, i) => sides.map(m => m.children[i])).flat(); // from the passage outward
+      for (const c of tops) cols.reduce((a, b) => foot(b) < foot(a) ? b : a).insertAdjacentHTML('beforeend', nodeHTML(c, V, runHTML));
+      return body.offsetHeight;
+    };
+    body.style.setProperty('--ph', $('passage').offsetHeight + 'px');
+    let best = 1, least = lay(1);
+    for (let n = 2; n <= most; n++) { const h = lay(n); if (h < least) [best, least] = [n, h] }
+    if (best !== most) lay(best);
     $('all').hidden = !phone.matches || !tops.length;
-    $('all').textContent = `Read all ${vis.length} comments`;
-    balance();
-  }
-
-  // On the full page, whichever column runs longer continues across the bottom, as on a printed page.
-  function balance() {
-    const a = $('inner'), b = $('outer'), u = $('under');
-    u.innerHTML = ''; u.hidden = true;
-    if (!full()) return;
-    $('body').style.setProperty('--ph', $('passage').offsetHeight + 'px');
-    for (let i = 0; i < 200; i++) {
-      const tall = a.offsetHeight >= b.offsetHeight ? a : b, runs = tall.querySelectorAll(':scope > .c');
-      if (Math.abs(a.offsetHeight - b.offsetHeight) < 150 || runs.length < 2) break;
-      u.prepend(document.createTextNode(' ')); u.prepend(runs[runs.length - 1]); u.hidden = false;
-    }
+    $('all').textContent = `Read all ${V.size} comments`;
   }
 
   function drawKey() {
@@ -410,11 +407,10 @@ function start() {
     }).join('');
   }
 
-  function draw() { const vis = shown(); drawKey(); drawPassage(vis); drawCols(vis) }
+  function draw() { const V = shown(); drawKey(); drawPassage(V); drawMargins(V) }
 
-  // Reading view: whole threads at a comfortable size, replies nested under what they answer.
-  function threadHTML(c, vis) {
-    const kids = vis.filter(k => k.target === c.id);
+  // A comment as it stands in the reading view: who wrote it, its number as a link, then the comment in full.
+  function cardHTML(c) {
     const lemma = c.quote ? `<span class="lemma" title="${esc(c.quote)}">${esc(lemmaOf(c.quote))}</span>` : '';
     const refs = (c.see_also || []).filter(r => byId[r]).map(r => `<button data-go="${r}" style="text-decoration-color:${ink(byId[r].author)}" title="${esc(byId[r].author)}">${num(r)}</button>`).join(', ');
     const m = c.meta || {}, tags = [
@@ -423,17 +419,16 @@ function start() {
       c.stale ? `quoted words amended away in version ${esc(c.stale)}` : ''].filter(Boolean).map(t => `<span class="tag">${t}</span>`).join(' ');
     const truth = marked(c) ? `<span class="truth">${plantNote(c)}</span>` : '';
     return `<div class="t${kinds(c)}" id="t-${c.id}" style="--c:${ink(c.author)}"><header><span>${glyph(c.author, true)} ${esc(c.author)}</span>${tags}<a href="#${c.id}" title="Link to this comment">${num(c.id)}</a></header>
-      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}${truth}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>
-      ${kids.length ? `<div class="kids">${kids.map(k => threadHTML(k, vis)).join('')}</div>` : ''}`;
+      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}${truth}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>`;
   }
   let sheetSpan = null;
   function openReader(rootIds, flashId) {
-    const vis = shown(), tops = topsOf(vis).filter(t => !rootIds || rootIds.includes(t.id));
+    const V = shown(), tops = V.kids('passage').filter(t => !rootIds || rootIds.includes(t.id));
     if (!tops.length) return;
     sheetSpan = rootIds ? tops[0].id : null;
     $('sheetTitle').textContent = rootIds ? '“' + lemmaOf(D.passage.text.slice(Math.min(...tops.map(t => t.start)), Math.max(...tops.map(t => t.end))), 12) + '”' : 'All commentary';
     $('sheetTitle').disabled = !rootIds;
-    $('sheetBody').innerHTML = tops.map(t => `<article class="thread">${threadHTML(t, vis)}</article>`).join('');
+    $('sheetBody').innerHTML = tops.map(t => nodeHTML(t, V, cardHTML)).join('');
     if (!sheet.open) sheet.showModal();
     document.documentElement.classList.add('sheet-open');
     sheet.scrollTop = 0;
@@ -458,7 +453,7 @@ function start() {
   }
   function go(id) {
     const c = byId[id]; if (!c) return;
-    if (!shown().some(v => v.id === id)) { S.upTo = rounds; S.off.clear(); $('layer').value = rounds; draw() } // make sure a linked comment is visible
+    if (!shown().has(id)) { S.upTo = rounds; S.off.clear(); $('layer').value = rounds; draw() } // make sure a linked comment is visible
     if (phone.matches) return openReader([rootOf(c).id], id);
     if (sheet.open) sheet.close();
     flash($(id));
@@ -488,10 +483,10 @@ function start() {
   sheet.addEventListener('close', () => document.documentElement.classList.remove('sheet-open'));
   addEventListener('hashchange', () => go(location.hash.slice(1)));
   const relayout = () => { if (sheet.open) sheet.close(); draw() };
-  daf.addEventListener('change', relayout); phone.addEventListener('change', relayout);
+  phone.addEventListener('change', relayout);
   let pending = 0, lastW = innerWidth;
-  addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(pending); pending = setTimeout(() => drawCols(shown()), 150) });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawCols(shown())); // heights change once the faces load
+  addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(pending); pending = setTimeout(() => drawMargins(shown()), 150) });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => drawMargins(shown())); // heights change once the faces load
 
   let timer = null;
   const stop = () => { clearInterval(timer); timer = null; $('play').textContent = 'Play' };
@@ -622,19 +617,19 @@ function start() {
     if (sheet.open) sheet.close();
     const W = px(PAPER.w - 2 * PAPER.margin), H = px(PAPER.h - 2 * PAPER.margin), wrap = document.querySelector('.wrap');
     root.classList.add('printing'); root.style.setProperty('--print-w', W + 'px');
-    const fits = fs => { root.style.setProperty('--print-fs', fs + 'px'); drawCols(shown()); return wrap.offsetHeight <= H * 0.98 }; // a little room, since paper rounds lines differently
+    const fits = fs => { root.style.setProperty('--print-fs', fs + 'px'); drawMargins(shown()); return wrap.offsetHeight <= H * 0.98 }; // a little room, since paper rounds lines differently
     let lo = 4, hi = W / 92; // at hi the sheet keeps its on-screen proportions, scaled up to the paper's width
     if (fits(hi)) return;
     for (let i = 0; i < 9; i++) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid }
     fits(lo);
   }
   addEventListener('beforeprint', fitPrint);
-  addEventListener('afterprint', () => { root.classList.remove('printing'); drawCols(shown()) });
+  addEventListener('afterprint', () => { root.classList.remove('printing'); drawMargins(shown()) });
   $('print').addEventListener('click', () => print());
 
   const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
   $('made').innerHTML = `
-    <div><h2>Reading the page</h2><p>The inner column holds comments on the passage, in the order of the words they attach to; small numbers in the passage show where each begins. The outer column holds comments on comments, each marked with the number it answers. Whichever column runs longer continues across the bottom. Select a comment to read its whole thread.</p></div>
+    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it, so a thread reads outward from the passage one step at a time. Where the page is too narrow for a margin to stand beside its comment, it runs beneath it, set in from the rule. Select a comment to read its whole thread.</p></div>
     <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
     <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
     <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
