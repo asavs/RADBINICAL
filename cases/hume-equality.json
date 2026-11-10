@@ -1,0 +1,56 @@
+[
+ {
+  "id": "bread-tax",
+  "case": "A state levies a modest progressive income tax and spends it on subsidising bread. Top earners work slightly less; possessions remain very unequal; no one's goods are inspected and no new magistracy is created.",
+  "question": "Does the passage's reasoning count against this tax?",
+  "options": [
+   "Yes: it checks art, care and industry and loosens the security of what a man's industry produces, which the passage makes the first rule of property",
+   "No: the attack is on PERFECT equality; the passage concedes that departing from equality robs the poor of more than it adds to the rich, which favours a measure like this"
+  ]
+ },
+ {
+  "id": "patent-term",
+  "case": "A country grants inventors and authors exclusive rights to their works for twenty years, after which anyone may copy them freely.",
+  "question": "Is this consistent with the rule that whatever is produced by a man's art or industry \"ought, for ever, to be secured to him\"?",
+  "options": [
+   "Consistent: the rule is justified by encouragement, so the term may be whatever encourages useful habits best; 'for ever' is a strong expression, not a fixed duration",
+   "Inconsistent: the passage states the security of the produce of industry as permanent, and a term that lapses is a different rule"
+  ]
+ },
+ {
+  "id": "estate-tax",
+  "case": "A ninety per cent tax on inheritances above a large threshold pays for schooling for the children of the poor. Parents may still leave a comfortable sum to each child.",
+  "question": "Does the passage's defence of descent \"for the same USEFUL purpose\" tell against the tax?",
+  "options": [
+   "Yes: descent is defended because it encourages the industry of those who would provide for their children, and the tax cuts that encouragement at the top",
+   "No: descent is defended only as useful, and a capped descent that funds the industry of the poor may serve the same useful purpose better"
+  ]
+ },
+ {
+  "id": "rotating-council",
+  "case": "A commune keeps possessions equal. Holdings are checked once a year by a council chosen by lot, whose members own exactly what everyone else owns and serve a single year.",
+  "question": "Does the passage's objection that the enforcing authority \"must soon degenerate into tyranny\" apply to this commune?",
+  "options": [
+   "Yes: equality of possessions destroys the subordination that authority rests on, so the council will be either too weak to enforce or will grow into a tyranny",
+   "No: the objection assumes power must rest on unequal property; a rotating council of equals answers it, leaving only the separate worry about checking virtues"
+  ]
+ },
+ {
+  "id": "model-against-experience",
+  "case": "Detailed modelling, by economists with no stake in the outcome, predicts that a guaranteed basic income would raise total output. Most ordinary people, from their own experience, are sure it would make others idle.",
+  "question": "On the passage's method for finding the rules of property, which should govern?",
+  "options": [
+   "Ordinary experience: 'vulgar sense and slight experience are sufficient', and the modelling is the kind of specious appearance the passage warns against",
+   "The modelling: the passage asks for the rules most USEFUL on the whole and to reject appearances that may be false, and a confident common opinion can be one"
+  ]
+ },
+ {
+  "id": "ruinous-contract",
+  "case": "A smallholder signed a loan contract whose terms, if enforced, would take his farm and leave his family destitute. The lender acted within the law. A court declines to enforce the contract.",
+  "question": "Is the court's refusal consistent with the rule that \"all contracts and promises ought carefully to be fulfilled\"?",
+  "options": [
+   "Inconsistent: the rule's value lies in mutual trust, which depends on contracts being enforced without case-by-case exceptions",
+   "Consistent: the rule rests on the general INTEREST of mankind, and a settled exception for ruinous contracts can serve that interest as well as the rule does"
+  ]
+ }
+]
