@@ -3,13 +3,15 @@
     text, usage = ask("qwen/qwen3.8-27b", system, user)
     obj, usage = ask_json("anthropic:claude-opus-5-5", system, user)
 
-The model id takes the same prefixes as a reader: a bare id goes to OpenRouter, "openai:",
-"nvidia:", "anthropic:" and "mock:" go where they say. `usage` is the provider's usage dict
-(OpenRouter's includes `cost`); keep it, e.g. in a side file's "usage" list.
+The model id is routed exactly as a reader's is (providers.route): a prefix such as "openai:",
+"anthropic:", "google:", "nvidia:" or "mock:" picks the provider, and a bare OpenRouter id goes
+to its maker when the maker's key is set, else to OpenRouter. `usage` is the provider's usage
+dict (OpenRouter's includes `cost`) plus "via", the provider actually used; keep it, e.g. in a
+side file's "usage" list.
 
 "mock:<anything>" makes no call and is deterministic: if the user message has a line
 `MOCK_REPLY: <text>`, the answer is <text> (the rest of that line, stripped); otherwise it is
-MOCK_DEFAULT. Usage is {}. So a test can write `MOCK_REPLY: {"verdict": "caught"}` into the
+MOCK_DEFAULT. Usage is {"via": "mock"}. So a test can write `MOCK_REPLY: {"verdict": "caught"}` into the
 user message and get that JSON back from ask_json.
 
 For tests that cannot put a line into the message, set HOOK to a callable
@@ -34,10 +36,11 @@ def ask(model, system, user, max_tokens=4000, temperature=None):
         return HOOK(model, system, user, max_tokens, temperature)
     if split_model(model)[0] == "mock":
         m = _MOCK_LINE.search(user)
-        return (m.group(1).strip() if m else MOCK_DEFAULT), {}
+        return (m.group(1).strip() if m else MOCK_DEFAULT), {"via": "mock"}
     flags = {"max_tokens": max_tokens, "temperature": temperature, "cross_refs": False}
-    _, text, usage = open_session({"model": model}, system, user, flags, tools=False).step()
-    return text, usage
+    session = open_session({"model": model}, system, user, flags, tools=False)
+    _, text, usage = session.step()
+    return text, {**usage, "via": session.via}
 
 
 def ask_json(model, system, user, max_tokens=4000, temperature=None):

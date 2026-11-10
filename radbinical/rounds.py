@@ -14,9 +14,10 @@ def take_turn(page, reader, layer, visible_fn, label, note):
     visible = visible_fn(me)
     system = system_prompt(d, me, label, reader.get("protocol", "tools"))
     user = f"Round {layer}. {note}\n\n" + render_for_reader(d, visible, label, me)
-    made, usage, closing, err = 0, {}, None, None
+    made, usage, closing, err, via = 0, {}, None, None, None
     try:
         session = open_session(reader, system, user, flags)
+        via = session.via
         for _ in range(flags["max_steps_per_turn"]):
             calls, text, u = session.step()
             add_usage(usage, u)
@@ -37,7 +38,7 @@ def take_turn(page, reader, layer, visible_fn, label, note):
             session.reply(results)
     except Exception as e:  # one reader failing should not sink the round
         err = f"{type(e).__name__}: {e}"[:600]
-    entry = {"layer": layer, "reader": me, "model": reader["model"], "comments": made, "usage": usage}
+    entry = {"layer": layer, "reader": me, "model": reader["model"], "via": via, "comments": made, "usage": usage}
     if closing:
         entry["closing"] = closing[:2000]
     if err:

@@ -771,6 +771,7 @@
    "layer": 1,
    "reader": "GPT-6.1 Terra",
    "model": "openai/gpt-6.1-terra",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 3029,
@@ -785,6 +786,7 @@
    "layer": 1,
    "reader": "Claude Opus 5.5",
    "model": "anthropic/claude-opus-5.5",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 4047,
@@ -799,6 +801,7 @@
    "layer": 1,
    "reader": "Gemini 4 Argon",
    "model": "google/gemini-4-argon",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 2405,
@@ -813,6 +816,7 @@
    "layer": 1,
    "reader": "DeepSeek v4.1",
    "model": "deepseek/deepseek-v4.1-flash",
+   "via": "openrouter",
    "comments": 4,
    "usage": {
     "prompt_tokens": 4830,
@@ -827,6 +831,7 @@
    "layer": 1,
    "reader": "Grok 4.7",
    "model": "x-ai/grok-4.7",
+   "via": "openrouter",
    "comments": 4,
    "usage": {
     "prompt_tokens": 5690,
@@ -841,6 +846,7 @@
    "layer": 1,
    "reader": "Kimi K3",
    "model": "moonshotai/kimi-k3",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 5490,
@@ -855,6 +861,7 @@
    "layer": 2,
    "reader": "GPT-6.1 Terra",
    "model": "openai/gpt-6.1-terra",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 8569,
@@ -869,6 +876,7 @@
    "layer": 2,
    "reader": "Claude Opus 5.5",
    "model": "anthropic/claude-opus-5.5",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 14236,
@@ -883,6 +891,7 @@
    "layer": 2,
    "reader": "Gemini 4 Argon",
    "model": "google/gemini-4-argon",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 9253,
@@ -897,6 +906,7 @@
    "layer": 2,
    "reader": "DeepSeek v4.1",
    "model": "deepseek/deepseek-v4.1-flash",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 14157,
@@ -911,6 +921,7 @@
    "layer": 2,
    "reader": "Kimi K3",
    "model": "moonshotai/kimi-k3",
+   "via": "openrouter",
    "comments": 4,
    "usage": {
     "prompt_tokens": 17412,
@@ -925,6 +936,7 @@
    "layer": 2,
    "reader": "Grok 4.7",
    "model": "x-ai/grok-4.7",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 15650,
@@ -939,6 +951,7 @@
    "layer": 3,
    "reader": "GPT-6.1 Terra",
    "model": "openai/gpt-6.1-terra",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 15077,
@@ -953,6 +966,7 @@
    "layer": 3,
    "reader": "Claude Opus 5.5",
    "model": "anthropic/claude-opus-5.5",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 23342,
@@ -967,6 +981,7 @@
    "layer": 3,
    "reader": "DeepSeek v4.1",
    "model": "deepseek/deepseek-v4.1-flash",
+   "via": "openrouter",
    "comments": 5,
    "usage": {
     "prompt_tokens": 21792,
@@ -981,6 +996,7 @@
    "layer": 3,
    "reader": "Gemini 4 Argon",
    "model": "google/gemini-4-argon",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 15858,
@@ -995,6 +1011,7 @@
    "layer": 3,
    "reader": "Kimi K3",
    "model": "moonshotai/kimi-k3",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 25851,
@@ -1009,6 +1026,7 @@
    "layer": 3,
    "reader": "Grok 4.7",
    "model": "x-ai/grok-4.7",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 23775,
@@ -1023,6 +1041,7 @@
    "layer": 4,
    "reader": "Claude Opus 5.5",
    "model": "anthropic/claude-opus-5.5",
+   "via": "openrouter",
    "comments": 0,
    "usage": {},
    "error": "RuntimeError: HTTP 402 from openrouter for anthropic/claude-opus-5.5: {\"error\":{\"message\":\"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.\",\"code\":402,\"metadata\":{\"reason\":\"in_flight_budget_exhausted\",\"limit_source\":\"openrouter_in_flight_budget\",\"remedy_hint\":\"Retry after your in-flight requests settle (see the Retry-After header). Adding credits at https://openrouter.ai/s"
@@ -1031,6 +1050,7 @@
    "layer": 4,
    "reader": "Gemini 4 Argon",
    "model": "google/gemini-4-argon",
+   "via": "openrouter",
    "comments": 0,
    "usage": {},
    "error": "RuntimeError: HTTP 402 from openrouter for google/gemini-4-argon: {\"error\":{\"message\":\"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.\",\"code\":402,\"metadata\":{\"reason\":\"in_flight_budget_exhausted\",\"limit_source\":\"openrouter_in_flight_budget\",\"remedy_hint\":\"Retry after your in-flight requests settle (see the Retry-After header). Adding credits at https://openrouter.ai/s"
@@ -1039,6 +1059,7 @@
    "layer": 4,
    "reader": "GPT-6.1 Terra",
    "model": "openai/gpt-6.1-terra",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 22666,
@@ -1053,6 +1074,7 @@
    "layer": 4,
    "reader": "Grok 4.7",
    "model": "x-ai/grok-4.7",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 25730,
@@ -1067,6 +1089,7 @@
    "layer": 4,
    "reader": "DeepSeek v4.1",
    "model": "deepseek/deepseek-v4.1-flash",
+   "via": "openrouter",
    "comments": 3,
    "usage": {
     "prompt_tokens": 26425,
@@ -1081,6 +1104,7 @@
    "layer": 4,
    "reader": "Kimi K3",
    "model": "moonshotai/kimi-k3",
+   "via": "openrouter",
    "comments": 0,
    "usage": {},
    "error": "ConnectionResetError: [Errno 104] Connection reset by peer"

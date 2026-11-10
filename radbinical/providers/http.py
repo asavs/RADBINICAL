@@ -1,4 +1,4 @@
-"""Shared HTTP plumbing for the OpenAI-style providers."""
+"""Shared HTTP plumbing for the OpenAI-style providers, and where each provider's key is read."""
 import json
 import os
 import random
@@ -7,10 +7,24 @@ import urllib.error
 import urllib.request
 
 
-def post_json(url, env, body):
+KEYS = {  # environment variables holding each provider's key, first set one wins
+    "openrouter": ("OPENROUTER_API_KEY",),
+    "openai": ("OPENAI_API_KEY",),
+    "anthropic": ("ANTHROPIC_API_KEY",),
+    "google": ("GEMINI_API_KEY",),
+    "nvidia": ("NVIDIA_API_KEY", "NVIDIA_NIM_API_KEY"),
+}
+
+
+def api_key(provider):
+    """The provider's key from the environment, or None."""
+    return next((os.environ[n] for n in KEYS[provider] if os.environ.get(n)), None)
+
+
+def post_json(url, provider, body):
     # If no key is set locally a placeholder is sent; in a managed environment the
     # network proxy swaps in the real credential for the host.
-    key = os.environ.get(env) or "placeholder-key"
+    key = api_key(provider) or "placeholder-key"
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={
         "Authorization": f"Bearer {key}", "Content-Type": "application/json", "X-Title": "radbinical"})
     last = None

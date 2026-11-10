@@ -18,7 +18,7 @@ import threading
 from pathlib import Path
 
 from .anchoring import locate, snap_to_sentences
-from .providers import split_model
+from .providers import canonical, split_model
 
 
 def reader_entry(m):
@@ -30,8 +30,9 @@ def reader_entry(m):
 
 
 def cast_of(readers):
-    """Short stable id for a set of readers: a hash of their sorted model ids."""
-    ids = sorted(r["model"] if isinstance(r, dict) else r for r in readers)
+    """Short stable id for a set of readers: a hash of their sorted canonical model ids, so the
+    same models give the same cast however they are written or routed."""
+    ids = sorted(canonical(r["model"] if isinstance(r, dict) else r) for r in readers)
     return hashlib.sha1("\n".join(ids).encode("utf-8")).hexdigest()[:8]
 
 

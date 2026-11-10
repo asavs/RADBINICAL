@@ -31,7 +31,7 @@
    "name": "gpt-oss-120b"
   }
  ],
- "cast": "95378f8c",
+ "cast": "e53bcfd7",
  "group": "hume-01",
  "flags": {
   "max_layers": 3,
@@ -473,6 +473,7 @@
    "layer": 1,
    "reader": "Inkling",
    "model": "thinkingmachines/inkling",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 2901,
@@ -487,6 +488,7 @@
    "layer": 1,
    "reader": "GPT-6.1 Sol",
    "model": "openai:gpt-6.1-sol",
+   "via": "openai",
    "comments": 2,
    "usage": {
     "prompt_tokens": 3731,
@@ -498,6 +500,7 @@
    "layer": 1,
    "reader": "gpt-oss-120b",
    "model": "openai/gpt-oss-120b",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 4351,
@@ -512,6 +515,7 @@
    "layer": 1,
    "reader": "Nemotron 3 Ultra",
    "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "via": "nvidia",
    "comments": 2,
    "usage": {
     "prompt_tokens": 5388,
@@ -524,6 +528,7 @@
    "layer": 1,
    "reader": "Claude Opus 5.5",
    "model": "anthropic:claude-opus-5-5",
+   "via": "anthropic",
    "comments": 3,
    "usage": {
     "prompt_tokens": 5182,
@@ -535,6 +540,7 @@
    "layer": 1,
    "reader": "Qwen 3.8 27b",
    "model": "qwen/qwen3.8-27b",
+   "via": "openrouter",
    "comments": 6,
    "usage": {
     "prompt_tokens": 7734,
@@ -549,6 +555,7 @@
    "layer": 2,
    "reader": "Inkling",
    "model": "thinkingmachines/inkling",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 8143,
@@ -563,6 +570,7 @@
    "layer": 2,
    "reader": "gpt-oss-120b",
    "model": "openai/gpt-oss-120b",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 7734,
@@ -577,6 +585,7 @@
    "layer": 2,
    "reader": "GPT-6.1 Sol",
    "model": "openai:gpt-6.1-sol",
+   "via": "openai",
    "comments": 2,
    "usage": {
     "prompt_tokens": 10935,
@@ -588,6 +597,7 @@
    "layer": 2,
    "reader": "Claude Opus 5.5",
    "model": "anthropic:claude-opus-5-5",
+   "via": "anthropic",
    "comments": 3,
    "usage": {
     "prompt_tokens": 12775,
@@ -599,6 +609,7 @@
    "layer": 2,
    "reader": "Nemotron 3 Ultra",
    "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "via": "nvidia",
    "comments": 1,
    "usage": {
     "prompt_tokens": 8510,
@@ -611,6 +622,7 @@
    "layer": 2,
    "reader": "Qwen 3.8 27b",
    "model": "qwen/qwen3.8-27b",
+   "via": "openrouter",
    "comments": 2,
    "usage": {
     "prompt_tokens": 13032,
@@ -625,6 +637,7 @@
    "layer": 3,
    "reader": "Claude Opus 5.5",
    "model": "anthropic:claude-opus-5-5",
+   "via": "anthropic",
    "comments": 1,
    "usage": {
     "prompt_tokens": 17229,
@@ -636,6 +649,7 @@
    "layer": 3,
    "reader": "Inkling",
    "model": "thinkingmachines/inkling",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 11528,
@@ -650,6 +664,7 @@
    "layer": 3,
    "reader": "GPT-6.1 Sol",
    "model": "openai:gpt-6.1-sol",
+   "via": "openai",
    "comments": 1,
    "usage": {
     "prompt_tokens": 10790,
@@ -661,6 +676,7 @@
    "layer": 3,
    "reader": "gpt-oss-120b",
    "model": "openai/gpt-oss-120b",
+   "via": "openrouter",
    "comments": 1,
    "usage": {
     "prompt_tokens": 11285,
@@ -675,6 +691,7 @@
    "layer": 3,
    "reader": "Qwen 3.8 27b",
    "model": "qwen/qwen3.8-27b",
+   "via": "openrouter",
    "comments": 4,
    "usage": {
     "prompt_tokens": 31772,
@@ -689,6 +706,7 @@
    "layer": 3,
    "reader": "Nemotron 3 Ultra",
    "model": "nvidia:nvidia/nemotron-3-ultra-550b-a55b",
+   "via": "nvidia",
    "comments": 1,
    "usage": {
     "prompt_tokens": 12861,

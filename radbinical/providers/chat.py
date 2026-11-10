@@ -1,4 +1,4 @@
-"""OpenAI-style chat completions: OpenRouter, NVIDIA, and plain-text mode."""
+"""OpenAI-style chat completions: OpenRouter, NVIDIA, Google, and plain-text mode."""
 import json
 import re
 
@@ -6,17 +6,19 @@ from ..prompts import annotate_tool
 from .http import post_json
 
 
-PROVIDERS = {
-    "openrouter": ("https://openrouter.ai/api/v1/chat/completions", "OPENROUTER_API_KEY", "max_tokens"),
-    "openai": ("https://api.openai.com/v1/chat/completions", "OPENAI_API_KEY", "max_completion_tokens"),
-    "nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", "NVIDIA_API_KEY", "max_tokens"),
+PROVIDERS = {  # endpoint, name of the output-limit field
+    "openrouter": ("https://openrouter.ai/api/v1/chat/completions", "max_tokens"),
+    "openai": ("https://api.openai.com/v1/chat/completions", "max_completion_tokens"),
+    "nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", "max_tokens"),
+    "google": ("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "max_tokens"),
 }
 
 
 class ChatSession:
-    """OpenAI-style chat completions with native tool calls (OpenRouter, OpenAI, NVIDIA)."""
+    """OpenAI-style chat completions with native tool calls (OpenRouter, OpenAI, NVIDIA, Google)."""
     def __init__(self, provider, name, system, user, flags, max_tokens, tools=True):
-        self.url, self.env, self.cap = PROVIDERS[provider]
+        self.provider = provider
+        self.url, self.cap = PROVIDERS[provider]
         self.name, self.flags, self.max_tokens = name, flags, max_tokens
         self.messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         self.tools = [annotate_tool(flags)] if tools else []
@@ -27,7 +29,7 @@ class ChatSession:
             body["tools"] = self.tools
         if self.flags["temperature"] is not None:
             body["temperature"] = self.flags["temperature"]
-        data = post_json(self.url, self.env, body)
+        data = post_json(self.url, self.provider, body)
         return data["choices"][0]["message"], data.get("usage") or {}
 
     def step(self):

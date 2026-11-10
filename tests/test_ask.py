@@ -2,6 +2,7 @@ import unittest
 
 from radbinical import ask as ask_mod
 from radbinical.ask import MOCK_DEFAULT, ask, ask_json, extract_json
+from test_routing import keys
 
 
 class Ask(unittest.TestCase):
@@ -10,10 +11,10 @@ class Ask(unittest.TestCase):
 
     def test_mock_reply_line(self):
         self.assertEqual(ask("mock:judge", "sys", "Some page.\nMOCK_REPLY:  caught in round 2 \nmore"),
-                         ("caught in round 2", {}))
+                         ("caught in round 2", {"via": "mock"}))
 
     def test_mock_default(self):
-        self.assertEqual(ask("mock:judge", "sys", "no instruction here"), (MOCK_DEFAULT, {}))
+        self.assertEqual(ask("mock:judge", "sys", "no instruction here"), (MOCK_DEFAULT, {"via": "mock"}))
 
     def test_ask_json_with_mock(self):
         obj, usage = ask_json("mock:x", "sys", 'MOCK_REPLY: Sure. ```json {"verdict": "caught", "by": ["c3"]} ```')
@@ -47,8 +48,9 @@ class Ask(unittest.TestCase):
         real = chat_mod.post_json, resp_mod.post_json
         chat_mod.post_json = resp_mod.post_json = fake
         try:
-            self.assertEqual(ask("qwen/qwen3.8-27b", "s", "u", temperature=0.5), ("hi", {"cost": 0.2}))
-            self.assertEqual(ask("openai:gpt-6.1-sol", "s", "u")[0], "sol")
+            with keys("OPENAI_API_KEY"):
+                self.assertEqual(ask("qwen/qwen3.8-27b", "s", "u", temperature=0.5), ("hi", {"cost": 0.2, "via": "openrouter"}))
+                self.assertEqual(ask("openai:gpt-6.1-sol", "s", "u"), ("sol", {"prompt_tokens": 3, "completion_tokens": 1, "via": "openai"}))
         finally:
             chat_mod.post_json, resp_mod.post_json = real
         (u1, b1), (u2, b2) = sent

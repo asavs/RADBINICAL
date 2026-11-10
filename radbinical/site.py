@@ -5,13 +5,13 @@ import re
 from pathlib import Path
 
 from .config import PACKAGE, ROOT, TEMPLATES
+from .providers import KNOWN
 
 
 HEAD = '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n'
 
 
 ICONS = "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/"
-PREFIXES = ("openrouter", "openai", "nvidia", "anthropic", "mock")
 
 
 def load_brands():
@@ -21,8 +21,8 @@ def load_brands():
 def brand_of(reader, brands):
     """The maker's entry in brands.json for a reader, or None."""
     head, sep, rest = reader["model"].partition(":")
-    ident = rest if sep and head in PREFIXES else reader["model"]
-    vendor = ident.split("/")[0] if "/" in ident else (head if head in PREFIXES else "")
+    ident = rest if sep and head in KNOWN else reader["model"]
+    vendor = ident.split("/")[0] if "/" in ident else (head if head in KNOWN else "")
     return brands.get(reader.get("brand") or vendor)
 
 

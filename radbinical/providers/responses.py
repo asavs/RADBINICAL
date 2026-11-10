@@ -22,7 +22,7 @@ class ResponsesSession:
             body["tools"] = self.tools
         if self.flags["temperature"] is not None:
             body["temperature"] = self.flags["temperature"]
-        data = post_json(self.URL, "OPENAI_API_KEY", body)
+        data = post_json(self.URL, "openai", body)
         self.input += data["output"]  # reasoning items are replayed as returned
         calls, text = [], []
         for item in data["output"]:

@@ -1,7 +1,6 @@
 """Claude through the Anthropic API, using the official SDK."""
-import os
-
 from ..prompts import annotate_tool
+from .http import api_key
 
 
 class AnthropicSession:
@@ -9,7 +8,7 @@ class AnthropicSession:
     def __init__(self, name, system, user, flags, max_tokens, tools=True):
         import anthropic
         # base_url is pinned so an ANTHROPIC_BASE_URL set for other tooling cannot redirect the call.
-        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY") or "placeholder-key",
+        self.client = anthropic.Anthropic(api_key=api_key("anthropic") or "placeholder-key",
                                           base_url="https://api.anthropic.com")
         self.name, self.system, self.max_tokens, self.flags = name, system, max_tokens, flags
         self.messages = [{"role": "user", "content": user}]
