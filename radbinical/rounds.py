@@ -2,6 +2,7 @@
 import concurrent.futures as cf
 import random
 
+from .forecast import Forecaster
 from .page import render_for_reader
 from .prompts import system_prompt
 from .providers import open_session
@@ -67,11 +68,19 @@ def run_layers(page, how_many):
             note = ("The margins are empty. Every reader is annotating independently this round; you will see each other's comments next round."
                     if layer == 1 else "Everyone annotates at the same time this round; you will see this round's comments from the others next round.")
         print(f"round {layer}: {'in turn' if live else 'in parallel'}", flush=True)
+        fc = Forecaster(page, layer, label) if flags.get("forecast") and layer > 1 else None
+
+        def turn(r):
+            if fc:
+                fc.ask(r, vis(r["name"]), note)
+            return take_turn(page, r, layer, vis, label, note)
         if live:
-            results = [take_turn(page, r, layer, vis, label, note) for r in readers]
+            results = [turn(r) for r in readers]
         else:
             with cf.ThreadPoolExecutor(len(readers)) as ex:
-                results = list(ex.map(lambda r: take_turn(page, r, layer, vis, label, note), readers))
+                results = list(ex.map(turn, readers))
+        if fc:
+            fc.finish()
         d["layers_done"] = layer
         page.save()
         render(page.dir)
