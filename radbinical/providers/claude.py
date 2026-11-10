@@ -23,8 +23,10 @@ class AnthropicSession:
         kw = {"tools": self.tools} if self.tools else {}
         if self.flags["temperature"] is not None:
             kw["temperature"] = self.flags["temperature"]
-        r = self.client.messages.create(model=self.name, max_tokens=self.max_tokens, system=self.system,
-                                        messages=self.messages, **kw)
+        # Streamed: the SDK refuses a plain request whose max_tokens could run past ten minutes.
+        with self.client.messages.stream(model=self.name, max_tokens=self.max_tokens, system=self.system,
+                                         messages=self.messages, **kw) as stream:
+            r = stream.get_final_message()
         self.truncated = r.stop_reason == "max_tokens"
         self.messages.append({"role": "assistant", "content": r.content})
         calls = [(b.id, b.input if isinstance(b.input, dict) else None) for b in r.content if b.type == "tool_use"]

@@ -110,5 +110,31 @@ class Canonical(unittest.TestCase):
             self.assertEqual(cast_of(["anthropic/claude-opus-5.5"]), a)
 
 
+class Anthropic(unittest.TestCase):
+    def test_streams_and_reads_tool_calls(self):
+        from types import SimpleNamespace as NS
+        seen = {}
+        final = NS(content=[NS(type="text", text="Done."), NS(type="tool_use", id="t1", input={"target": "passage"})],
+                   stop_reason="tool_use", usage=NS(input_tokens=10, output_tokens=3))
+
+        class Stream:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+            def get_final_message(self): return final
+
+        class Messages:
+            def stream(self, **kw):
+                seen.update(kw)
+                return Stream()
+
+        s = AnthropicSession.__new__(AnthropicSession)
+        s.client, s.name, s.system, s.max_tokens = NS(messages=Messages()), "claude-x", "sys", 24000
+        s.flags, s.messages, s.tools = dict(DEFAULT_FLAGS), [{"role": "user", "content": "u"}], []
+        calls, text, usage = s.step()
+        self.assertEqual((calls, text, usage), ([("t1", {"target": "passage"})], "Done.", {"prompt_tokens": 10, "completion_tokens": 3}))
+        self.assertEqual((seen["max_tokens"], seen["model"]), (24000, "claude-x"))
+        self.assertFalse(s.truncated)
+
+
 if __name__ == "__main__":
     unittest.main()
