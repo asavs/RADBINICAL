@@ -22,11 +22,11 @@ from .providers import canonical, split_model
 
 
 def reader_entry(m):
-    """A reader record from a config entry: a bare model id or a dict with model, name, protocol..."""
+    """A reader record from a config entry: a bare model id or a dict with model, name, max_tokens, brand."""
     if isinstance(m, str):
         m = {"model": m}
     name = m.get("name") or split_model(m["model"])[1].split("/")[-1]
-    return {**{k: m[k] for k in ("protocol", "max_tokens", "brand") if k in m}, "model": m["model"], "name": name}
+    return {**{k: m[k] for k in ("max_tokens", "brand") if k in m}, "model": m["model"], "name": name}
 
 
 def is_human(reader):

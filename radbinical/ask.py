@@ -33,16 +33,16 @@ _MOCK_LINE = re.compile(r"^MOCK_REPLY:[ \t]*(.*)$", re.M)
 
 
 def ask(model, system, user, max_tokens=4000, temperature=None):
-    """Ask once, with no tools. Returns (text, usage)."""
+    """Ask once. Returns (text, usage)."""
     if HOOK is not None:
         text, usage = HOOK(model, system, user, max_tokens, temperature)
         return text, complete(model, usage)
     if split_model(model)[0] == "mock":
         m = _MOCK_LINE.search(user)
         return (m.group(1).strip() if m else MOCK_DEFAULT), {"via": "mock"}
-    flags = {"max_tokens": max_tokens, "temperature": temperature, "cross_refs": False}
-    session = open_session({"model": model}, system, user, flags, tools=False)
-    _, text, usage = session.step()
+    flags = {"max_tokens": max_tokens, "temperature": temperature}
+    session = open_session({"model": model}, system, user, flags)
+    text, usage = session.step()
     usage = complete(model, {**usage, "via": session.via})
     if getattr(session, "truncated", False):  # an answer cut off is incomplete, and its JSON usually broken
         raise Truncated(f"{model} reached max_tokens={max_tokens} " + (

@@ -11,7 +11,7 @@
     {"model": "x-ai/grok-4.7", "name": "Grok 4.7"},
     {"model": "deepseek/deepseek-v4.1-flash", "name": "DeepSeek v4.1"},
     {"model": "moonshotai/kimi-k3", "name": "Kimi K3"},
-    {"model": "openrouter:nousresearch/hermes-4-405b", "name": "Hermes 4", "protocol": "text"}
+    {"model": "openrouter:nousresearch/hermes-4-405b", "name": "Hermes 4"}
   ],
   "flags": {
     "max_layers": 4,

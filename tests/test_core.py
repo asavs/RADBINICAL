@@ -1,3 +1,5 @@
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -6,7 +8,9 @@ from pathlib import Path
 from radbinical.anchoring import locate, snap_to_sentences
 from radbinical.config import DEFAULT_FLAGS, ROOT
 from radbinical.page import Page, load_passage, reader_entry, render_for_reader
-from radbinical.providers import TextSession, split_model
+from radbinical import rounds
+from radbinical.prompts import read_reply, system_prompt
+from radbinical.providers import split_model
 from radbinical.rounds import run_layers
 
 TEXT = "The laws of production are fixed. Distribution is “a matter of human institution solely.”\n\nA second paragraph."
@@ -96,56 +100,122 @@ class Providers(unittest.TestCase):
         self.assertEqual(split_model("anthropic:claude-opus-5-5"), ("anthropic", "claude-opus-5-5"))
         self.assertEqual(split_model("qwen/qwen3.8-27b:batch"), ("openrouter", "qwen/qwen3.8-27b:batch"))
 
-    def test_text_blocks_are_parsed(self):
-        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
-        s._send = lambda with_tools=True: ({"content": 'Hm.\n<annotate target="passage" quote="laws" see_also="c1, c2">\nA gloss.\n</annotate>'}, {})
-        calls, text, _ = s.step()
-        self.assertEqual(calls, [("0", {"target": "passage", "quote": "laws", "text": "A gloss.", "see_also": ["c1", "c2"]})])
-        self.assertEqual(text, "Hm.")
 
-    def test_text_blocks_left_open(self):
-        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
-        s._send = lambda with_tools=True: ({"content": '<annotate target="c8" quote="x y">\nOne.\n\n<annotate target="passage" quote="laws">\nTwo.</annotate>\n<annotate target="c1">Three.'}, {})
-        calls, text, _ = s.step()
-        self.assertEqual([(a["target"], a["text"]) for _, a in calls], [("c8", "One."), ("passage", "Two."), ("c1", "Three.")])
-        self.assertEqual(text, "")
+class Reply(unittest.TestCase):
+    """How a reader's one reply is read."""
 
-    def test_text_turn_ends_once_every_block_is_recorded(self):
-        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
-        sent = []
-        def send(with_tools=True):
-            sent.append(list(s.messages))
-            return {"content": '<annotate target="passage" quote="laws">A.</annotate><annotate target="c9">B.</annotate>'}, {}
-        s._send = send
-        calls, _, _ = s.step()
-        self.assertEqual(len(calls), 2)
-        s.reply([("0", "Recorded as c1."), ("1", 'Not recorded: no comment with id "c9".')])
-        self.assertIn("Block 2: Not recorded", s.messages[-1]["content"])
-        calls, _, _ = s.step()
-        s.reply([("0", "Recorded as c2."), ("1", "Recorded as c3.")])
-        self.assertEqual(s.step(), ([], "", {}))
-        self.assertEqual(len(sent), 2)
+    def test_blocks_are_read(self):
+        comments, note, wrong = read_reply('Hm.\n<comment on="passage" see="c1, c2">\n<quote>laws</quote>\nA gloss.\n</comment>\nBye.')
+        self.assertEqual(comments, [{"target": "passage", "quote": "laws", "text": "A gloss.", "see_also": ["c1", "c2"]}])
+        self.assertEqual((note, wrong), ("Hm.\n\nBye.", False))
 
-    def test_text_comments_in_another_shape_are_sent_back(self):
-        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
-        answers = iter(['{annotations: [{"target": "c3", "text": "x"}]}', '<annotate target="c3">x</annotate>'])
-        s._send = lambda with_tools=True: ({"content": next(answers)}, {"cost": 0.1})
-        calls, _, usage = s.step()
-        self.assertEqual(calls, [("0", {"target": "c3", "quote": "", "text": "x"})])
-        self.assertEqual(usage, {"cost": 0.2})
-        self.assertIn("Nothing was recorded", s.messages[-2]["content"])
-        s2 = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
-        s2._send = lambda with_tools=True: ({"content": "Nothing further this round."}, {})
-        self.assertEqual(s2.step()[0], [])
-        self.assertEqual(len(s2.messages), 3)
+    def test_a_quote_may_hold_quotation_marks(self):
+        [c], _, _ = read_reply("""<comment on='passage'><quote>a man "guilty" who takes</quote>Why the scare quotes?</comment>""")
+        self.assertEqual((c["quote"], c["text"]), ('a man "guilty" who takes', "Why the scare quotes?"))
 
-    def test_text_retries_are_capped(self):
-        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
-        s._send = lambda with_tools=True: ({"content": '<annotate target="c9">B.</annotate>'}, {})
-        for _ in range(TextSession.RETRIES + 1):
-            self.assertEqual(len(s.step()[0]), 1)
-            s.reply([("0", "Not recorded: no.")])
-        self.assertEqual(s.step(), ([], "", {}))
+    def test_blocks_left_open_end_at_the_next(self):
+        comments, note, _ = read_reply('<comment on="c8"><quote>x y</quote>\nOne.\n\n<comment on=passage>\n<quote>laws</quote>Two.</comment>\n<comment on="c1">Three.')
+        self.assertEqual([(c["target"], c["quote"], c["text"]) for c in comments],
+                         [("c8", "x y", "One."), ("passage", "laws", "Two."), ("c1", "", "Three.")])
+        self.assertEqual(note, "")
+
+    def test_a_reply_cut_off_loses_only_its_unfinished_block(self):
+        text = '<comment on="c1">Whole.</comment><comment on="c2">Half a thou'
+        self.assertEqual([c["text"] for c in read_reply(text, truncated=True)[0]], ["Whole."])
+        self.assertEqual([c["text"] for c in read_reply(text)[0]], ["Whole.", "Half a thou"])
+        self.assertEqual(len(read_reply('<comment on="c1">Whole.</comment>', truncated=True)[0]), 1)
+
+    def test_comments_in_another_shape_are_noticed(self):
+        self.assertEqual(read_reply('{"comments": [{"on": "c3", "text": "x"}]}')[::2], ([], True))
+        self.assertEqual(read_reply('<annotate target="c3">x</annotate>')[::2], ([], True))
+        self.assertEqual(read_reply("Nothing further this round; I will pass on: this one.")[::2], ([], False))
+
+    def test_every_reader_is_told_the_same(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = new_page(tmp).d
+            told = system_prompt(d, "alef", lambda a: a)
+            self.assertIn('<comment on="passage">', told)
+            self.assertIn('see="c2 c5"', told)
+            self.assertNotIn("see=", system_prompt({**d, "flags": {**d["flags"], "cross_refs": False}}, "alef", lambda a: a))
+
+
+class Script:
+    """A session that gives scripted answers and keeps what it was told."""
+    via, truncated = "script", False
+
+    def __init__(self, *answers, cut=False):
+        self.answers, self.told, self.cut = list(answers), [], cut
+
+    def step(self):
+        self.truncated = self.cut and len(self.answers) == 1
+        return self.answers.pop(0), {"cost": 0.1}
+
+    def say(self, text):
+        self.told.append(text)
+
+
+class Turn(unittest.TestCase):
+    """A turn is one reply; what could not be recorded is sent back once."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.page = new_page(self.tmp.name)
+        self.real = rounds.open_session
+
+    def tearDown(self):
+        rounds.open_session = self.real
+        self.tmp.cleanup()
+
+    def turn(self, session):
+        rounds.open_session = lambda *a, **k: session
+        with contextlib.redirect_stdout(io.StringIO()):
+            rounds.take_turn(self.page, self.page.d["readers"][0], 1, lambda me: [], lambda a: a, "")
+        return self.page.d["log"][-1]
+
+    def test_one_reply_is_the_turn(self):
+        s = Script('A thought.\n<comment on="passage"><quote>laws of production</quote>A.</comment><comment on="passage"><quote>fixed</quote>B.</comment>')
+        entry = self.turn(s)
+        self.assertEqual((entry["comments"], entry["replies"], entry["closing"], s.told), (2, 1, "A thought.", []))
+        self.assertNotIn("refused", entry)
+        self.assertEqual([c["text"] for c in self.page.d["comments"]], ["A.", "B."])
+
+    def test_refused_comments_are_sent_back_once(self):
+        first = '<comment on="passage"><quote>laws of production</quote>A.</comment><comment on="passage"><quote>not in it</quote>B.</comment>'
+        s = Script(first, '<comment on="passage"><quote>still not in it</quote>B.</comment>', "never asked for")
+        entry = self.turn(s)
+        self.assertEqual((entry["comments"], entry["replies"], entry["refused"], entry["usage"]["cost"]), (1, 2, 1, 0.2))
+        self.assertEqual(len(s.told), 1)
+        self.assertIn('Comment 2 (on "passage"): Not recorded: that quote was not found', s.told[0])
+        self.assertNotIn("Comment 1", s.told[0])
+        self.assertEqual(len(s.answers), 1)
+
+    def test_a_repaired_comment_is_recorded(self):
+        s = Script('<comment on="c9">B.</comment>', '<comment on="passage"><quote>fixed</quote>B.</comment>')
+        entry = self.turn(s)
+        self.assertEqual((entry["comments"], entry["replies"]), (1, 2))
+        self.assertNotIn("refused", entry)
+
+    def test_another_shape_is_sent_back_once(self):
+        s = Script('{"comments": [{"on": "passage", "quote": "fixed", "text": "x"}]}', '<comment on="passage"><quote>fixed</quote>x</comment>')
+        entry = self.turn(s)
+        self.assertEqual((entry["comments"], entry["replies"]), (1, 2))
+        self.assertIn("Nothing was recorded", s.told[0])
+
+    def test_passing_takes_one_reply(self):
+        entry = self.turn(Script("Nothing further this round."))
+        self.assertEqual((entry["comments"], entry["replies"], entry["closing"]), (0, 1, "Nothing further this round."))
+
+    def test_a_reply_cut_off_keeps_its_whole_comments_and_is_marked(self):
+        s = Script('<comment on="passage"><quote>fixed</quote>A.</comment><comment on="passage"><quote>laws</quote>Half a', cut=True)
+        entry = self.turn(s)
+        self.assertEqual((entry["comments"], entry["replies"], s.told), (1, 1, []))
+        self.assertIn("stopped at max_tokens", entry["error"])
+
+    def test_the_comment_limit_ends_the_turn_quietly(self):
+        self.page.d["flags"]["max_comments_per_turn"] = 1
+        s = Script('<comment on="passage"><quote>fixed</quote>A.</comment><comment on="passage"><quote>laws</quote>B.</comment>')
+        entry = self.turn(s)
+        self.assertEqual((entry["comments"], entry["replies"], s.told), (1, 1, []))
 
 
 class Brands(unittest.TestCase):

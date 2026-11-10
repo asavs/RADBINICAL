@@ -17,7 +17,6 @@ DEFAULT_FLAGS = {
     "cross_refs": True,           # allow see_also pointers between comments
     "allow_self_reply": True,
     "max_comments_per_turn": None,
-    "max_steps_per_turn": 16,     # safety cap on tool round-trips per reader per round
     "max_tokens": 8000, 
     "temperature": None,
     "seed": 0,

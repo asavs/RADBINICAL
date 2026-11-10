@@ -111,11 +111,11 @@ class Canonical(unittest.TestCase):
 
 
 class Anthropic(unittest.TestCase):
-    def test_streams_and_reads_tool_calls(self):
+    def test_streams_and_reads_the_answer(self):
         from types import SimpleNamespace as NS
         seen = {}
-        final = NS(content=[NS(type="text", text="Done."), NS(type="tool_use", id="t1", input={"target": "passage"})],
-                   stop_reason="tool_use", usage=NS(input_tokens=10, output_tokens=3))
+        final = NS(content=[NS(type="thinking", thinking="..."), NS(type="text", text="Done.")],
+                   stop_reason="end_turn", usage=NS(input_tokens=10, output_tokens=3))
 
         class Stream:
             def __enter__(self): return self
@@ -129,9 +129,11 @@ class Anthropic(unittest.TestCase):
 
         s = AnthropicSession.__new__(AnthropicSession)
         s.client, s.name, s.system, s.max_tokens = NS(messages=Messages()), "claude-x", "sys", 24000
-        s.flags, s.messages, s.tools = dict(DEFAULT_FLAGS), [{"role": "user", "content": "u"}], []
-        calls, text, usage = s.step()
-        self.assertEqual((calls, text, usage), ([("t1", {"target": "passage"})], "Done.", {"prompt_tokens": 10, "completion_tokens": 3}))
+        s.flags, s.messages = dict(DEFAULT_FLAGS), [{"role": "user", "content": "u"}]
+        self.assertEqual(s.step(), ("Done.", {"prompt_tokens": 10, "completion_tokens": 3}))
+        self.assertNotIn("tools", seen)
+        s.say("more")
+        self.assertEqual([m["role"] for m in s.messages], ["user", "assistant", "user"])
         self.assertEqual((seen["max_tokens"], seen["model"]), (24000, "claude-x"))
         self.assertFalse(s.truncated)
 

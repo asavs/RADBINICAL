@@ -8,7 +8,7 @@
     {"model": "anthropic/claude-opus-5.5", "name": "Claude Opus 5.5"},
     {"model": "openai/gpt-6.1-terra", "name": "GPT-6.1 Terra"},
     {"model": "deepseek/deepseek-v4.1-flash", "name": "DeepSeek v4.1"},
-    {"model": "openrouter:nousresearch/hermes-4-405b", "name": "Hermes 4", "protocol": "text"}
+    {"model": "openrouter:nousresearch/hermes-4-405b", "name": "Hermes 4"}
   ],
   "flags": {
     "max_layers": 3,

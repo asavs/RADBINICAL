@@ -1,9 +1,9 @@
-"""Reaching models. One Session class per provider, all with the same three moves:
+"""Reaching models. One Session class per provider, all with the same two moves:
 
-    step()         -> (calls, text, usage)   calls = [(call_id, args_dict_or_None)]
-    reply(results)                           results = [(call_id, message)]
+    step()      -> (text, usage)   the model's next answer
+    say(text)                      what it is told next, before another step()
 
-With tools=False a session is a plain exchange: step() returns the answer as text and no calls.
+`session.truncated` says whether the last answer stopped at the output limit.
 
 `route(model)` decides where a model id goes, and is the only place that does:
 
@@ -21,7 +21,7 @@ With tools=False a session is a plain exchange: step() returns the answer as tex
 """
 import re
 
-from .chat import PROVIDERS, ChatSession, TextSession
+from .chat import PROVIDERS, ChatSession
 from .claude import AnthropicSession
 from .http import KEYS, api_key
 from .mock import MockSession
@@ -92,18 +92,17 @@ def canonical(model):
     return _openrouter_id(head, name) or model
 
 
-def open_session(reader, system, user, flags, tools=True):
+def open_session(reader, system, user, flags):
     """A session for the reader's model on the route `route` picks; `session.via` names it."""
     provider, name = route(reader["model"])
     max_tokens = reader.get("max_tokens") or flags["max_tokens"]
     if provider == "mock":
         s = MockSession(name, system, user)
     elif provider == "anthropic":
-        s = AnthropicSession(name, system, user, flags, max_tokens, tools)
-    elif provider == "openai" and (reader.get("protocol") != "text" or not tools):
-        s = ResponsesSession(name, system, user, flags, max_tokens, tools)
+        s = AnthropicSession(name, system, user, flags, max_tokens)
+    elif provider == "openai":
+        s = ResponsesSession(name, system, user, flags, max_tokens)
     else:
-        cls = TextSession if tools and reader.get("protocol") == "text" else ChatSession
-        s = cls(provider, name, system, user, flags, max_tokens, tools)
+        s = ChatSession(provider, name, system, user, flags, max_tokens)
     s.via = provider
     return s

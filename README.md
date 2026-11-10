@@ -27,6 +27,33 @@ open in a browser. Python 3.10 or later; no packages needed unless you call Anth
 
 Every command explains itself with `-h`.
 
+## A turn
+
+Every reader takes its turn the same way, whatever its model can do. It is shown the passage and
+the margins as they stand, each comment beneath what it is written on, and answers once. Its answer
+holds a block for each comment it wants to make, or none:
+
+    <comment on="passage">
+    <quote>the exact words it is on</quote>
+    the comment
+    </comment>
+
+`on` names the node whose margin the comment goes in: `passage`, or a comment's id such as `c7`.
+On the passage the quote is required and must be found there; on a comment it is optional.
+`see="c2 c5"` points at other comments. What the answer says outside its blocks is kept in the
+log as `closing` and does not go on the page.
+
+A comment that cannot be recorded (its quote is not in the passage, or nothing has the id it
+names) is sent back with the reason, together with any others refused in the same answer, and the
+reader may write them again in one more answer. That is the whole turn: one answer, or two. A
+reader is free to say again what it has already said; nothing refuses a repeat, and the table
+marks it (`repeat_of`).
+
+Each turn's entry in the page's `log` carries `replies`, the number of answers it took, and
+`refused`, the comments still not recorded at the end. A log entry without `replies` is from a
+run made when readers called a tool once per comment, in up to 16 steps a turn, and Hermes 4 alone
+wrote one answer of blocks; all the runs of Phases 1 to 4 are of that kind.
+
 ## Readers and keys
 
 Each entry under `models` in the config is one reader. A prefix sends it to that provider; a bare
@@ -55,9 +82,7 @@ On your machine, copy `.env.example` to `.env` and fill in the keys you use; `.e
 git, and a key already set in your shell wins. On GitHub, add them under Settings → Secrets and
 variables → Actions with the same names.
 
-A reader whose model can't call tools can be given `"protocol": "text"`; it then writes its
-comments as tagged blocks in plain text. `"max_tokens"` can also be set per reader, and `"name"`
-sets how it appears on the page.
+`"max_tokens"` can be set per reader, and `"name"` sets how it appears on the page.
 
 Each reader is shown with its maker's logo and brand colour, worked out from the model id. The
 table is `radbinical/brands.json`; the logos are linked from the lobe-icons set, not stored here.
@@ -273,7 +298,6 @@ Set under `flags` in the config.
 | `cross_refs` | true | Comments can point to other comments |
 | `allow_self_reply` | true | A reader can reply to its own comment |
 | `max_comments_per_turn` | none | Limit per reader per round |
-| `max_steps_per_turn` | 16 | Most tool calls a reader can make in one turn |
 | `max_tokens` | 8000 | Output limit per model call |
 | `temperature` | none | Sampling temperature; unset uses each model's default |
 | `seed` | 0 | Fixes the shuffled order of readers |
@@ -326,7 +350,7 @@ submissions on every push and pull request.
 | `radbinical/commands/` | One file per command |
 | `radbinical/rounds.py` | The round loop and each reader's turn |
 | `radbinical/page.py` | The page record, side files, and the view each reader gets |
-| `radbinical/prompts.py` | What readers are told, and their one tool |
+| `radbinical/prompts.py` | What readers are told, and how their answer is read |
 | `radbinical/anchoring.py` | Matching a quoted span to the passage |
 | `radbinical/ask.py` | One-shot calls for judges, redactors, forecasts and rulings |
 | `radbinical/providers/` | One file per way of reaching a model, and the routing |

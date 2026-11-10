@@ -1,9 +1,5 @@
-"""OpenAI-style chat completions: OpenRouter, NVIDIA, Google, and plain-text mode."""
-import json
-import re
-
-from ..prompts import annotate_tool
-from .http import add_usage, post_json
+"""OpenAI-style chat completions: OpenRouter, Nous, NVIDIA and Google."""
+from .http import post_json
 
 
 PROVIDERS = {  # endpoint, name of the output-limit field
@@ -16,19 +12,16 @@ PROVIDERS = {  # endpoint, name of the output-limit field
 
 
 class ChatSession:
-    """OpenAI-style chat completions with native tool calls (OpenRouter, OpenAI, NVIDIA, Google)."""
-    def __init__(self, provider, name, system, user, flags, max_tokens, tools=True):
+    """OpenAI-style chat completions (OpenRouter, Nous, NVIDIA, Google)."""
+    def __init__(self, provider, name, system, user, flags, max_tokens):
         self.provider = provider
         self.url, self.cap = PROVIDERS[provider]
         self.name, self.flags, self.max_tokens = name, flags, max_tokens
         self.messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-        self.tools = [annotate_tool(flags)] if tools else []
         self.truncated = False  # the last answer stopped at the output limit
 
-    def _send(self, with_tools=True):
+    def _send(self):
         body = {"model": self.name, "messages": self.messages, self.cap: self.max_tokens}
-        if with_tools and self.tools:
-            body["tools"] = self.tools
         if self.flags["temperature"] is not None:
             body["temperature"] = self.flags["temperature"]
         data = post_json(self.url, self.provider, body)
@@ -38,75 +31,8 @@ class ChatSession:
     def step(self):
         msg, usage = self._send()
         self.messages.append(msg)  # kept whole so any reasoning blocks the provider needs are replayed intact
-        calls = []
-        for c in msg.get("tool_calls") or []:
-            try:
-                calls.append((c["id"], json.loads(c["function"].get("arguments") or "{}")))
-            except json.JSONDecodeError:
-                calls.append((c["id"], None))
         text = msg.get("content") if isinstance(msg.get("content"), str) else ""
-        return calls, text or "", usage
+        return text or "", usage
 
-    def reply(self, results):
-        for cid, res in results:
-            self.messages.append({"role": "tool", "tool_call_id": cid, "content": res})
-
-
-# A block ends at its closing tag or, when a model leaves the tag open, where the next block or the reply ends.
-_BLOCK = re.compile(r"<annotate\b([^>]*)>(.*?)(?:</annotate\s*>|(?=<annotate\b)|\Z)", re.S | re.I)
-
-
-_ATTEMPT = re.compile(r"""["']?\btarget\b["']?\s*[:=]""", re.I)
-_ATTR = re.compile(r"""(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)')""")
-
-
-class TextSession(ChatSession):
-    """For models without reliable tool calling: comments are written as <annotate> blocks in plain text.
-
-    A turn is one reply. Asked whether it wants to add more, a text-protocol model tends to keep
-    writing blocks, repeating itself and replying to its own new comments until the step cap, so
-    the turn ends once every block of a reply is recorded. Blocks that were not recorded are sent
-    back, and the model may write them again, at most RETRIES times."""
-    RETRIES = 2
-
-    def __init__(self, *a, **k):
-        super().__init__(*a, **k)
-        self.done, self.retries = False, 0
-
-    def step(self):
-        if self.done:
-            return [], "", {}
-        total = {}
-        while True:
-            msg, usage = self._send(with_tools=False)
-            add_usage(total, usage)
-            text = msg.get("content") if isinstance(msg.get("content"), str) else ""
-            self.messages.append({"role": "assistant", "content": text or ""})
-            calls = self._parse(text)
-            # Comments written in some other shape (JSON, say) are sent back once rather than lost.
-            if calls or self.retries >= self.RETRIES or not _ATTEMPT.search(text or ""):
-                return calls, _BLOCK.sub("", text or "").strip(), total
-            self.retries += 1
-            self.messages.append({"role": "user", "content": "Nothing was recorded: comments must be written as "
-                                  '<annotate target="..." quote="...">...</annotate> blocks, not as JSON or any other '
-                                  "format. Write them again as blocks, or reply without a block to end your turn."})
-
-    @staticmethod
-    def _parse(text):
-        calls = []
-        for i, m in enumerate(_BLOCK.finditer(text or "")):
-            attrs = {k.lower(): (a or b) for k, a, b in _ATTR.findall(m.group(1))}
-            args = {"target": attrs.get("target", "passage"), "quote": attrs.get("quote", ""), "text": m.group(2).strip()}
-            if attrs.get("see_also"):
-                args["see_also"] = re.split(r"[,\s]+", attrs["see_also"].strip())
-            calls.append((str(i), args))
-        return calls
-
-    def reply(self, results):
-        if all(res.startswith("Recorded") for _, res in results) or self.retries >= self.RETRIES:
-            self.done = True
-            return
-        self.retries += 1
-        lines = [f"Block {int(cid) + 1}: {res}" for cid, res in results]
-        self.messages.append({"role": "user", "content": "\n".join(lines) + "\n\nYou may write the blocks that were not "
-                              "recorded again, corrected; do not repeat the ones that were. Reply without a block to end your turn."})
+    def say(self, text):
+        self.messages.append({"role": "user", "content": text})

@@ -5,45 +5,54 @@ import random
 from .forecast import Forecaster
 from .page import labeller, models_of, render_for_reader
 from .prices import complete
-from .prompts import system_prompt
+from .prompts import read_reply, repair_request, system_prompt
 from .providers import open_session
 from .providers.http import add_usage
 from .site import render
 
 
+REPAIRS = 1   # replies a reader may add to a turn, to write again what could not be recorded
+
+
 def take_turn(page, reader, layer, visible_fn, label, note):
+    """One reader's turn: one reply, every comment in it recorded or refused. What was refused is
+    sent back with the reasons, and the reader may write it again, REPAIRS times at most."""
     d, flags, me = page.d, page.d["flags"], reader["name"]
     visible = visible_fn(me)
-    system = system_prompt(d, me, label, reader.get("protocol", "tools"))
+    system = system_prompt(d, me, label)
     user = f"Round {layer}. {note}\n\n" + render_for_reader(d, visible, label, me)
-    made, usage, closing, err, via = 0, {}, None, None, None
+    cap = flags["max_comments_per_turn"]
+    made, replies, refused, usage, closing, err, via = 0, 0, 0, {}, None, None, None
     try:
         session = open_session(reader, system, user, flags)
         via = session.via
-        for _ in range(flags["max_steps_per_turn"]):
-            calls, text, u = session.step()
+        while True:
+            text, u = session.step()
             add_usage(usage, u)
-            if not calls:
-                closing = text.strip() or None
-                if getattr(session, "truncated", False):
-                    err = f"stopped at max_tokens={reader.get('max_tokens') or flags['max_tokens']} without finishing its turn"
-                break
-            results = []
-            for cid, args in calls:
-                cap = flags["max_comments_per_turn"]
-                if args is None:
-                    ok, res = False, "Not recorded: the arguments were not valid JSON."
-                elif cap is not None and made >= cap:
-                    ok, res = False, "Not recorded: you have reached this round's comment limit."
-                else:
-                    ok, res = page.add(me, layer, args)
+            replies += 1
+            truncated = getattr(session, "truncated", False)
+            comments, said, wrong_shape = read_reply(text, truncated)
+            closing = closing or said or None
+            problems = []
+            for i, args in enumerate(comments, 1):
+                if cap is not None and made >= cap:
+                    break
+                ok, why = page.add(me, layer, args)
                 made += ok
-                results.append((cid, res))
-            session.reply(results)
+                if not ok:
+                    problems.append((i, args["target"], why))
+            refused = len(problems)
+            if truncated:
+                err = f"stopped at max_tokens={reader.get('max_tokens') or flags['max_tokens']} without finishing its turn"
+            if truncated or not (problems or wrong_shape) or replies > REPAIRS:
+                break
+            session.say(repair_request(problems))
     except Exception as e:  # one reader failing should not sink the round
         err = f"{type(e).__name__}: {e}"[:600]
     complete(reader["model"], usage)  # priced once on the summed tokens when the provider gave no cost
-    entry = {"layer": layer, "reader": me, "model": reader["model"], "via": via, "comments": made, "usage": usage}
+    entry = {"layer": layer, "reader": me, "model": reader["model"], "via": via, "comments": made, "replies": replies, "usage": usage}
+    if refused:
+        entry["refused"] = refused
     if closing:
         entry["closing"] = closing[:2000]
     if err:

@@ -71,7 +71,7 @@ class People(unittest.TestCase):
                "flags": {"seed": 1}}
         out = self.root / "runs" / "court"
         page = quiet(amend.start, cfg, out)
-        quiet(run_layers, page, 1)
+        quiet(run_layers, page, 2)
         self.assertEqual(human.add(out, sub(comments=[{"target": "passage", "quote": "The question asks", "text": "x"}]),
                                    "ruth.json")[0], [])
         page = Page.load(out)

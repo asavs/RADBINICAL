@@ -71,14 +71,15 @@ class Prices(unittest.TestCase):
 
         class Fake:
             via = "openai"
-            steps = [([("1", {"target": "passage", "quote": "physical truths", "text": "x"})], "",
+            truncated = False
+            steps = [('<comment on="passage"><quote>physical truths</quote>x</comment><comment on="c999">y</comment>',
                       {"prompt_tokens": 100, "completion_tokens": 10, "total_tokens": 110}),
-                     ([], "done", {"prompt_tokens": 120, "completion_tokens": 5, "total_tokens": 125})]
+                     ("done", {"prompt_tokens": 120, "completion_tokens": 5, "total_tokens": 125})]
 
             def step(self):
                 return self.steps.pop(0)
 
-            def reply(self, results):
+            def say(self, text):
                 pass
 
         real = rounds.open_session
