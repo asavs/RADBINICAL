@@ -57,8 +57,21 @@ _ATTR = re.compile(r"""(\w+)\s*=\s*(?:"([^"]*)"|'([^']*)')""")
 
 
 class TextSession(ChatSession):
-    """For models without reliable tool calling: comments are written as <annotate> blocks in plain text."""
+    """For models without reliable tool calling: comments are written as <annotate> blocks in plain text.
+
+    A turn is one reply. Asked whether it wants to add more, a text-protocol model tends to keep
+    writing blocks, repeating itself and replying to its own new comments until the step cap, so
+    the turn ends once every block of a reply is recorded. Blocks that were not recorded are sent
+    back, and the model may write them again, at most RETRIES times."""
+    RETRIES = 2
+
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.done, self.retries = False, 0
+
     def step(self):
+        if self.done:
+            return [], "", {}
         msg, usage = self._send(with_tools=False)
         text = msg.get("content") if isinstance(msg.get("content"), str) else ""
         self.messages.append({"role": "assistant", "content": text or ""})
@@ -72,5 +85,10 @@ class TextSession(ChatSession):
         return calls, _BLOCK.sub("", text or "").strip(), usage
 
     def reply(self, results):
-        lines = [res for _, res in results]
-        self.messages.append({"role": "user", "content": "\n".join(lines) + "\n\nAdd more blocks if you wish, or reply without one to end your turn."})
+        if all(res.startswith("Recorded") for _, res in results) or self.retries >= self.RETRIES:
+            self.done = True
+            return
+        self.retries += 1
+        lines = [f"Block {int(cid) + 1}: {res}" for cid, res in results]
+        self.messages.append({"role": "user", "content": "\n".join(lines) + "\n\nYou may write the blocks that were not "
+                              "recorded again, corrected; do not repeat the ones that were. Reply without a block to end your turn."})

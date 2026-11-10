@@ -103,6 +103,30 @@ class Providers(unittest.TestCase):
         self.assertEqual(calls, [("0", {"target": "passage", "quote": "laws", "text": "A gloss.", "see_also": ["c1", "c2"]})])
         self.assertEqual(text, "Hm.")
 
+    def test_text_turn_ends_once_every_block_is_recorded(self):
+        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
+        sent = []
+        def send(with_tools=True):
+            sent.append(list(s.messages))
+            return {"content": '<annotate target="passage" quote="laws">A.</annotate><annotate target="c9">B.</annotate>'}, {}
+        s._send = send
+        calls, _, _ = s.step()
+        self.assertEqual(len(calls), 2)
+        s.reply([("0", "Recorded as c1."), ("1", 'Not recorded: no comment with id "c9".')])
+        self.assertIn("Block 2: Not recorded", s.messages[-1]["content"])
+        calls, _, _ = s.step()
+        s.reply([("0", "Recorded as c2."), ("1", "Recorded as c3.")])
+        self.assertEqual(s.step(), ([], "", {}))
+        self.assertEqual(len(sent), 2)
+
+    def test_text_retries_are_capped(self):
+        s = TextSession("nvidia", "m", "sys", "user", dict(DEFAULT_FLAGS), 100)
+        s._send = lambda with_tools=True: ({"content": '<annotate target="c9">B.</annotate>'}, {})
+        for _ in range(TextSession.RETRIES + 1):
+            self.assertEqual(len(s.step()[0]), 1)
+            s.reply([("0", "Not recorded: no.")])
+        self.assertEqual(s.step(), ([], "", {}))
+
 
 class Brands(unittest.TestCase):
     def test_maker_is_found_from_the_model_id(self):

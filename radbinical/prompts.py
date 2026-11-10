@@ -24,9 +24,11 @@ def system_prompt(page, me, label, protocol="tools"):
            + (' A block can also carry see_also="c2,c5" to point at other comments.' if flags["cross_refs"] else "") + "\n\n") +
         "There is no assignment and nothing here is being scored. Comment where you have something to say, "
         "as briefly or at as much length as the thought needs, and leave the rest alone. Agreeing, disagreeing, "
-        "asking, connecting and staying silent are all fine. When you have nothing further to add this round, "
-        + ("say so in plain text without calling the tool. That ends your turn." if protocol != "text"
-           else "reply without any block. That ends your turn.")
+        "asking, connecting and staying silent are all fine. "
+        + ("When you have nothing further to add this round, say so in plain text without calling the tool. "
+           "That ends your turn." if protocol != "text"
+           else "Your reply is your whole turn this round: put every block you want in it, or none if you have "
+                "nothing to add. If a block cannot be recorded you will be told why and can write it again.")
     )
 
 
