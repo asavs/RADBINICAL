@@ -10,5 +10,5 @@
   "qwen": {"name": "Alibaba", "icon": "qwen-color", "color": "#082DFF"},
   "meta-llama": {"name": "Meta", "icon": "meta-color", "color": "#0082FB"},
   "mistralai": {"name": "Mistral AI", "icon": "mistral-color", "color": "#FA500F"},
-  "nousresearch": {"name": "Nous Research", "icon": "nousresearch"}
+  "nousresearch": {"name": "Nous Research", "icon": "nousresearch", "color": "#2F3CF5"}
 }

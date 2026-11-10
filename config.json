@@ -10,7 +10,8 @@
     {"model": "google/gemini-4-argon", "name": "Gemini 4 Argon"},
     {"model": "x-ai/grok-4.7", "name": "Grok 4.7"},
     {"model": "deepseek/deepseek-v4.1-flash", "name": "DeepSeek v4.1"},
-    {"model": "moonshotai/kimi-k3", "name": "Kimi K3"}
+    {"model": "moonshotai/kimi-k3", "name": "Kimi K3"},
+    {"model": "openrouter:nousresearch/hermes-4-405b", "name": "Hermes 4", "protocol": "text"}
   ],
   "flags": {
     "max_layers": 4,
