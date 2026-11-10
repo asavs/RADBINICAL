@@ -15,15 +15,15 @@ PROVIDERS = {
 
 class ChatSession:
     """OpenAI-style chat completions with native tool calls (OpenRouter, OpenAI, NVIDIA)."""
-    def __init__(self, provider, name, system, user, flags, max_tokens):
+    def __init__(self, provider, name, system, user, flags, max_tokens, tools=True):
         self.url, self.env, self.cap = PROVIDERS[provider]
         self.name, self.flags, self.max_tokens = name, flags, max_tokens
         self.messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
-        self.tools = [annotate_tool(flags)]
+        self.tools = [annotate_tool(flags)] if tools else []
 
     def _send(self, with_tools=True):
         body = {"model": self.name, "messages": self.messages, self.cap: self.max_tokens}
-        if with_tools:
+        if with_tools and self.tools:
             body["tools"] = self.tools
         if self.flags["temperature"] is not None:
             body["temperature"] = self.flags["temperature"]

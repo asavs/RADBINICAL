@@ -4,7 +4,8 @@
     reply(results)                           results = [(call_id, message)]
 
 A reader's model id picks the provider: "openai:...", "nvidia:...", "anthropic:...",
-"mock:...", or a bare OpenRouter id.
+"mock:...", or a bare OpenRouter id. With tools=False a session is a plain exchange:
+step() returns the model's answer as text and never any calls.
 """
 from .chat import PROVIDERS, ChatSession, TextSession
 from .claude import AnthropicSession
@@ -20,14 +21,14 @@ def split_model(model):
     return (head, rest) if sep and head in KNOWN else ("openrouter", model)
 
 
-def open_session(reader, system, user, flags):
+def open_session(reader, system, user, flags, tools=True):
     provider, name = split_model(reader["model"])
     max_tokens = reader.get("max_tokens") or flags["max_tokens"]
     if provider == "mock":
         return MockSession(name, system, user)
     if provider == "anthropic":
-        return AnthropicSession(name, system, user, flags, max_tokens)
-    if provider == "openai" and reader.get("protocol") != "text":
-        return ResponsesSession(name, system, user, flags, max_tokens)
-    cls = TextSession if reader.get("protocol") == "text" else ChatSession
-    return cls(provider, name, system, user, flags, max_tokens)
+        return AnthropicSession(name, system, user, flags, max_tokens, tools)
+    if provider == "openai" and (reader.get("protocol") != "text" or not tools):
+        return ResponsesSession(name, system, user, flags, max_tokens, tools)
+    cls = TextSession if tools and reader.get("protocol") == "text" else ChatSession
+    return cls(provider, name, system, user, flags, max_tokens, tools)
