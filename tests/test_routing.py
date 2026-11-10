@@ -17,13 +17,13 @@ def keys(*set_names):
 
 
 class Route(unittest.TestCase):
-    def test_shared_ids_go_to_nous_when_only_its_key_is_set(self):
+    def test_shared_ids_go_to_nous_ahead_of_openrouter(self):
         with keys("NOUS_API_KEY"):
             self.assertEqual(route("x-ai/grok-4.7"), ("nous", "x-ai/grok-4.7"))
             self.assertEqual(route("anthropic:claude-opus-5-5"), ("nous", "anthropic/claude-opus-5.5"))
         with keys("NOUS_API_KEY", "OPENROUTER_API_KEY"):
-            self.assertEqual(route("x-ai/grok-4.7"), ("openrouter", "x-ai/grok-4.7"))
-            self.assertEqual(route("nous:x-ai/grok-4.7"), ("nous", "x-ai/grok-4.7"))
+            self.assertEqual(route("x-ai/grok-4.7"), ("nous", "x-ai/grok-4.7"))
+            self.assertEqual(route("openrouter:x-ai/grok-4.7"), ("openrouter", "x-ai/grok-4.7"))
         with keys("NOUS_API_KEY", "ANTHROPIC_API_KEY"):
             self.assertEqual(route("anthropic/claude-opus-5.5"), ("anthropic", "claude-opus-5-5"))
 

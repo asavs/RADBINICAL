@@ -15,7 +15,7 @@ With tools=False a session is a plain exchange: step() returns the answer as tex
   Anthropic as "claude-opus-5-5"). Ids with an OpenRouter variant suffix (":free", ":batch"),
   and OpenAI's open-weight gpt-oss models, which OpenAI's own API does not serve, stay shared.
 - Anything else goes to a shared provider. OpenRouter and Nous both carry many makers' models
-  under the same ids; OpenRouter is used when its key is set, Nous when only Nous's is.
+  under the same ids; Nous is used when its key is set, OpenRouter when only OpenRouter's is.
 
 `canonical(model)` is the OpenRouter-style id, the same however the model was written.
 """
@@ -29,7 +29,7 @@ from .responses import ResponsesSession
 
 
 DIRECT = ("openai", "anthropic", "google", "nvidia")
-SHARED = ("openrouter", "nous")  # carry many makers' models under OpenRouter-style ids; first with a key wins
+SHARED = ("nous", "openrouter")  # carry many makers' models under OpenRouter-style ids; first with a key wins
 KNOWN = set(PROVIDERS) | {"anthropic", "mock"}
 _OPENROUTER_ONLY = re.compile(r"^openai/gpt-oss")
 
