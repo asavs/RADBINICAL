@@ -451,7 +451,7 @@ function start() {
     });
     sides.forEach((m, k) => {
       const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least + tabs, gap), wide = ruled(V, room(col));
-      const boxes = place(groups.map(g => ({ want: mine[g[0]].want - (g.length > 1 ? tabs : 0), height: Infinity })), least, gap, at.height);
+      const boxes = place(groups.map(g => ({ want: mine[g[0]].want - (g.length > 1 ? tabs : 0) })), least, gap, at.height);
       col.insertAdjacentHTML('beforeend', groups.map((g, i) => {
         const row = g.length < 2 ? '' : `<div class="tabs" style="height:${tabs}px">${g.map(j => mine[j].c).map(c =>
           `<button class="tab" data-front="${c.id}" style="--c:${ink(c.author)}" aria-pressed="false" aria-label="Comment ${num(c.id)} by ${esc(c.author)}">${glyph(c.author, true)}${num(c.id)}</button>`).join('')}</div>`;

@@ -49,8 +49,8 @@ def system_prompt(page, me, label):
 _BLOCK = re.compile(r"<comment\b([^>]*)>(.*?)(</comment\s*>|(?=<comment\b)|\Z)", re.S | re.I)
 _ATTR = re.compile(r"""([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))""")
 _QUOTE = re.compile(r"<quote>(.*?)</quote>", re.S | re.I)
-# A reply with no block that still looks like comments: tags of some other kind, or JSON keys.
-_ATTEMPT = re.compile(r"""<\s*(?:comment|annotate|quote)\b|["'](?:on|target|quote)["']\s*:""", re.I)
+# A reply with no block that still looks like comments: a quote tag on its own, or JSON keys.
+_ATTEMPT = re.compile(r"""<\s*quote\b|["'](?:on|quote)["']\s*:""", re.I)
 
 WRONG_SHAPE = ('Nothing was recorded: comments must be written as <comment on="..."> ... </comment> blocks, as '
                "described, not as JSON or in any other form.")

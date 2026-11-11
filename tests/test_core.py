@@ -127,7 +127,7 @@ class Reply(unittest.TestCase):
 
     def test_comments_in_another_shape_are_noticed(self):
         self.assertEqual(read_reply('{"comments": [{"on": "c3", "text": "x"}]}')[::2], ([], True))
-        self.assertEqual(read_reply('<annotate target="c3">x</annotate>')[::2], ([], True))
+        self.assertEqual(read_reply('<quote>laws</quote> I would gloss this.')[::2], ([], True))
         self.assertEqual(read_reply("Nothing further this round; I will pass on: this one.")[::2], ([], False))
 
     def test_every_reader_is_told_the_same(self):

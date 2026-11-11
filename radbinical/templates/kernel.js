@@ -34,25 +34,18 @@ function pieces(text, spans, cuts = []) {
   return out;
 }
 
-// Boxes down one column, each wanting to start level with the words it is on. `items` is
-// [{want, height}] in order down the page: `want` the height of its words, `height` what the box
-// needs to show everything. A box starts at its words, or as soon after the box above as leaves
-// that box `least` to show, and is cut where the next one starts. The last is cut at `end`, the
-// foot of the text, when that is given, though never to less than `least`.
-// Returns [{top, height, cut}].
+// Boxes down one column, each wanting to start level with the words it is on. `items` is [{want}] in
+// order down the page, `want` the height of its words. A box starts at its words, or as soon after
+// the box above as leaves that box `least`, and runs to where the next one starts; the last runs to
+// `end`, the foot of the text. No box is less than `least` high. Returns [{top, height}].
 function place(items, least, gap = 0, end = Infinity) {
-  const out = [];
+  const tops = [];
   let floor = 0;
   for (const it of items) {
-    const top = Math.max(it.want, floor);
-    out.push({ top, height: it.height, cut: false });
-    floor = top + least + gap;
+    tops.push(Math.max(it.want, floor));
+    floor = tops[tops.length - 1] + least + gap;
   }
-  for (let i = 0; i < out.length; i++) {
-    const room = i < out.length - 1 ? out[i + 1].top - out[i].top - gap : Math.max(least, end - out[i].top);
-    if (out[i].height > room) { out[i].height = room; out[i].cut = true }
-  }
-  return out;
+  return tops.map((top, i) => ({ top, height: i < tops.length - 1 ? tops[i + 1] - top - gap : Math.max(least, end - top) }));
 }
 
 // Which side of its text a comment stands on: the side its words begin nearer to. `x` is where they
@@ -60,17 +53,16 @@ function place(items, least, gap = 0, end = Infinity) {
 const nearer = (x, lo, hi) => (x - lo <= hi - x ? 0 : 1);
 
 // Boxes whose words are too close together for each to have room, gathered into stacks. `items` is
-// [{want}] in order down the page. A box that could not start within `slack` of its words, because
-// the box above needs `least` to show, joins that box as a stack; so every stack starts within
-// `slack` of the words of its first member, and of all its members when they share a line.
-// Returns the stacks in order, each a list of indexes into `items`.
-function stacks(items, least, gap = 0, slack = 0) {
+// [{want}] in order down the page. A box that could not start at its words, because the box above
+// needs `least` to show, joins that box as a stack; so every stack starts at the words of its first
+// member. Returns the stacks in order, each a list of indexes into `items`.
+function stacks(items, least, gap = 0) {
   const out = [];
   let floor = -Infinity;
   items.forEach((it, i) => {
-    if (out.length && floor - it.want > slack) return out[out.length - 1].push(i);
+    if (out.length && floor > it.want) return out[out.length - 1].push(i);
     out.push([i]);
-    floor = Math.max(it.want, floor) + least + gap;
+    floor = it.want + least + gap;
   });
   return out;
 }

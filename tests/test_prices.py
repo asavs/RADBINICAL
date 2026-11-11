@@ -9,7 +9,6 @@ from radbinical import ask as ask_mod
 from radbinical import prices, rounds
 from radbinical.cli import main
 from radbinical.commands import prices as prices_cmd
-from radbinical.page import Page
 from radbinical.table import runs
 from test_plant import make_page
 

@@ -57,7 +57,7 @@ marks it (`repeat_of`).
 Each turn's entry in the page's `log` carries `replies`, the number of answers it took, and
 `refused`, the comments still not recorded at the end. A log entry without `replies` is from a
 run made when readers called a tool once per comment, in up to 16 steps a turn, and Hermes 4 alone
-wrote one answer of blocks; all the runs of Phases 1 to 4 are of that kind.
+wrote one answer of blocks.
 
 ## Readers and keys
 
@@ -333,8 +333,7 @@ the passage and for a comment: a comment is on a node and, when it quotes, on a 
 text; with no quote it is on the whole text. `radbinical/templates/kernel.js` holds the answer for
 the viewer (`spanOf`), the cutting of a text into marked pieces (`pieces`) and the arithmetic of
 setting boxes level with their words (`place`, `nearer`, `stacks`); none of it touches the page, and
-`tests/test_kernel.py` runs it under Node. `span` in `radbinical/page.py` is the same rule for
-code that reads a page.
+`tests/test_kernel.py` runs it under Node.
 
 Pin to text, on a wide screen, is a second layout on that kernel: each comment on the passage
 stands level with the words it is on, on the side they begin nearer to, and is cut short where
@@ -348,8 +347,8 @@ clicking a reader in the key hides or shows them. Selecting a comment opens its 
 People's comments carry a dotted number. Beneath the sheet, the Apparatus shows the side files
 marked "viewer" above.
 
-Print prints the sheet alone as one poster, A1 landscape, at the largest type that fits. Print
-from a window at least 1100 pixels wide. For another paper size, change `PAPER` in
+Print prints the column sheet alone as one poster, A1 landscape, at the largest type that fits,
+whatever the window's width and whether or not Pin to text is on. For another paper size, change `PAPER` in
 `radbinical/templates/viewer.html`.
 
 ## Website and workflows
@@ -380,6 +379,7 @@ submissions on every push and pull request.
 | `radbinical/cli.py` | Finds the commands |
 | `radbinical/commands/` | One file per command |
 | `radbinical/rounds.py` | The round loop and each reader's turn |
+| `radbinical/preflight.py` | Asking each reader for one word before a run starts |
 | `radbinical/page.py` | The page record, side files, and the view each reader gets |
 | `radbinical/prompts.py` | What readers are told, and how their answer is read |
 | `radbinical/anchoring.py` | Matching a quoted span to the passage |

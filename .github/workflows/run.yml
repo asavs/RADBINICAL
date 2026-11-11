@@ -36,6 +36,7 @@ jobs:
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
       NOUS_API_KEY: ${{ secrets.NOUS_API_KEY }}
       MODE: ${{ inputs.mode }}
       CONFIG: ${{ inputs.config }}

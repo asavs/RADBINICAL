@@ -11,7 +11,6 @@ from radbinical.cli import main
 from radbinical.commands.plant import add_plant
 from radbinical.judge import (chunks, judge_claims, judge_plants, read_verdicts, replies_to, summarise_plant,
                               summary)
-from radbinical.page import Page
 from test_plant import make_page
 
 

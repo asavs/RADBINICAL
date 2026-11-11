@@ -108,16 +108,6 @@ def below(page, cid):
     return [x for k in children(page, cid) for x in (k, *below(page, k["id"]))]
 
 
-def span(page, c):
-    """(start, end) of the words comment `c` is on, as offsets into the text of the node it is
-    written on, or None when it is on the whole of that text. A comment on the passage stores its
-    span; a comment on a comment quotes the words it means, and its span is where they are found."""
-    if c["target"] == "passage":
-        return c["start"], c["end"]
-    on = next((x for x in page["comments"] if x["id"] == c["target"]), None)
-    return locate(on["text"], c["quote"]) if on and c.get("quote") else None
-
-
 def render_for_reader(page, visible, label, me):
     """Plain-text view of the page as one reader sees it."""
     p = page["passage"]
