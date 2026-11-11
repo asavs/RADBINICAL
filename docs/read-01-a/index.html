@@ -515,12 +515,13 @@ function start() {
   }
 
   // Pinned (kernel: nearer, stacks, place). Each comment on the passage stands on the side its words
-  // begin nearer to, level with their mark. Where the next comment's words are too close for it to
-  // start within two lines of them, it joins the one above as a stack: one thread in front, a tab
-  // for each. A pile is cut where the next begins; pointing at it shows all of the thread in front.
+  // begin nearer to, and starts exactly level with their mark; the pile above is cut there, down to
+  // two lines if need be. Only where the pile above would be left less than that does the comment
+  // join it as a stack: one thread in front, a tab for each. Pointing at a pile shows all of the
+  // thread in front.
   function pin(V, sides, room, rem) {
     sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>');
-    const least = 4.4 * rem, gap = 0.35 * rem, slack = 2.8 * rem, at = $('passage').getBoundingClientRect();
+    const least = 3 * rem, gap = 0.35 * rem, slack = 0, at = $('passage').getBoundingClientRect();
     const made = V.kids('passage').map(c => {
       const mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`).getBoundingClientRect();
       return { c, want: mark.top - at.top, side: nearer(mark.left, at.left, at.right) };
