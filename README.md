@@ -326,6 +326,18 @@ narrow to read does a margin run beneath its comment. In code
 the same shape is `children`, `thread` and `below` in `radbinical/page.py`: the passage and every
 comment are nodes, and a comment's `target` is the node it is written on.
 
+Under every layout is one question, where on its text a comment is, answered the same way for
+the passage and for a comment: a comment is on a node and, when it quotes, on a span of that node's
+text; with no quote it is on the whole text. `radbinical/templates/kernel.js` holds the answer for
+the viewer (`spanOf`), the cutting of a text into marked pieces (`pieces`) and the arithmetic of
+setting boxes level with their words (`place`, `share`); none of it touches the page, and
+`tests/test_kernel.py` runs it under Node. `span` in `radbinical/page.py` is the same rule for
+code that reads a page.
+
+Pin to text, on a wide screen, is a second layout on that kernel: each comment on the passage
+starts level with the words it is on and is cut short where the next begins, so the sheet is as
+tall as the passage. Pointing at a comment shows all of it.
+
 The rounds slider and Play show the page as it stood after each round;
 clicking a reader in the key hides or shows them. Selecting a comment opens its whole thread.
 People's comments carry a dotted number. Beneath the sheet, the Apparatus shows the side files
@@ -366,6 +378,7 @@ submissions on every push and pull request.
 | `radbinical/page.py` | The page record, side files, and the view each reader gets |
 | `radbinical/prompts.py` | What readers are told, and how their answer is read |
 | `radbinical/anchoring.py` | Matching a quoted span to the passage |
+| `radbinical/templates/kernel.js` | Where on its text a comment is, for the viewer's layouts |
 | `radbinical/ask.py` | One-shot calls for judges, redactors, forecasts and rulings |
 | `radbinical/providers/` | One file per way of reaching a model, and the routing |
 | `radbinical/table.py` | The row-per-comment table |

@@ -56,7 +56,9 @@ def render(run_dir):
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     title = "Marginalia on " + re.sub(r"[<>&]", "", data["passage"]["title"])
     brands = json.dumps({k: v for k, v in load_brands().items() if not k.startswith("_")})
-    html = tpl.replace("__TITLE__", title).replace("/*__PAGE_DATA__*/null", blob).replace("/*__BRANDS__*/{}", brands)
+    kernel = (TEMPLATES / "kernel.js").read_text(encoding="utf-8")
+    html = (tpl.replace("__TITLE__", title).replace("/*__KERNEL__*/", kernel)
+            .replace("/*__PAGE_DATA__*/null", blob).replace("/*__BRANDS__*/{}", brands))
     (run_dir / "page.html").write_text(html, encoding="utf-8")
 
 

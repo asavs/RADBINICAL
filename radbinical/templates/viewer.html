@@ -99,11 +99,17 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 #left, #left .node.row { flex-direction: row-reverse }
 #left .margin { margin-left: 0; padding-left: 0; border-left: none; margin-right: 0.15rem; padding-right: 0.55rem; border-right: 1px solid var(--rule) }
 .notch { display: none }
+#pin { display: none }
+/* pinned: each thread on the passage starts level with its words and is cut where the next starts */
+.body.pinned .col { position: relative }
+.body.pinned .col > .node { position: absolute; margin: 0; overflow: hidden; background: var(--sheet) }
+.body.pinned #left .col > .node { left: 0; right: calc(var(--pw) / 2 + 0.35rem) }
+.body.pinned #right .col > .node { right: 0; left: calc(var(--pw) / 2 + 0.35rem) }
+.body.pinned .col > .node.cut { -webkit-mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent); mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent) }
+.body.pinned .col > .node:hover, .body.pinned .col > .node.open { height: auto !important; z-index: 1; overflow: visible; -webkit-mask-image: none; mask-image: none; box-shadow: 0 0 0 1px var(--rule), 0 0.4rem 1.1rem rgb(0 0 0 / 0.18) }
 .c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem; padding: 0.1rem 0.3rem; background: color-mix(in srgb, var(--c) 6%, transparent) }
 .c:hover, .c.lit { background: color-mix(in srgb, var(--c) 17%, transparent) }
 .c.kin { background: color-mix(in srgb, var(--c) 12%, transparent) }
-.q { text-decoration: underline 1px var(--c); text-underline-offset: 2.5px }
-.q.lit { text-decoration-thickness: 2.5px; background: color-mix(in srgb, var(--c) 22%, transparent) }
 .c .n { font-family: var(--small); font-weight: 700; font-size: 0.72em; color: var(--c); vertical-align: 0.35em; line-height: 0; margin: 0 0.2em 0 0.1em }
 .c .hd { white-space: nowrap }
 .c .lemma { font-weight: 700 }
@@ -187,6 +193,7 @@ th { font-weight: 500; color: var(--ink-2) }
   .notch { display: block; width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 0.9rem) }
   #left .notch { float: right } #right .notch { float: left }
   .passage p { font-size: 1.3rem }
+  #pin { display: inline-block }
 }
 /* Print: the full page as one poster sheet. Before printing, the script lays the sheet out at the
    paper's width (html.printing) and picks the largest type that fits it on one page; the paper
@@ -224,6 +231,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
         <label for="layer">Rounds <input type="range" id="layer" min="1" max="1" step="1" value="1"></label>
         <button id="play" hidden>Play</button>
         <button id="plants" aria-pressed="false" hidden title="Mark the comments planted on the page, with what is wrong or unusual in each and who caught it">Plants</button>
+        <button id="pin" aria-pressed="false" title="Set each comment on the passage level with its words, cut short where the next begins">Pin to text</button>
         <button id="print" title="Print the page as one poster sheet">Print</button>
         <a id="again" hidden target="_blank" rel="noopener">Another round</a>
       </aside>
@@ -245,6 +253,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
 </div>
 
 <script>
+/*__KERNEL__*/
 const D = /*__PAGE_DATA__*/null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -279,7 +288,7 @@ function start() {
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
   const num = id => id.replace(/^c/, '');
   const rounds = Math.max(1, D.layers_done || 1);
-  const S = { upTo: rounds, off: new Set(), icons: false, plants: false };
+  const S = { upTo: rounds, off: new Set(), icons: false, plants: false, pin: false };
   const SIDE = D.side || {};
 
   // Planted comments are marked only while Plants is on, so the sheet otherwise reads as its readers saw it.
@@ -304,7 +313,7 @@ function start() {
   const marked = c => S.plants && isPlant(c);
   const kinds = c => (people.has(c.author) ? ' human' : '') + (marked(c) ? ' plant' : '') + (c.stale ? ' stale' : '');
   const staleNote = c => c.stale ? ` title="Its quoted words were amended away in version ${esc(c.stale)}"` : '';
-  const phone = matchMedia('(max-width: 699px)');
+  const phone = matchMedia('(max-width: 699px)'), wide = matchMedia('(min-width: 1100px)');
   const sheet = $('sheet');
 
   $('title').textContent = D.passage.title;
@@ -330,41 +339,36 @@ function start() {
   };
 
   // The passage: clean text, with a small numbered mark where each comment on it begins.
+  // Marking a text (kernel: pieces). Each stretch that comments are on is a .seg carrying their ids,
+  // underlined in their colours; the passage and a comment's own text are marked the same way.
+  const spansOn = (id, V) => V.kids(id).map(k => [k, spanOf(k, byId[id])]).filter(([, sp]) => sp).map(([k, sp]) => ({ id: k.id, start: sp[0], end: sp[1] }));
+  const segOpen = ids => `<span class="seg" style="--ul:${underline(ids.map(i => byId[i]))}" data-ids="${ids.join(' ')}">`;
+
+  // The passage: clean text, with a small numbered mark where each comment on it begins.
   function drawPassage(V) {
-    const text = D.passage.text, tops = V.kids('passage');
-    const cuts = new Set([0, text.length]);
-    tops.forEach(c => { cuts.add(c.start); cuts.add(c.end) });
-    let pos = 0; const paras = [];
-    text.split('\n\n').forEach(p => { paras.push([pos, pos + p.length]); cuts.add(pos); cuts.add(pos + p.length); pos += p.length + 2 });
-    const pts = [...cuts].sort((a, b) => a - b);
+    const text = D.passage.text, paras = [];
+    let pos = 0;
+    text.split('\n\n').forEach(p => { paras.push([pos, pos + p.length]); pos += p.length + 2 });
+    const all = pieces(text, spansOn('passage', V), paras.flat());
     let html = '', first = true;
     for (const [a, b] of paras) {
       html += '<p>';
-      for (let i = 0; i < pts.length - 1; i++) {
-        const s = pts[i], e = pts[i + 1];
-        if (s < a || e > b) continue;
-        let chunk = esc(text.slice(s, e)), box = '';
+      for (const pc of all.filter(pc => pc.start >= a && pc.end <= b)) {
+        let chunk = esc(text.slice(pc.start, pc.end)), box = '';
         if (first) { chunk = chunk.replace(/^(\S+)\s*/, (_, w) => { box = `<span class="incipit">${w}</span>`; return '' }); first = false }
-        html += box + tops.filter(c => c.start === s).map(c => `<sup class="m${people.has(c.author) ? ' h' : ''}" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
-        const on = tops.filter(c => c.start <= s && c.end >= e);
-        html += on.length ? `<span class="seg" style="--ul:${underline(on)}" data-ids="${on.map(c => c.id).join(' ')}">${chunk}</span>` : chunk;
+        html += box + pc.begins.map(i => byId[i]).map(c => `<sup class="m${people.has(c.author) ? ' h' : ''}" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
+        html += pc.on.length ? segOpen(pc.on) + chunk + '</span>' : chunk;
       }
       html += '</p>';
     }
     $('passage').innerHTML = html;
   }
 
-  // A comment's text as one run. Where a reply quotes part of it, that part is underlined in the replier's colour.
+  // A comment's text as one run, the parts that replies quote marked as the passage's are.
   function bodyHTML(c, V) {
-    const raw = c.text.replace(/\s+/g, ' ').trim(), spans = [];
-    for (const k of V.kids(c.id).filter(k => k.quote)) {
-      const q = k.quote.replace(/\s+/g, ' ').trim(), i = q ? raw.indexOf(q) : -1;
-      if (i >= 0 && !spans.some(s => i < s[1] && i + q.length > s[0])) spans.push([i, i + q.length, k]);
-    }
-    spans.sort((x, y) => y[0] - x[0]); // right to left, so earlier offsets stay valid
-    let out = raw;
-    for (const [i, j, k] of spans) out = out.slice(0, i) + '\uE000' + k.id + '\uE001' + out.slice(i, j) + '\uE002' + out.slice(j);
-    return inline(out).replace(/\uE000(\w+)\uE001/g, (_, id) => `<span class="q" data-by="${id}" style="--c:${ink(byId[id].author)}">`).replace(/\uE002/g, '</span>');
+    const raw = shownText(c);
+    const out = pieces(raw, spansOn(c.id, V)).map(pc => pc.on.length ? '\uE000' + pc.on.join(' ') + '\uE001' + raw.slice(pc.start, pc.end) + '\uE002' : raw.slice(pc.start, pc.end)).join('');
+    return inline(out).replace(/\uE000([\w ]+)\uE001/g, (_, ids) => segOpen(ids.split(' '))).replace(/\uE002/g, '</span>');
   }
 
   // A comment as it stands in a margin: mark, number, the opening words it is on in bold, then the comment.
@@ -398,6 +402,8 @@ function start() {
     const most = Math.max(1, Math.floor(sides[0].offsetWidth / (30 * rem)));
     const foot = m => { const t = m.lastElementChild; return t && t.matches('.node') ? t.offsetTop + t.offsetHeight : 0 };
     // how many columns of at least LEAST a thread has room for, where the side is narrowest: beside the passage
+    const pinned = S.pin && wide.matches && !document.documentElement.classList.contains('printing');
+    body.classList.toggle('pinned', pinned);
     const room = m => { const notch = m.querySelector(':scope > .notch'); return Math.max(1, Math.floor((m.clientWidth - (notch ? notch.offsetWidth : 0)) / (LEAST * rem))) };
     const lay = n => {
       sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
@@ -407,11 +413,38 @@ function start() {
       return body.offsetHeight;
     };
     body.style.setProperty('--ph', $('passage').offsetHeight + 'px');
+    $('all').hidden = !phone.matches || !tops.length;
+    $('all').textContent = `Read all ${V.size} comments`;
+    if (pinned) return pin(V, sides, room, rem);
     let best = 1, least = lay(1);
     for (let n = 2; n <= most; n++) { const h = lay(n); if (h < least) [best, least] = [n, h] }
     if (best !== most) lay(best);
-    $('all').hidden = !phone.matches || !tops.length;
-    $('all').textContent = `Read all ${V.size} comments`;
+  }
+
+  // Pinned (kernel: share, place): one column a side; each thread on the passage starts level with
+  // the mark of its words, or as soon after the thread above as leaves that one a few lines, and is
+  // cut where the next starts. Pointing at a thread shows all of it.
+  function pin(V, sides, room, rem) {
+    sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>');
+    const cols = sides.map(m => m.firstElementChild), least = 4.4 * rem, gap = 0.35 * rem;
+    const top = $('passage').getBoundingClientRect().top;
+    // every thread is first drawn in one column, to learn how tall it is in full
+    const made = V.kids('passage').map(c => {
+      cols[0].insertAdjacentHTML('beforeend', nodeHTML(c, V, runHTML, room(cols[0])));
+      const el = cols[0].lastElementChild, mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`);
+      return { el, want: mark ? mark.getBoundingClientRect().top - top : 0, height: el.offsetHeight };
+    });
+    const side = share(made, 2, least, gap);
+    cols.forEach((col, k) => {
+      const mine = made.filter((_, i) => side[i] === k);
+      place(mine, least, gap, $('passage').offsetHeight).forEach((box, i) => {
+        const el = mine[i].el;
+        col.append(el);
+        el.style.top = box.top + 'px'; el.style.height = box.height + 'px';
+        el.classList.toggle('cut', box.cut);
+        col.style.minHeight = box.top + box.height + 'px';
+      });
+    });
   }
 
   function drawKey() {
@@ -454,10 +487,10 @@ function start() {
   function light(id, on) {
     const c = byId[id]; if (!c) return;
     const root = rootOf(c).id;
-    document.querySelectorAll('.seg').forEach(s => { if (s.dataset.ids.split(' ').includes(root)) { s.classList.toggle('lit', on); s.style.setProperty('--c', ink(byId[root].author)) } });
+    // its own words in what it is on, and its thread's words in the passage
+    for (const x of new Set([root, id])) document.querySelectorAll(`.seg[data-ids~="${x}"]`).forEach(s => { s.classList.toggle('lit', on); s.style.setProperty('--c', ink(byId[x].author)) });
     document.querySelectorAll(`sup.m[data-m="${root}"]`).forEach(m => m.classList.toggle('lit', on));
     document.querySelectorAll(`.c[data-on="${id}"]`).forEach(k => k.classList.toggle('kin', on));
-    document.querySelectorAll(`.q[data-by="${id}"]`).forEach(q => q.classList.toggle('lit', on));
     if (c.target !== 'passage' && $(c.target)) $(c.target).classList.toggle('kin', on);
   }
   function flash(el) {
@@ -475,7 +508,7 @@ function start() {
 
   const hover = on => e => {
     const c = e.target.closest('.c'); if (c) light(c.id, on);
-    const q = e.target.closest('.q'); if (q && $(q.dataset.by)) $(q.dataset.by).classList.toggle('lit', on); // a quoted phrase lights the reply that quotes it
+    const g = e.target.closest('.seg'); if (g) g.dataset.ids.split(' ').forEach(i => { const el = $(i); if (el) el.classList.toggle('lit', on) }); // marked words light the comments on them
     const m = e.target.closest('sup.m'); if (m) { light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
   };
   document.querySelector('.daf').addEventListener('mouseover', hover(true));
@@ -616,6 +649,7 @@ function start() {
   }
 
   $('plants').hidden = !D.comments.some(isPlant);
+  $('pin').addEventListener('click', e => { S.pin = !S.pin; e.target.setAttribute('aria-pressed', S.pin); drawMargins(shown()) });
   $('plants').addEventListener('click', e => { S.plants = !S.plants; e.target.setAttribute('aria-pressed', S.plants); if (sheet.open) sheet.close(); draw(); drawApparatus() });
   if (D.site && D.site.workflow) {
     const a = $('again');
@@ -643,7 +677,7 @@ function start() {
 
   const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
   $('made').innerHTML = `
-    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it, so a thread reads outward from the passage one column at a time, and takes as many columns as it is deep. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread.</p></div>
+    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it, so a thread reads outward from the passage one column at a time, and takes as many columns as it is deep. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, cut short where the next begins; point at one to see all of it.</p></div>
     <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
     <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
     <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
