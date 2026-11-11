@@ -55,17 +55,24 @@ function place(items, least, gap = 0, end = Infinity) {
   return out;
 }
 
-// Which of several columns each box goes to, so that as few as possible start below their words:
-// each, in order, to the column where it can start highest, the earlier column on a tie.
-// `ends` has one entry per column. Returns the column of each item.
-function share(items, columns, least, gap = 0) {
-  const floor = Array(columns).fill(0);
-  return items.map(it => {
-    let best = 0;
-    for (let k = 1; k < columns; k++) if (Math.max(it.want, floor[k]) < Math.max(it.want, floor[best])) best = k;
-    floor[best] = Math.max(it.want, floor[best]) + least + gap;
-    return best;
+// Which side of its text a comment stands on: the side its words begin nearer to. `x` is where they
+// begin, `lo` and `hi` the text's two edges. Returns 0 for the `lo` side and 1 for the `hi` side.
+const nearer = (x, lo, hi) => (x - lo <= hi - x ? 0 : 1);
+
+// Boxes whose words are too close together for each to have room, gathered into stacks. `items` is
+// [{want}] in order down the page. A box that could not start within `slack` of its words, because
+// the box above needs `least` to show, joins that box as a stack; so every stack starts within
+// `slack` of the words of its first member, and of all its members when they share a line.
+// Returns the stacks in order, each a list of indexes into `items`.
+function stacks(items, least, gap = 0, slack = 0) {
+  const out = [];
+  let floor = -Infinity;
+  items.forEach((it, i) => {
+    if (out.length && floor - it.want > slack) return out[out.length - 1].push(i);
+    out.push([i]);
+    floor = Math.max(it.want, floor) + least + gap;
   });
+  return out;
 }
 
-if (typeof module !== 'undefined') module.exports = { shownText, spanOf, pieces, place, share };
+if (typeof module !== 'undefined') module.exports = { shownText, spanOf, pieces, place, nearer, stacks };

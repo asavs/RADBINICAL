@@ -330,13 +330,15 @@ Under every layout is one question, where on its text a comment is, answered the
 the passage and for a comment: a comment is on a node and, when it quotes, on a span of that node's
 text; with no quote it is on the whole text. `radbinical/templates/kernel.js` holds the answer for
 the viewer (`spanOf`), the cutting of a text into marked pieces (`pieces`) and the arithmetic of
-setting boxes level with their words (`place`, `share`); none of it touches the page, and
+setting boxes level with their words (`place`, `nearer`, `stacks`); none of it touches the page, and
 `tests/test_kernel.py` runs it under Node. `span` in `radbinical/page.py` is the same rule for
 code that reads a page.
 
 Pin to text, on a wide screen, is a second layout on that kernel: each comment on the passage
-starts level with the words it is on and is cut short where the next begins, so the sheet is as
-tall as the passage. Pointing at a comment shows all of it.
+stands level with the words it is on, on the side they begin nearer to, and is cut short where
+the next begins, so the sheet is as tall as the passage. Comments whose words are too close for
+each to have room share a spot as a stack, one in front and a tab for each. Pointing at a comment
+shows all of it; a tab, or the comment's number in the passage, brings it to the front.
 
 The rounds slider and Play show the page as it stood after each round;
 clicking a reader in the key hides or shows them. Selecting a comment opens its whole thread.

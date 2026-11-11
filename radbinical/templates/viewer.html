@@ -100,13 +100,21 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 #left .margin { margin-left: 0; padding-left: 0; border-left: none; margin-right: 0.15rem; padding-right: 0.55rem; border-right: 1px solid var(--rule) }
 .notch { display: none }
 #pin { display: none }
-/* pinned: each thread on the passage starts level with its words and is cut where the next starts */
-.body.pinned .col { position: relative }
-.body.pinned .col > .node { position: absolute; margin: 0; overflow: hidden; background: var(--sheet) }
-.body.pinned #left .col > .node { left: 0; right: calc(var(--pw) / 2 + 0.35rem) }
-.body.pinned #right .col > .node { right: 0; left: calc(var(--pw) / 2 + 0.35rem) }
-.body.pinned .col > .node.cut { -webkit-mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent); mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent) }
-.body.pinned .col > .node:hover, .body.pinned .col > .node.open { height: auto !important; z-index: 1; overflow: visible; -webkit-mask-image: none; mask-image: none; box-shadow: 0 0 0 1px var(--rule), 0 0.4rem 1.1rem rgb(0 0 0 / 0.18) }
+/* pinned: each comment on the passage stands level with its words, on the side they begin nearer to,
+   and is cut where the next begins. A pile is the box at one spot: one thread, or a stack of threads
+   whose words are too close for each to have room, with a tab for each and one of them in front. */
+.body.pinned .col { position: relative; pointer-events: none } /* the column lies over the passage's place; only its piles take the pointer */
+.pile { position: absolute; overflow: hidden; background: var(--sheet); pointer-events: auto }
+#left .pile { left: 0; right: calc(var(--pw) / 2 + 0.35rem) }
+#right .pile { right: 0; left: calc(var(--pw) / 2 + 0.35rem) }
+.pile > .node:not(.front) { display: none }
+.pile.cut { -webkit-mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent); mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent) }
+.pile:hover, .pile:focus-within { max-height: none !important; z-index: 1; overflow: visible; -webkit-mask-image: none; mask-image: none; box-shadow: 0 0 0 1px var(--rule), 0 0.4rem 1.1rem rgb(0 0 0 / 0.18) }
+.tabs { display: flex; flex-wrap: wrap; gap: 0 0.5rem; padding: 0 0.3rem 0.1rem; font-family: var(--small); font-size: 0.8rem; line-height: 1.5; text-align: left }
+#left .tabs { justify-content: flex-end }
+.tab { display: inline-flex; align-items: center; gap: 0.2rem; background: none; border: none; border-bottom: 2px solid transparent; padding: 0 0.05rem; font-weight: 700; color: var(--c) }
+.tab[aria-pressed="true"] { border-bottom-color: var(--c) }
+.tab[aria-pressed="false"] { opacity: 0.6 }
 .c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem; padding: 0.1rem 0.3rem; background: color-mix(in srgb, var(--c) 6%, transparent) }
 .c:hover, .c.lit { background: color-mix(in srgb, var(--c) 17%, transparent) }
 .c.kin { background: color-mix(in srgb, var(--c) 12%, transparent) }
@@ -421,30 +429,40 @@ function start() {
     if (best !== most) lay(best);
   }
 
-  // Pinned (kernel: share, place): one column a side; each thread on the passage starts level with
-  // the mark of its words, or as soon after the thread above as leaves that one a few lines, and is
-  // cut where the next starts. Pointing at a thread shows all of it.
+  // Pinned (kernel: nearer, stacks, place). Each comment on the passage stands on the side its words
+  // begin nearer to, level with their mark. Where the next comment's words are too close for it to
+  // start within two lines of them, it joins the one above as a stack: one thread in front, a tab
+  // for each. A pile is cut where the next begins; pointing at it shows all of the thread in front.
   function pin(V, sides, room, rem) {
     sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>');
-    const cols = sides.map(m => m.firstElementChild), least = 4.4 * rem, gap = 0.35 * rem;
-    const top = $('passage').getBoundingClientRect().top;
-    // every thread is first drawn in one column, to learn how tall it is in full
+    const least = 4.4 * rem, gap = 0.35 * rem, slack = 2.8 * rem, at = $('passage').getBoundingClientRect();
     const made = V.kids('passage').map(c => {
-      cols[0].insertAdjacentHTML('beforeend', nodeHTML(c, V, runHTML, room(cols[0])));
-      const el = cols[0].lastElementChild, mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`);
-      return { el, want: mark ? mark.getBoundingClientRect().top - top : 0, height: el.offsetHeight };
+      const mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`).getBoundingClientRect();
+      return { c, want: mark.top - at.top, side: nearer(mark.left, at.left, at.right) };
     });
-    const side = share(made, 2, least, gap);
-    cols.forEach((col, k) => {
-      const mine = made.filter((_, i) => side[i] === k);
-      place(mine, least, gap, $('passage').offsetHeight).forEach((box, i) => {
-        const el = mine[i].el;
-        col.append(el);
-        el.style.top = box.top + 'px'; el.style.height = box.height + 'px';
-        el.classList.toggle('cut', box.cut);
-        col.style.minHeight = box.top + box.height + 'px';
-      });
+    sides.forEach((m, k) => {
+      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least, gap, slack), wide = room(col);
+      const boxes = place(groups.map(g => ({ want: mine[g[0]].want, height: Infinity })), least, gap, at.height);
+      col.insertAdjacentHTML('beforeend', groups.map((g, i) => {
+        const tabs = g.length < 2 ? '' : `<div class="tabs">${g.map(j => mine[j].c).map(c =>
+          `<button class="tab" data-front="${c.id}" style="--c:${ink(c.author)}" aria-pressed="false" aria-label="Comment ${num(c.id)} by ${esc(c.author)}">${glyph(c.author, true)}${num(c.id)}</button>`).join('')}</div>`;
+        return `<div class="pile" style="top:${boxes[i].top}px;max-height:${boxes[i].height}px">${tabs}${g.map(j => nodeHTML(mine[j].c, V, runHTML, wide)).join('')}</div>`;
+      }).join(''));
+      if (boxes.length) col.style.minHeight = boxes[boxes.length - 1].top + boxes[boxes.length - 1].height + 'px';
+      col.querySelectorAll('.pile').forEach(p => front(p.querySelector(':scope > .node')));
     });
+  }
+  // Bring one thread of a pile to the front, and mark the pile as cut if it does not all show.
+  function front(node) {
+    const pile = node.parentElement, id = node.querySelector(':scope > .c').id;
+    pile.querySelectorAll(':scope > .node').forEach(n => n.classList.toggle('front', n === node));
+    pile.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', t.dataset.front === id));
+    pile.classList.toggle('cut', pile.scrollHeight > pile.clientHeight + 1);
+  }
+  // Bring the thread that holds comment `id` to the front of its pile, if it is behind another.
+  function surface(id) {
+    const el = $(id), node = el && el.closest('.pile > .node');
+    if (node && !node.classList.contains('front')) front(node);
   }
 
   function drawKey() {
@@ -503,19 +521,22 @@ function start() {
     if (!shown().has(id)) { S.upTo = rounds; S.off.clear(); $('layer').value = rounds; draw() } // make sure a linked comment is visible
     if (phone.matches) return openReader([rootOf(c).id], id);
     if (sheet.open) sheet.close();
+    surface(id);
     flash($(id));
   }
 
   const hover = on => e => {
     const c = e.target.closest('.c'); if (c) light(c.id, on);
     const g = e.target.closest('.seg'); if (g) g.dataset.ids.split(' ').forEach(i => { const el = $(i); if (el) el.classList.toggle('lit', on) }); // marked words light the comments on them
-    const m = e.target.closest('sup.m'); if (m) { light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
+    const t = on && e.target.closest('.tab'); if (t) surface(t.dataset.front);
+    const m = e.target.closest('sup.m'); if (m) { if (on) surface(m.dataset.m); light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
   };
   document.querySelector('.daf').addEventListener('mouseover', hover(true));
   document.querySelector('.daf').addEventListener('mouseout', hover(false));
-  const pickMark = m => phone.matches ? openReader([m.dataset.m]) : flash($(m.dataset.m));
+  const pickMark = m => { if (phone.matches) return openReader([m.dataset.m]); surface(m.dataset.m); flash($(m.dataset.m)) };
   document.addEventListener('click', e => {
     const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
+    const t = e.target.closest('.tab'); if (t) return surface(t.dataset.front);
     const a = e.target.closest('.t header a'); if (a && a.hash === location.hash) return go(a.hash.slice(1)); // same link again: hashchange will not fire
     const m = e.target.closest('sup.m'); if (m) return pickMark(m);
     const c = e.target.closest('.c'); if (c && !getSelection().toString()) return openReader([c.dataset.root], c.id);
@@ -677,7 +698,7 @@ function start() {
 
   const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
   $('made').innerHTML = `
-    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it, so a thread reads outward from the passage one column at a time, and takes as many columns as it is deep. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, cut short where the next begins; point at one to see all of it.</p></div>
+    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it, so a thread reads outward from the passage one column at a time, and takes as many columns as it is deep. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, on the side they begin nearer to, cut short where the next begins; point at one to see all of it. Comments whose words are too close together to each have room share a spot as a stack, with a tab for each; point at or select a tab, or the comment's number in the passage, to bring it to the front.</p></div>
     <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
     <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
     <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>

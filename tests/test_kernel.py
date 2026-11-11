@@ -57,8 +57,27 @@ class Kernel(unittest.TestCase):
         self.assertEqual(js('k.place([{want: 240, height: 300}], 30, 10, 250)'), [{"top": 240, "height": 30, "cut": True}])
         self.assertEqual(js('k.place([{want: 0, height: 50}], 30, 10, 250)'), [{"top": 0, "height": 50, "cut": False}])
 
-    def test_boxes_are_shared_so_that_few_start_below_their_words(self):
-        self.assertEqual(js('k.share([{want: 0}, {want: 0}, {want: 10}, {want: 500}], 2, 100)'), [0, 1, 0, 0])
+    def test_a_comment_stands_on_the_side_its_words_begin_nearer_to(self):
+        self.assertEqual(js('[k.nearer(10, 0, 100), k.nearer(50, 0, 100), k.nearer(51, 0, 100), k.nearer(430, 400, 800), k.nearer(700, 400, 800)]'),
+                         [0, 0, 1, 0, 1])
+
+    def test_boxes_too_close_to_each_have_room_make_a_stack(self):
+        items = '[{want: 0}, {want: 5}, {want: 20}, {want: 100}, {want: 105}, {want: 300}]'
+        self.assertEqual(js(f'k.stacks({items}, 60, 10, 20)'), [[0, 1, 2], [3, 4], [5]])
+        self.assertEqual(js(f'k.stacks({items}, 60, 10, 80)'), [[0], [1, 2], [3, 4], [5]])
+        self.assertEqual(js(f'k.stacks({items}, 60, 10, 1000)'), [[0], [1], [2], [3], [4], [5]])   # enough slack: nothing stacks
+        self.assertEqual(js('k.stacks([], 60)'), [])
+
+    def test_a_stack_starts_within_the_slack_of_its_first_members_words(self):
+        got = js("""(() => {
+          const items = [0, 3, 40, 41, 44, 90, 200, 204, 260].map(want => ({want})), least = 50, gap = 5, slack = 25;
+          const groups = k.stacks(items, least, gap, slack);
+          const boxes = k.place(groups.map(g => ({want: items[g[0]].want, height: Infinity})), least, gap, 400);
+          return groups.map((g, i) => [g, boxes[i].top - items[g[0]].want, boxes[i].height]);
+        })()""")
+        self.assertEqual(sum(len(g) for g, _, _ in got), 9)
+        self.assertTrue(all(0 <= off <= 25 for _, off, _ in got))
+        self.assertTrue(all(h >= 50 for _, _, h in got))
 
 
 class Span(unittest.TestCase):
