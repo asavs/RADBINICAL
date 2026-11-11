@@ -517,25 +517,30 @@ function start() {
   // Pinned (kernel: nearer, stacks, place). Each comment on the passage stands on the side its words
   // begin nearer to, and starts exactly level with their mark; the pile above is cut there, down to
   // two lines if need be. Only where the pile above would be left less than that does the comment
-  // join it as a stack: one thread in front, a tab for each. Pointing at a pile shows all of the
-  // thread in front.
+  // join it as a stack: one thread in front, a tab for each. A stack's tabs stand just above the
+  // words of its first comment, and each comment in it is set down by as far as its own words are
+  // below those, so whichever is in front starts level with its words and the tabs never move.
+  // Pointing at a pile shows all of the thread in front.
   function pin(V, sides, room, rem) {
     sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>');
-    const least = 3 * rem, gap = 0.35 * rem, slack = 0, at = $('passage').getBoundingClientRect();
+    const least = 3 * rem, gap = 0.35 * rem, tabs = 1.3 * rem, at = $('passage').getBoundingClientRect();
     const made = V.kids('passage').map(c => {
       const mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`).getBoundingClientRect();
       return { c, want: mark.top - at.top, side: nearer(mark.left, at.left, at.right) };
     });
     sides.forEach((m, k) => {
-      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least, gap, slack), wide = ruled(V, room(col));
-      const boxes = place(groups.map(g => ({ want: mine[g[0]].want, height: Infinity })), least, gap, at.height);
+      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least + tabs, gap), wide = ruled(V, room(col));
+      const boxes = place(groups.map(g => ({ want: mine[g[0]].want - (g.length > 1 ? tabs : 0), height: Infinity })), least, gap, at.height);
       col.insertAdjacentHTML('beforeend', groups.map((g, i) => {
-        const tabs = g.length < 2 ? '' : `<div class="tabs">${g.map(j => mine[j].c).map(c =>
+        const row = g.length < 2 ? '' : `<div class="tabs" style="height:${tabs}px">${g.map(j => mine[j].c).map(c =>
           `<button class="tab" data-front="${c.id}" style="--c:${ink(c.author)}" aria-pressed="false" aria-label="Comment ${num(c.id)} by ${esc(c.author)}">${glyph(c.author, true)}${num(c.id)}</button>`).join('')}</div>`;
-        return `<div class="pile" style="top:${boxes[i].top}px;max-height:${boxes[i].height}px">${tabs}${g.map(j => nodeHTML(mine[j].c, V, runHTML, wide)).join('')}</div>`;
+        return `<div class="pile" style="top:${boxes[i].top}px;max-height:${boxes[i].height}px">${row}${g.map(j => nodeHTML(mine[j].c, V, runHTML, wide)).join('')}</div>`;
       }).join(''));
       if (boxes.length) col.style.minHeight = boxes[boxes.length - 1].top + boxes[boxes.length - 1].height + 'px';
-      col.querySelectorAll('.pile').forEach(p => front(p.querySelector(':scope > .node')));
+      col.querySelectorAll('.pile').forEach((p, i) => {
+        p.querySelectorAll(':scope > .node').forEach((n, m) => n.style.marginTop = mine[groups[i][m]].want - mine[groups[i][0]].want + 'px');
+        front(p.querySelector(':scope > .node'));
+      });
     });
   }
   // Bring one thread of a pile to the front, and mark the pile as cut if it does not all show.
