@@ -5,7 +5,6 @@ import re
 from pathlib import Path
 
 from .config import PACKAGE, ROOT, TEMPLATES
-from .page import read_side
 from .providers import KNOWN
 from .table import run_dirs
 
@@ -16,7 +15,6 @@ HEAD = '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewpor
 ICONS = "https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/"
 REPO = "https://github.com/asavs/RADBINICAL"
 WORKFLOW = REPO + "/actions/workflows/run.yml"   # the Run workflow; only the owner can start it
-SIDES = ("plants", "redactions", "forecasts", "rulings", "amendments")   # side files the viewer shows
 
 
 def load_brands():
@@ -47,10 +45,9 @@ def marks(readers, brands):
 
 
 def render(run_dir):
-    """Write page.html beside page.json, with the side files the viewer shows embedded as `D.side`."""
+    """Write page.html beside page.json."""
     run_dir = Path(run_dir)
     data = json.loads((run_dir / "page.json").read_text(encoding="utf-8"))
-    data["side"] = {n: s for n in SIDES if (s := read_side(run_dir, n)) is not None}
     data["site"] = {"run": run_dir.name, "workflow": WORKFLOW}
     tpl = (TEMPLATES / "viewer.html").read_text(encoding="utf-8")
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
@@ -66,26 +63,11 @@ def _stats(d):
     return f'{len(d["comments"])} comments · {d["layers_done"]} rounds'
 
 
-def _forks(name, kids, depth=0):
-    """Runs forked from `name`, one quiet line each, their own forks beneath."""
-    if name not in kids or depth > 20:
-        return ""
-    return '<ul class="forks">' + "".join(
-        f'<li><small>fork <a href="{html.escape(n)}/">{html.escape(n)}</a> · {_stats(d)}</small>{_forks(n, kids, depth + 1)}</li>'
-        for n, d in kids[name]) + "</ul>"
-
-
 def index_items(rows, brands):
-    """The index list from [(run name, page)]. Repeats of one config share an entry; forks sit
-    under the run they came from."""
-    names = {n for n, _ in rows}
-    kids, groups = {}, {}
+    """The index list from [(run name, page)]. Repeats of one config share an entry."""
+    groups = {}
     for n, d in rows:
-        src = d.get("lineage")
-        if src and src != n and src in names:
-            kids.setdefault(src, []).append((n, d))
-        else:
-            groups.setdefault(d.get("group") or n, []).append((n, d))
+        groups.setdefault(d.get("group") or n, []).append((n, d))
     out = []
     for g, members in groups.items():
         n, d = members[0]
@@ -93,11 +75,10 @@ def index_items(rows, brands):
                 f'<span>{html.escape(", ".join(r["name"] for r in d["readers"]))}</span>')
         date = html.escape(d.get("started", "")[:10])
         if len(members) == 1:
-            out.append(f'{head}<small>{html.escape(n)} · {_stats(d)} · {date}</small>{_forks(n, kids)}</li>')
+            out.append(f'{head}<small>{html.escape(n)} · {_stats(d)} · {date}</small></li>')
             continue
         runs = " · ".join(f'<a href="{html.escape(m)}/">{html.escape(m)}</a> {_stats(e)}' for m, e in members)
-        out.append(f'{head}<small>{html.escape(g)} · run {len(members)} times · {date}</small><small>{runs}</small>'
-                   + "".join(_forks(m, kids) for m, _ in members) + "</li>")
+        out.append(f'{head}<small>{html.escape(g)} · run {len(members)} times · {date}</small><small>{runs}</small></li>')
     return "".join(out)
 
 

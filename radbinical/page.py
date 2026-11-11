@@ -1,15 +1,9 @@
 """The page: a passage, its comments, and how one reader sees them.
 
-A run lives in one folder. `page.json` is the page itself: the passage (with `id`, the passage
-file's stem), the readers, `cast` (a short hash of the readers' model ids, see `cast_of`), `group`
-(shared by repeated runs of one config; otherwise the folder name), the flags, the comments and
-the log of every turn. A run may also carry an optional `lineage`.
-
-Anything else a later step produces about a run goes beside it as its own JSON file,
-`<run>/<name>.json` (`redactions.json`, `forecasts.json`, ...), never into `page.json`. Use
-`read_side` / `write_side`, or `Page.side` / `Page.save_side`. A side file that called models may
-carry a top-level `"usage"` list of usage dicts (as `ask` returns them); the table adds up their
-`cost` into the run's cost.
+A run lives in one folder, and `page.json` in it is the whole record: the passage (with `id`, the
+passage file's stem), the readers, `cast` (a short hash of the readers' model ids, see `cast_of`),
+`group` (shared by repeated runs of one config; otherwise the folder name), the flags, the comments
+and the log of every turn.
 """
 import hashlib
 import json
@@ -70,18 +64,6 @@ def cast_of(readers):
     return hashlib.sha1("\n".join(ids).encode("utf-8")).hexdigest()[:8]
 
 
-def read_side(run_dir, name):
-    """The side file `<run_dir>/<name>.json`, or None if it does not exist."""
-    f = Path(run_dir) / f"{name}.json"
-    return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
-
-
-def write_side(run_dir, name, obj):
-    if name == "page":
-        raise ValueError("page.json is the page itself, not a side file")
-    (Path(run_dir) / f"{name}.json").write_text(json.dumps(obj, indent=1, ensure_ascii=False), encoding="utf-8")
-
-
 def load_passage(path):
     raw = Path(path).read_text(encoding="utf-8")
     paras = [" ".join(p.split()) for p in re.split(r"\n\s*\n", raw) if p.strip()]
@@ -103,11 +85,6 @@ def thread(page, c):
     return chain
 
 
-def below(page, cid):
-    """Every comment in the margins of node `cid`, however deep: each one followed by its own."""
-    return [x for k in children(page, cid) for x in (k, *below(page, k["id"]))]
-
-
 def render_for_reader(page, visible, label, me):
     """Plain-text view of the page as one reader sees it."""
     p = page["passage"]
@@ -121,8 +98,6 @@ def render_for_reader(page, visible, label, me):
         pad = "    " * depth
         who = label(c["author"]) + (" (you)" if c["author"] == me else "")
         where = "on the passage" if c["target"] == "passage" else f"on {c['target']}"
-        if c.get("stale"):
-            where += f" (its words were amended away in version {c['stale']})"
         q = f': "{c["quote"]}"' if c.get("quote") else ""
         out.append(f"{pad}[{c['id']}] {who}, {where}{q}")
         for line in c["text"].splitlines() or [""]:
@@ -148,12 +123,6 @@ class Page:
     def load(cls, run_dir):
         return cls(json.loads((Path(run_dir) / "page.json").read_text(encoding="utf-8")), run_dir)
 
-    def side(self, name):
-        return read_side(self.dir, name)
-
-    def save_side(self, name, obj):
-        write_side(self.dir, name, obj)
-
     def save(self):
         with self.lock:
             (self.dir / "page.json").write_text(json.dumps(self.d, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -161,7 +130,7 @@ class Page:
     def add(self, author, layer, args, kind=None, meta=None):
         """Validate and record one annotation. Returns (ok, message for the model).
 
-        `kind` marks a comment that is not a model's own reading ("plant", "human"); `meta` is a
+        `kind` marks a comment that is not a model's own reading ("human"); `meta` is a
         dict of notes about it. Both are stored on the comment and never shown to readers.
         """
         d, flags = self.d, self.d["flags"]

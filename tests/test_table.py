@@ -10,18 +10,16 @@ from radbinical.table import comment_rows, rows, runs, write_jsonl
 TEXT = "The laws of production are fixed. Distribution is a matter of human institution solely."
 
 
-def make_run(base, name, group, lineage=None):
+def make_run(base, name, group):
     readers = [reader_entry(m) for m in ("mock:alef", "mock:bet")]
     data = {"passage": {"id": "mill-property", "title": "T", "source": "", "text": TEXT},
             "readers": readers, "cast": cast_of(readers), "group": group,
             "flags": dict(DEFAULT_FLAGS), "comments": [], "log": [], "counter": 0, "layers_done": 2, "started": "2026-01-01T00:00:00"}
-    if lineage:
-        data["lineage"] = lineage
     d = Path(base) / name
     d.mkdir()
     page = Page(data, d)
     page.add("alef", 1, {"target": "passage", "quote": "laws of production", "text": "gloss"})
-    page.add("bet", 1, {"target": "passage", "quote": "human institution", "text": "other"}, kind="plant", meta={"truth": "x"})
+    page.add("bet", 1, {"target": "passage", "quote": "human institution", "text": "other"}, kind="human", meta={"blind": True})
     page.add("bet", 2, {"target": "c1", "quote": "gloss", "text": "reply", "see_also": ["c2"]})
     page.add("alef", 2, {"target": "c3", "text": "reply to reply"})
     data["log"] = [{"layer": 1, "reader": "alef", "model": "mock:alef", "usage": {"cost": 0.25}},
@@ -35,10 +33,8 @@ class Table(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.base = self.tmp.name
-        make_run(self.base, "b-run", "g1", lineage="L1")
-        p = make_run(self.base, "a-run", "g1")
-        p.save_side("redactions", {"items": [], "usage": [{"cost": 0.5}, {"cost": 0.125}]})
-        p.save_side("notes", ["a list, no usage"])
+        make_run(self.base, "b-run", "g1")
+        make_run(self.base, "a-run", "g1")
         (Path(self.base) / "not-a-run").mkdir()
 
     def tearDown(self):
@@ -48,17 +44,16 @@ class Table(unittest.TestCase):
         r = rows(self.base)
         self.assertEqual([x["run"] for x in r], ["a-run"] * 4 + ["b-run"] * 4)
         c1, c2, c3, c4 = r[:4]
-        self.assertEqual(list(c1), ["run", "passage", "cast", "group", "lineage", "model", "reader", "round", "id",
-                                    "parent", "root", "depth", "start", "end", "quote", "text", "see_also", "kind", "stale", "inherited", "repeat_of"])
+        self.assertEqual(list(c1), ["run", "passage", "cast", "group", "model", "reader", "round", "id",
+                                    "parent", "root", "depth", "start", "end", "quote", "text", "see_also", "kind", "repeat_of"])
         self.assertEqual((c1["parent"], c1["root"], c1["depth"], c1["kind"], c1["model"]), (None, "c1", 0, None, "mock:alef"))
         self.assertEqual(TEXT[c1["start"]:c1["end"]], "laws of production")
-        self.assertEqual(c2["kind"], "plant")
+        self.assertEqual(c2["kind"], "human")
         self.assertNotIn("meta", c2)
         self.assertEqual((c3["parent"], c3["root"], c3["depth"], c3["quote"], c3["see_also"]), ("c1", "c1", 1, "gloss", ["c2"]))
         self.assertEqual((c4["parent"], c4["root"], c4["depth"], c4["quote"], c4["round"]), ("c3", "c1", 2, None, 2))
         self.assertEqual((c3["start"], c3["end"]), (c1["start"], c1["end"]))
         self.assertEqual((c4["start"], c4["end"]), (c1["start"], c1["end"]))
-        self.assertEqual((r[0]["lineage"], r[4]["lineage"]), (None, "L1"))
         self.assertFalse(any(x["repeat_of"] for x in r))
 
     def test_repeat_of_names_the_first_time_a_reader_wrote_the_same_words(self):
@@ -75,9 +70,8 @@ class Table(unittest.TestCase):
         self.assertEqual(a["cast"], cast_of(["mock:bet", "mock:alef"]))
         self.assertEqual(a["readers"], [{"name": "alef", "model": "mock:alef", "joined": 1},
                                         {"name": "bet", "model": "mock:bet", "joined": 1}])
-        self.assertEqual((a["cost"], a["cost_estimated"]), (0.875, 0.0))   # log plus redactions.json
+        self.assertEqual((a["cost"], a["cost_estimated"]), (0.25, 0.0))
         self.assertEqual(b["cost"], 0.25)
-        self.assertEqual(b["lineage"], "L1")
 
     def test_jsonl_is_utf8_and_stable(self):
         out = Path(self.base) / "data" / "x.jsonl"

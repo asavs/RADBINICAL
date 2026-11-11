@@ -24,12 +24,10 @@ def page_of(d):
 
 
 def comment_rows(run, page):
-    """Rows for one page. A reply's start and end are its root's span on the passage. In a fork,
-    `inherited` marks the comments copied from the run it was forked from. `repeat_of` is the id of
-    the first earlier comment by the same reader with the same words (spacing aside), wherever on
-    the page either was put."""
+    """Rows for one page. A reply's start and end are its root's span on the passage. `repeat_of`
+    is the id of the first earlier comment by the same reader with the same words (spacing aside),
+    wherever on the page either was put."""
     models = {r["name"]: r["model"] for r in page["readers"]}
-    copied = (page.get("forked_from") or {}).get("comments", 0)
     out, said = [], {}
     for c in sorted(page["comments"], key=lambda c: c["n"]):
         first = said.setdefault((c["author"], " ".join(c["text"].split())), c["id"])
@@ -37,25 +35,19 @@ def comment_rows(run, page):
         root, depth = chain[0], len(chain) - 1
         out.append({
             "run": run, "passage": page["passage"]["id"], "cast": page["cast"], "group": page["group"],
-            "lineage": page.get("lineage"), "model": models.get(c["author"]), "reader": c["author"],
+            "model": models.get(c["author"]), "reader": c["author"],
             "round": c["layer"], "id": c["id"], "parent": None if c["target"] == "passage" else c["target"],
             "root": root["id"], "depth": depth, "start": root["start"], "end": root["end"],
-            "quote": c.get("quote"), "text": c["text"], "see_also": c.get("see_also", []), "kind": c.get("kind"), "stale": c.get("stale"),
-            "inherited": c["n"] <= copied, "repeat_of": None if first == c["id"] else first,
+            "quote": c.get("quote"), "text": c["text"], "see_also": c.get("see_also", []), "kind": c.get("kind"),
+            "repeat_of": None if first == c["id"] else first,
         })
     return out
 
 
-def usages(d, page):
-    """Every usage dict of a run: its log's, each priced as in radbinical/prices.py when it has
-    tokens but no cost, and those in the "usage" lists of its side files, as stored."""
-    out = [complete(e.get("model", ""), dict(e.get("usage") or {})) for e in page["log"]]
-    for f in sorted(d.glob("*.json")):
-        if f.name != "page.json":
-            side = json.loads(f.read_text(encoding="utf-8"))
-            if isinstance(side, dict):
-                out += [u for u in side.get("usage") or [] if isinstance(u, dict)]
-    return out
+def usages(page):
+    """Every usage dict in a run's log, each priced as in radbinical/prices.py when it has tokens
+    but no cost."""
+    return [complete(e.get("model", ""), dict(e.get("usage") or {})) for e in page["log"]]
 
 
 def joined(page):
@@ -74,11 +66,10 @@ def joined(page):
 def run_row(d, page):
     """One run's row. `cost` is every call's cost, reported or estimated; `cost_estimated` is the
     part of it estimated from tokens."""
-    reported, estimated = costs(usages(d, page))
+    reported, estimated = costs(usages(page))
     j = joined(page)
     return {
         "run": d.name, "passage": page["passage"]["id"], "cast": page["cast"], "group": page["group"],
-        "lineage": page.get("lineage"),
         "readers": [{"name": r["name"], "model": r["model"], "joined": j.get(r["name"])} for r in page["readers"]],
         "flags": page["flags"], "rounds": page["layers_done"], "comments": len(page["comments"]),
         "cost": round(reported + estimated, 6), "cost_estimated": estimated, "started": page.get("started"),

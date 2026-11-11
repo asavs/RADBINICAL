@@ -127,13 +127,8 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 .c.flash { animation: flash 1.6s ease-out }
 @keyframes flash { from { background: color-mix(in srgb, var(--mark) 55%, transparent) } to { background: transparent } }
 @media (prefers-reduced-motion: reduce) { .c.flash { animation: none; outline: 2px solid var(--mark) } }
-/* a person's comment: dotted number; a planted one (only with Plants on): dashed edge and its truth;
-   a stale one, whose quoted words were amended away: dimmed, its opening words struck */
+/* a person's comment: dotted number */
 .c.human .n, sup.m.h, .t.human header a { text-decoration: underline dotted 1px; text-underline-offset: 2px }
-.c.plant, .t.plant .tb { outline: 1px dashed var(--warn); outline-offset: 1px }
-.truth { font-style: italic; color: var(--warn) }
-.t .truth { display: block; margin-top: 0.3rem }
-.c.stale, .t.stale { opacity: 0.55 } .c.stale .lemma, .t.stale .lemma { text-decoration: line-through }
 .colophon { font-family: var(--text); font-style: italic; font-weight: 500; color: var(--ink-2); font-size: 1.02rem; text-align: center }
 
 /* reading view: whole threads at a comfortable size, every margin beneath its text */
@@ -169,19 +164,6 @@ table { border-collapse: collapse; font-size: 0.8rem; font-variant-numeric: tabu
 td, th { text-align: left; padding: 0.2rem 1rem 0.2rem 0; vertical-align: top; border-bottom: 1px solid var(--rule) }
 th { font-weight: 500; color: var(--ink-2) }
 
-/* apparatus: what later steps found about the page, set like the end matter of an edition */
-.apparatus { display: flex; flex-direction: column; gap: 1.1rem; border-top: 1px solid var(--ink); padding-top: 0.5rem }
-.apparatus h2 { font-family: var(--text); font-weight: 700; font-size: 1.35rem; letter-spacing: 0.01em; margin: 0 }
-.apparatus h3 { font-family: var(--small); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em; color: var(--ink-2); margin: 0 0 0.3rem }
-.apparatus p { margin: 0 0 0.35rem; font-family: var(--gloss); font-size: 0.95rem; line-height: 1.45; max-width: 46rem }
-.apparatus .lead { font-family: var(--text); font-style: italic; font-weight: 500; font-size: 1rem; color: var(--ink-2) }
-.apparatus .run { columns: 3 22rem; column-gap: 1.5rem }
-.apparatus .run > div { break-inside: avoid-column; margin-bottom: 0.8rem }
-.apparatus .st { font-family: var(--small); font-weight: 700; font-size: 0.85em; letter-spacing: 0.04em }
-.apparatus del { color: var(--ink-2) } .apparatus ins { text-decoration: underline 1px var(--ink); text-underline-offset: 2.5px }
-.apparatus td .on, .apparatus .on { font-family: var(--small); font-size: 0.85em; color: var(--ink-2) }
-.apparatus .diff { font-weight: 700 }
-
 /* Phone: the passage alone; commentary opens from the bottom. */
 @media (max-width: 699px) {
   .side { display: none }
@@ -211,7 +193,7 @@ th { font-weight: 500; color: var(--ink-2) }
 html.printing { font-size: var(--print-fs) }
 html.printing body { padding: 0 }
 html.printing .wrap { width: var(--print-w); max-width: none; gap: 0.5rem }
-html.printing .bar, html.printing .all, html.printing details, html.printing .apparatus, html.printing dialog { display: none }
+html.printing .bar, html.printing .all, html.printing details, html.printing dialog { display: none }
 html.printing .daf { border: none; padding: 0 }
 /* the desktop sheet, whatever width the browser reports for the paper */
 html.printing .side { display: flex }
@@ -225,7 +207,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
   :root:root:root { --paper: #fff; --sheet: #fff; --ink: #14181f; --ink-2: #505a69; --rule: #c9d0d9; --mark: #f0bf00; --warn: #8a5a00;
     --a0: #c2362b; --a1: #1565c0; --a2: #1b7f4b; --a3: #7b3fb5; --a4: #a85a00; --a5: #0b7c8c; --a6: #b02a78; --a7: #56606e; --flip: none; color-scheme: light }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact }
-  .bar, .all, details, .apparatus, dialog { display: none }
+  .bar, .all, details, dialog { display: none }
   .c { break-inside: avoid }
 }
 </style>
@@ -240,7 +222,6 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
       <aside class="ctl" aria-label="Rounds">
         <label for="layer">Rounds <input type="range" id="layer" min="1" max="1" step="1" value="1"></label>
         <button id="play" hidden>Play</button>
-        <button id="plants" aria-pressed="false" hidden title="Mark the comments planted on the page, with what is wrong or unusual in each and who caught it">Plants</button>
         <button id="pin" aria-pressed="false" title="Set each comment on the passage level with its words, cut short where the next begins">Pin to text</button>
         <button id="print" title="Print the page as one poster sheet">Print</button>
         <a id="again" hidden target="_blank" rel="noopener">Another round</a>
@@ -254,7 +235,6 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
     <button class="all" id="all" hidden></button>
   </main>
   <div class="colophon" id="source"></div>
-  <section class="apparatus" id="apparatus" aria-label="Apparatus" hidden></section>
   <dialog class="sheet" id="sheet" aria-labelledby="sheetTitle">
     <div class="sheet-head"><button class="sheet-title" id="sheetTitle"></button><button class="sheet-close" id="sheetClose" autofocus>Close</button></div>
     <div class="sheet-body" id="sheetBody"></div>
@@ -298,31 +278,8 @@ function start() {
   const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
   const num = id => id.replace(/^c/, '');
   const rounds = Math.max(1, D.layers_done || 1);
-  const S = { upTo: rounds, off: new Set(), icons: false, plants: false, pin: false };
-  const SIDE = D.side || {};
-
-  // Planted comments are marked only while Plants is on, so the sheet otherwise reads as its readers saw it.
-  const plantOf = Object.fromEntries(((SIDE.plants || {}).plants || []).map(p => [p.id, p]));
-  // A reply by the reader a plant is filed under is judged but does not count toward its outcome.
-  const verdictOf = Object.fromEntries(Object.values(plantOf).flatMap(p => (p.replies || []).filter(r => r.verdict)
-    .map(r => [r.id, r.nominal_author ? `${r.verdict}, by its nominal author, not counted` : r.verdict])));
-  const isPlant = c => c.kind === 'plant' || !!plantOf[c.id];
-  const names = xs => xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
-  // A judged slip is caught (or not) by readers; a judged sound reading is dismissed (or not). See radbinical/judge.py.
-  const outcome = p => {
-    const sound = p.sort === 'sound', hit = sound ? p.dismissed : p.caught;
-    if (typeof hit !== 'boolean') return null;
-    const by = sound ? p.dismissed_by : p.by, when = sound ? p.dismissed_round : p.caught_round;
-    return hit ? { text: `${sound ? 'dismissed' : 'caught'} by ${names(by || [])}`, when } : { text: sound ? 'not dismissed' : 'not caught' };
-  };
-  function plantNote(c) {
-    const p = plantOf[c.id] || {}, m = c.meta || {}, sound = (p.sort || m.sort) === 'sound', truth = p.truth || m.truth, o = outcome(p);
-    const fate = o ? esc(o.text[0].toUpperCase() + o.text.slice(1)) + (o.when ? ` in round ${esc(o.when)}` : '') + '.' : '';
-    return `${sound ? 'Planted sound reading' : 'Planted slip'}${truth ? ': ' + inline(String(truth).replace(/[.\s]+$/, '')) : ''}. ${fate}`.trim();
-  }
-  const marked = c => S.plants && isPlant(c);
-  const kinds = c => (people.has(c.author) ? ' human' : '') + (marked(c) ? ' plant' : '') + (c.stale ? ' stale' : '');
-  const staleNote = c => c.stale ? ` title="Its quoted words were amended away in version ${esc(c.stale)}"` : '';
+  const S = { upTo: rounds, off: new Set(), icons: false, pin: false };
+  const kinds = c => (people.has(c.author) ? ' human' : '');
   const phone = matchMedia('(max-width: 699px)'), wide = matchMedia('(min-width: 1100px)');
   const sheet = $('sheet');
 
@@ -386,8 +343,7 @@ function start() {
   function runHTML(c, V) {
     const top = c.target === 'passage';
     const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 3 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
-    const truth = marked(c) ? ` <span class="truth">${plantNote(c)}</span>` : '';
-    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"${staleNote(c)}><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}${bodyHTML(c, V)}${truth}</div>`;
+    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}${bodyHTML(c, V)}</div>`;
   }
 
   // A node: a comment drawn by `content`, then its margin, holding a node for each comment on it.
@@ -490,13 +446,9 @@ function start() {
   function cardHTML(c) {
     const lemma = c.quote ? `<span class="lemma" title="${esc(c.quote)}">${esc(lemmaOf(c.quote))}</span>` : '';
     const refs = (c.see_also || []).filter(r => byId[r]).map(r => `<button data-go="${r}" style="text-decoration-color:${ink(byId[r].author)}" title="${esc(byId[r].author)}">${num(r)}</button>`).join(', ');
-    const m = c.meta || {}, tags = [
-      people.has(c.author) ? (m.blind ? 'a person, writing blind' : 'a person') : '',
-      S.plants && verdictOf[c.id] ? verdictOf[c.id] : '',
-      c.stale ? `quoted words amended away in version ${esc(c.stale)}` : ''].filter(Boolean).map(t => `<span class="tag">${t}</span>`).join(' ');
-    const truth = marked(c) ? `<span class="truth">${plantNote(c)}</span>` : '';
-    return `<div class="t${kinds(c)}" id="t-${c.id}" style="--c:${ink(c.author)}"><header><span>${glyph(c.author, true)} ${esc(c.author)}</span>${tags}<a href="#${c.id}" title="Link to this comment">${num(c.id)}</a></header>
-      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}${truth}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>`;
+    const tag = people.has(c.author) ? `<span class="tag">${(c.meta || {}).blind ? 'a person, writing blind' : 'a person'}</span>` : '';
+    return `<div class="t${kinds(c)}" id="t-${c.id}" style="--c:${ink(c.author)}"><header><span>${glyph(c.author, true)} ${esc(c.author)}</span>${tag}<a href="#${c.id}" title="Link to this comment">${num(c.id)}</a></header>
+      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>`;
   }
   let sheetSpan = null;
   function openReader(rootIds, flashId) {
@@ -579,111 +531,7 @@ function start() {
   });
   $('layer').addEventListener('input', e => { if (timer) stop(); S.upTo = +e.target.value; draw() });
 
-  // Apparatus: what later steps found about the page, from its side files, set beneath the sheet.
-  const cites = ids => {
-    const s = (ids || []).filter(id => byId[id]).map(id => `<button data-go="${id}" style="text-decoration-color:${ink(byId[id].author)}" title="${esc(byId[id].author)}">${num(id)}</button>`).join(', ');
-    return s ? ` <span class="refs">${s}</span>` : '';
-  };
-  const fmt = x => typeof x === 'number' ? (Number.isInteger(x) ? String(x) : x.toFixed(2)) : esc(x ?? '');
-  const grid = (head, rows) => `<div class="tbl"><table><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join('')}</tr>`).join('')}</table></div>`;
-  const mean = xs => { xs = xs.filter(x => typeof x === 'number'); return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : '' };
-
-  // compare in redactions.json: {models, pairs: [{a, b, all, disputed, settled, unresolved}], core, only_one, uncited}
-  const overlap = C => {
-    if (!C || (C.models || []).length < 2) return '';
-    const nm = m => esc(((SIDE.redactions.redactions || []).find(r => r.model === m) || {}).name || m);
-    return `<p class="lead">Overlap of cited comments (Jaccard): ${(C.pairs || []).map(p => `${nm(p.a)} and ${nm(p.b)} ${fmt(p.all)}`).join(' · ')}${
-      typeof C.uncited === 'number' ? ` · comments no redaction cites ${Math.round(C.uncited * 100)}%` : ''}. Cited by every redaction:${cites(C.core) || ' none'}</p>`;
-  };
-
-  function redactions(R) {
-    if (!R || !(R.redactions || []).length) return '';
-    const STATUS = [['disputed', 'Disputed'], ['settled', 'Settled'], ['unresolved', 'Unresolved']];
-    const check = k => {
-      const notes = [k.ids_ok === false && 'cites a comment that does not exist', k.quotes_ok === false && 'a quotation is not in the comment it cites', k.verdict].filter(Boolean);
-      return notes.length ? ` <span class="on"${k.why ? ` title="${esc(k.why)}"` : ''}>${esc(notes.join('; '))}</span>` : '';
-    };
-    const item = i => `${inline(i.summary || '')}${cites(i.cites)}${check(i.check || {})}`;
-    return `<div><h3>Redactions</h3><p class="lead">Each redactor set out what the page disputed, what it settled and what it left open, deciding nothing and citing a comment for every item.</p><div class="run">${
-      R.redactions.map(r => `<div><p><b>${esc(r.name || r.model)}</b>${r.signed === false ? ' <span class="on">read the page unsigned</span>' : ''}</p>${
-        r.error ? `<p class="on">Failed: ${esc(r.error)}</p>` : ''}${STATUS.map(([k, label]) => {
-        const items = (r.items || []).filter(i => i.status === k);
-        return items.length ? `<p><span class="st">${label}.</span> ${items.map(item).join(' ')}</p>` : '';
-      }).join('')}${(r.notes || []).length ? `<p class="on" title="${esc(r.notes.join('\n'))}">${r.notes.length} item${r.notes.length === 1 ? '' : 's'} dropped or trimmed</p>` : ''}</div>`).join('')}</div>${overlap(R.compare)}</div>`;
-  }
-
-  function forecasts(F) {
-    F = (F || {}).forecasts || [];
-    if (!F.length) return '';
-    const rs = [...new Set(F.map(f => f.round))].sort((a, b) => a - b), who = [...new Set(F.map(f => f.reader))];
-    const cell = f => f && f.error ? `<span class="on" title="${esc(f.error)}">failed</span>` : f ? `<span title="Named ${esc((f.predicted || []).map(num).join(', ') || 'none')}; of those, ${esc((f.hits || []).map(num).join(', ') || 'none')} drew replies">${(f.hits || []).length}/${(f.predicted || []).length}</span> <span class="on">${fmt(f.chance)}</span>` : '';
-    return `<div><h3>Forecasts</h3><p class="lead">Before each round, each reader named the comments it expected to draw replies. A cell gives how many did out of how many it named, then the rate chance would give.</p>${
-      grid(['Reader', ...rs.map(r => 'Round ' + r), 'Precision', 'Recall', 'Chance'], who.map(w => {
-        const mine = F.filter(f => f.reader === w);
-        return [esc(w), ...rs.map(r => cell(mine.find(f => f.round === r))), fmt(mean(mine.map(f => f.precision))), fmt(mean(mine.map(f => f.recall))), fmt(mean(mine.map(f => f.chance)))];
-      }))}</div>`;
-  }
-
-  function rulings(RU) {
-    if (!RU || !(RU.rulings || []).length) return '';
-    const all = RU.rulings, nm = r => r.name || r.model;
-    const cases = (RU.cases || []).length ? RU.cases : [...new Set(all.map(r => r.case))].map(id => ({ id }));
-    const models = [...new Set(all.map(nm))];
-    // A ruling's option is the option's text (radbinical/caselaw.py); shown as its letter, A, B, ...
-    const letterOf = (cs, o) => { const c = cases.find(c => c.id === cs), i = c && Array.isArray(c.options) ? c.options.indexOf(o) : -1; return i >= 0 ? String.fromCharCode(65 + i) : String(o) };
-    const opts = rs => [...new Set(rs.filter(r => r.option != null).map(r => letterOf(r.case, r.option)))].join(' / ');
-    const why = rs => esc(rs.map(r => r.error ? 'Failed: ' + r.error : r.reason).filter(Boolean).join('\n\n'));
-    const cell = (cs, m) => {
-      const of = cond => all.filter(r => r.case === cs && nm(r) === m && r.condition === cond), b = of('bare'), p = of('page');
-      if (!b.length && !p.length) return '';
-      return `<span title="${why(b)}">${esc(opts(b) || '–')}</span> → <span class="${opts(b) !== opts(p) ? 'diff' : ''}" title="${why(p)}">${esc(opts(p) || '–')}</span>${cites(p.flatMap(r => r.cites || []))}`;
-    };
-    const opt = c => Array.isArray(c.options) && c.options.length ? ` <span class="on">${c.options.map((o, i) => `${String.fromCharCode(65 + i)}. ${esc(o)}`).join(' · ')}</span>` : '';
-    // summary in rulings.json: {conditions: {bare, page: {agreement, pairwise, ...}}, changed: {count, of}, note}
-    const S2 = RU.summary || {}, cond = S2.conditions || {}, ch = S2.changed;
-    const agreed = cond.bare || cond.page ? `<p class="lead">Agreement between models: ${fmt(cond.bare && cond.bare.agreement)} on the bare passage, ${fmt(cond.page && cond.page.agreement)} with the page${
-      ch ? `; ${fmt(ch.count)} of ${fmt(ch.of)} rulings changed` : ''}. ${esc(S2.note || '')}</p>` : '';
-    return `<div><h3>Rulings</h3><p class="lead">Each model ruled on each case twice, first on the bare passage, then with the page before it. A cell reads bare → with the page, in bold where the two differ; numbers are the comments it cited.</p>${
-      grid(['Case', ...models.map(esc)], cases.map(c => [`<b>${esc(c.id)}</b>`, ...models.map(m => cell(c.id, m))]))}${
-      cases.filter(c => c.question || c.case).map(c => `<p><b>${esc(c.id)}.</b> ${inline(c.case || '')}${c.case && c.question ? ' ' : ''}${inline(c.question || '')}${opt(c)}</p>`).join('')}${agreed}</div>`;
-  }
-
-  function amendments(A) {
-    if (!A || !(A.versions || []).length) return '';
-    const props = A.proposals || [], used = new Set(A.versions.flatMap(v => v.from_proposals || []));
-    const votes = p => esc((p.votes || []).map(v => `${v.reader}: ${v.vote}${v.why ? ' (' + v.why + ')' : ''}`).join('\n'));
-    // A proposal is "open" (not yet voted on), "invalid" (never put to the vote) or "closed"; see radbinical/amend.py.
-    const fate = p => p.status === 'open' ? 'waiting for the vote' : p.status === 'invalid' ? 'not put to the vote'
-      : `${p.yes || 0} for, ${p.no || 0} against${p.abstain ? `, ${p.abstain} abstaining` : ''} · ${p.applied ? 'applied' : p.passed ? 'passed, not applied' : 'not passed'}`;
-    const prop = p => `<p><del>${esc(p.quote || '')}</del> <ins>${esc(p.replacement || '')}</ins> <span class="on" title="${votes(p)}">${esc(p.author || '')} · version ${esc(p.version ?? '')} · ${fate(p)}${p.note ? ` (${esc(p.note)})` : ''}</span>${p.reason ? ' ' + inline(p.reason) : ''}${cites(p.cites)}</p>`;
-    const rest = props.filter(p => !used.has(p.id));
-    return `<div><h3>Amendments</h3><p class="lead">${A.question ? inline(A.question) + ' · ' : ''}${A.threshold != null ? 'votes to pass ' + fmt(A.threshold) + ' · ' : ''}${A.versions.length} version${A.versions.length === 1 ? '' : 's'}</p>${
-      A.versions.map(v => `${(v.from_proposals || []).map(id => props.find(p => p.id === id)).filter(Boolean).map(prop).join('')}<p><span class="st">Version ${esc(v.n)}.</span> ${inline(v.text || '')}</p>`).join('')}${
-      rest.length ? `<p><span class="st">Proposed and not applied.</span></p>${rest.map(prop).join('')}` : ''}</div>`;
-  }
-
-  function plants(PL) {
-    if (!S.plants || !PL || !(PL.plants || []).length) return '';
-    return `<div><h3>Planted comments</h3><p class="lead">Comments placed on the page under a reader's name, to see whether the others catch a slip or dismiss a sound reading${PL.judge ? `; judged by ${esc(PL.judge)}` : ''}.</p>${
-      grid(['Comment', 'Sort', 'Under the name of', 'Round', 'Replies', 'Outcome', 'Rounds to catch'], PL.plants.map(p => {
-        const o = outcome(p), counts = Object.entries(p.counts || {}).filter(([, n]) => n).map(([v, n]) => `${n} ${esc(v)}`).join(', ');
-        const reps = p.replies || [], own = reps.filter(r => r.nominal_author).length;
-        const note = [counts, own ? `${own} by its nominal author, not counted` : ''].filter(Boolean).join('; ');
-        return [cites([p.id]) || esc(p.id), p.sort === 'sound' ? 'sound reading' : 'slip', esc(p.author || ''), fmt(p.round),
-          `${reps.length - own}${note ? ` <span class="on">${note}</span>` : ''}`,
-          o ? esc(o.text) + (o.when ? ` in round ${esc(o.when)}` : '') : 'not judged', fmt(p.rounds_to_catch)];
-      }))}${(PL.notes || []).length ? `<p class="on">${PL.notes.length} note${PL.notes.length === 1 ? '' : 's'} from judging, in plants.json.</p>` : ''}</div>`;
-  }
-
-  function drawApparatus() {
-    const parts = [redactions(SIDE.redactions), forecasts(SIDE.forecasts), rulings(SIDE.rulings), amendments(SIDE.amendments), plants(SIDE.plants)].filter(Boolean);
-    $('apparatus').innerHTML = parts.length ? '<h2>Apparatus</h2>' + parts.join('') : '';
-    $('apparatus').hidden = !parts.length;
-  }
-
-  $('plants').hidden = !D.comments.some(isPlant);
   $('pin').addEventListener('click', e => { S.pin = !S.pin; e.target.setAttribute('aria-pressed', S.pin); drawMargins(shown()) });
-  $('plants').addEventListener('click', e => { S.plants = !S.plants; e.target.setAttribute('aria-pressed', S.plants); if (sheet.open) sheet.close(); draw(); drawApparatus() });
   if (D.site && D.site.workflow) {
     const a = $('again');
     a.href = D.site.workflow; a.hidden = false;
@@ -717,7 +565,7 @@ function start() {
     ${authors.some(brandOf) ? '<div><h2>Logos</h2><p>Each reader is marked with its maker\'s logo and brand colour, to show whose model wrote what. The marks belong to their owners. Icons are linked from the <a href="https://github.com/lobehub/lobe-icons">lobe-icons</a> set.</p></div>' : ''}
     <div><h2>Round by round</h2><div class="tbl"><table><tr><th>Round</th><th>Reader</th><th>Comments</th><th>Note</th></tr>${
       [...D.log].sort((a, b) => a.layer - b.layer).map(l =>`<tr><td>${l.layer}</td><td>${esc(l.reader)}</td><td>${l.comments}</td><td>${esc(l.error ? 'Failed: ' + l.error : (l.closing || ''))}</td></tr>`).join('')}</table></div></div>`;
-  draw(); drawApparatus();
+  draw();
   if (authors.some(brandOf)) { // logos are linked, not bundled: show them only once one is known to load
     const probe = new Image();
     probe.onload = () => { S.icons = true; draw() };

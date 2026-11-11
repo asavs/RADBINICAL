@@ -1,5 +1,5 @@
 """What the runs cost: per run and in total, the cost providers reported, the cost estimated
-from tokens (radbinical/prices.py) and their sum, over the page's log and every side file's usage.
+from tokens (radbinical/prices.py) and their sum, over each page's log.
 
     python -m radbinical spend
     python -m radbinical spend --since 2026-11-10            # runs started at or after this
@@ -26,7 +26,7 @@ def main(a):
         started = page.get("started")
         if since and not (started and when(started) >= since):
             continue
-        rows.append((d.name, started or "", *costs(usages(d, page))))
+        rows.append((d.name, started or "", *costs(usages(page))))
     w = max([len(r[0]) for r in rows] + [3])
     print(f"{'run':<{w}}  {'started':<19}  {'reported':>10}  {'estimated':>10}  {'sum':>10}")
     for name, started, rep, est in rows:

@@ -1,6 +1,0 @@
-{"run": "read-01-a-s1", "reader": "qwen3.8-27b", "model": "qwen/qwen3.8-27b", "joined": 5, "comments": 2, "share_engaging": 1.0, "share_fresh": 0.0, "mean_age": 3.57, "max_age": 4, "share_older": 1.0}
-{"run": "read-01-a-s2", "reader": "qwen3.8-27b", "model": "qwen/qwen3.8-27b", "joined": 5, "comments": 2, "share_engaging": 1.0, "share_fresh": 0.0, "mean_age": 2.44, "max_age": 4, "share_older": 0.7778}
-{"run": "read-01-a-s3", "reader": "qwen3.8-27b", "model": "qwen/qwen3.8-27b", "joined": 5, "comments": 2, "share_engaging": 1.0, "share_fresh": 0.0, "mean_age": 2.29, "max_age": 4, "share_older": 0.7143}
-{"run": "read-01-a-s4", "reader": "qwen3.8-27b", "model": "qwen/qwen3.8-27b", "joined": 5, "comments": 2, "share_engaging": 1.0, "share_fresh": 0.0, "mean_age": 3.33, "max_age": 4, "share_older": 0.8333}
-{"run": "read-01-a-s5", "reader": "qwen3.8-27b", "model": "qwen/qwen3.8-27b", "joined": 5, "comments": 3, "share_engaging": 1.0, "share_fresh": 0.0, "mean_age": 3.15, "max_age": 4, "share_older": 0.8462}
-{"run": "read-01-a-s6", "reader": "qwen3.8-27b", "model": "qwen/qwen3.8-27b", "joined": 5, "comments": 2, "share_engaging": 1.0, "share_fresh": 0.0, "mean_age": 2.86, "max_age": 4, "share_older": 0.7143}

@@ -20,7 +20,6 @@ DEFAULT_FLAGS = {
     "max_tokens": 8000, 
     "temperature": None,
     "seed": 0,
-    "forecast": False,            # before each round after the first, readers name the comments they expect to draw replies
 }
 
 

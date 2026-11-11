@@ -5,12 +5,27 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from radbinical import ask as ask_mod
 from radbinical import prices, rounds
 from radbinical.cli import main
 from radbinical.commands import prices as prices_cmd
+from radbinical.config import DEFAULT_FLAGS
+from radbinical.page import Page
 from radbinical.table import runs
-from test_plant import make_page
+
+TEXT = "The laws of Production partake of the character of physical truths. Distribution is a matter of human institution solely."
+
+
+def make_page(d, layers_done=2):
+    """A page in folder d with two readers and two comments in round 1."""
+    data = {"passage": {"id": "t", "title": "T", "source": "", "text": TEXT},
+            "readers": [{"model": "mock:alef", "name": "alef"}, {"model": "mock:bet", "name": "bet"}],
+            "cast": "x", "group": "g", "flags": dict(DEFAULT_FLAGS), "comments": [], "log": [],
+            "counter": 0, "layers_done": layers_done}
+    page = Page(data, d)
+    page.add("alef", 1, {"target": "passage", "quote": "physical truths", "text": "Physical, as in natural law."})
+    page.add("bet", 1, {"target": "c1", "text": "Natural law is too strong."})
+    page.save()
+    return page
 
 FAKE = {"anthropic/claude-test-1.5": {"prompt": 1e-06, "completion": 5e-06},
         "openai/gpt-test": {"prompt": 2e-06, "completion": 1e-05}}
@@ -29,7 +44,6 @@ class Prices(unittest.TestCase):
 
     def tearDown(self):
         prices.TABLE = None
-        ask_mod.HOOK = None
         self.tmp.cleanup()
 
     def test_tokens_and_reasoning(self):
@@ -56,12 +70,6 @@ class Prices(unittest.TestCase):
         self.assertEqual(prices.complete("openai:gpt-test", dict(reported)), reported)
         self.assertEqual(prices.complete("x-ai/unpriced", {"prompt_tokens": 5}), {"prompt_tokens": 5})
         self.assertEqual(prices.costs([{"cost": 0.5}, {"cost": 0.25, "cost_estimated": True}, {}, "junk"]), (0.5, 0.25))
-
-    def test_ask_estimates_when_no_cost(self):
-        ask_mod.HOOK = lambda *a: ("ok", {"prompt_tokens": 1000, "completion_tokens": 100})
-        self.assertEqual(ask_mod.ask("anthropic:claude-test-1-5", "s", "u")[1]["cost_estimated"], True)
-        ask_mod.HOOK = lambda *a: ("ok", {"prompt_tokens": 1000, "completion_tokens": 100, "cost": 0.01})
-        self.assertNotIn("cost_estimated", ask_mod.ask("anthropic:claude-test-1-5", "s", "u")[1])
 
     def test_turn_is_priced_once_on_summed_tokens(self):
         d = Path(self.tmp.name) / "r"
@@ -139,7 +147,6 @@ class Spend(unittest.TestCase):
                 {"layer": 2, "reader": "bet", "model": "openai:gpt-test", "usage": {"prompt_tokens": 1, "cost": 0.25, "cost_estimated": True}},
                 {"layer": 2, "reader": "alef", "model": "mock:alef", "usage": {"prompt_tokens": 3}}]
             page.save()
-            page.save_side("plants", {"plants": [], "usage": [{"cost": 1.0}, {"cost": 0.125, "cost_estimated": True}]})
 
     def tearDown(self):
         prices.TABLE = None
@@ -147,18 +154,18 @@ class Spend(unittest.TestCase):
 
     def test_table_splits_estimated_cost(self):
         r = runs(self.base)[0]
-        self.assertEqual((r["cost"], r["cost_estimated"]), (1.878, 0.378))
+        self.assertEqual((r["cost"], r["cost_estimated"]), (0.753, 0.253))
         log = json.loads((self.base / "early" / "page.json").read_text(encoding="utf-8"))["log"]
         self.assertNotIn("cost", log[1]["usage"])  # the record is not rewritten
 
     def test_spend(self):
         out = run(["spend", "--runs", str(self.base)])
         lines = out.splitlines()
-        self.assertTrue(any(l.startswith("early ") and l.split()[-3:] == ["1.5000", "0.3780", "1.8780"] for l in lines))
-        self.assertEqual(lines[-1], "total 3.7560 USD")
+        self.assertTrue(any(l.startswith("early ") and l.split()[-3:] == ["0.5000", "0.2530", "0.7530"] for l in lines))
+        self.assertEqual(lines[-1], "total 1.5060 USD")
         out = run(["spend", "--runs", str(self.base), "--since", "2026-02-01T12:00"])
         self.assertNotIn("early", out)
-        self.assertEqual(out.splitlines()[-1], "total 1.8780 USD")
+        self.assertEqual(out.splitlines()[-1], "total 0.7530 USD")
         self.assertEqual(run(["spend", "--runs", str(self.base), "--since", "2027-01-01"]).splitlines()[-1], "total 0.0000 USD")
 
 
