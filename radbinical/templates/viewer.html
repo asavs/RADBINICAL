@@ -5,9 +5,10 @@
 /* Layout: a printed commentary page, built from one shape. A node is a text with a margin, and
    whatever is written on the text sits in that margin as a node of its own. The passage is the
    outermost node, with a margin on either side of it. A comment's margin lies on its far side from
-   the passage, so every reply sits one column further out than what it answers. A thread takes as
-   many columns as it is deep, sharing its side's width between them; only where a column would be
-   narrower than LEAST (in the script) do the deepest margins run beneath their text instead. */
+   the passage, so every reply sits one column further out than what it answers. Each side is ruled
+   into one column for each remove from the passage that the page reaches, and a comment always
+   stands in the column of its own remove, whether or not anything is written beyond it; only where
+   a column would be narrower than LEAST (in the script) do the deepest margins run beneath. */
 :root {
   --paper: #eef1f4; --sheet: #fdfdfb; --ink: #14181f; --ink-2: #505a69; --rule: #c9d0d9;
   --mark: #f0bf00; --warn: #8a5a00;
@@ -92,6 +93,7 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 .node.tight { text-align: left } /* three columns or more: too narrow to justify without gaps */
 .margin { display: flex; flex-direction: column; gap: 0.5rem; margin-left: 0.15rem; padding-left: 0.55rem; border-left: 1px solid var(--rule) }
 .margin:empty { display: none }
+.node.row > .margin:empty { display: block; border: none } /* an empty margin still holds its columns */
 /* the passage's own margin, either side of it, in as many columns as fit; on the left, outward is leftward */
 .side { display: flex; align-items: flex-start; gap: 1.1rem; min-width: 0; font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; overflow-wrap: break-word }
 .col { display: flow-root; flex: 1 1 0; min-width: 0 }
@@ -389,14 +391,18 @@ function start() {
   }
 
   // A node: a comment drawn by `content`, then its margin, holding a node for each comment on it.
-  // `room` is how many columns the node may take, its own included. Its margin stands beside it in
-  // as many of the rest as the thread beneath is deep; with no room left, the margin runs beneath.
+  // `room` is how many columns the node has, its own included. The comment takes the first and its
+  // margin the rest, whether or not anything is written there, so a column always holds comments at
+  // one remove from the passage. With one column, the margin runs beneath.
   const deep = (V, id) => Math.max(0, ...V.kids(id).map(k => 1 + deep(V, k.id)));
   const nodeHTML = (c, V, content, room = 1) => {
-    const out = Math.max(0, Math.min(deep(V, c.id), room - 1));
+    const out = Math.max(0, room - 1);
     return `<section class="node${out ? ' row' : ''}${out > 1 ? ' tight' : ''}"${out ? ` style="--out:${out}"` : ''}>${content(c, V)}<div class="margin">${
       V.kids(c.id).map(k => nodeHTML(k, V, content, out)).join('')}</div></section>`;
   };
+  // The columns a side is ruled into: one for each remove from the passage that the page reaches,
+  // or as many of those as `most` leaves at least LEAST wide.
+  const ruled = (V, most) => Math.min(most, 1 + Math.max(0, ...V.kids('passage').map(c => deep(V, c.id))));
   const LEAST = 8; // rem: the narrowest a column of commentary may be
 
   // The passage's own margin has two sides, each of one or more columns. The innermost column of a
@@ -417,7 +423,7 @@ function start() {
       sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
       const cols = Array.from({ length: n }, (_, i) => sides.map(m => m.children[i])).flat(); // from the passage outward
       const rooms = new Map(cols.map(m => [m, room(m)]));
-      for (const c of tops) { const m = cols.reduce((a, b) => foot(b) < foot(a) ? b : a); m.insertAdjacentHTML('beforeend', nodeHTML(c, V, runHTML, rooms.get(m))) }
+      for (const c of tops) { const m = cols.reduce((a, b) => foot(b) < foot(a) ? b : a); m.insertAdjacentHTML('beforeend', nodeHTML(c, V, runHTML, ruled(V, rooms.get(m)))) }
       return body.offsetHeight;
     };
     body.style.setProperty('--ph', $('passage').offsetHeight + 'px');
@@ -441,7 +447,7 @@ function start() {
       return { c, want: mark.top - at.top, side: nearer(mark.left, at.left, at.right) };
     });
     sides.forEach((m, k) => {
-      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least, gap, slack), wide = room(col);
+      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least, gap, slack), wide = ruled(V, room(col));
       const boxes = place(groups.map(g => ({ want: mine[g[0]].want, height: Infinity })), least, gap, at.height);
       col.insertAdjacentHTML('beforeend', groups.map((g, i) => {
         const tabs = g.length < 2 ? '' : `<div class="tabs">${g.map(j => mine[j].c).map(c =>
@@ -698,7 +704,7 @@ function start() {
 
   const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
   $('made').innerHTML = `
-    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it, so a thread reads outward from the passage one column at a time, and takes as many columns as it is deep. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, on the side they begin nearer to, cut short where the next begins; point at one to see all of it. Comments whose words are too close together to each have room share a spot as a stack, with a tab for each; point at or select a tab, or the comment's number in the passage, to bring it to the front.</p></div>
+    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it. So each side is ruled into columns: the one beside the passage holds comments on the passage, the next holds comments on those, and so on outward, as far as the page goes. A comment nobody has answered has empty columns beyond it. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, on the side they begin nearer to, cut short where the next begins; point at one to see all of it. Comments whose words are too close together to each have room share a spot as a stack, with a tab for each; point at or select a tab, or the comment's number in the passage, to bring it to the front.</p></div>
     <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
     <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
     <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>

@@ -320,9 +320,11 @@ Set under `flags` in the config.
 
 The page is built from one shape: a text with a margin, where whatever is written on the text
 stands in that margin and has a margin of its own. The passage sits in the middle with a margin on
-either side. A comment's margin lies on its far side from the passage, so a thread reads outward one
-column at a time, taking as many columns as it is deep; only where another column would be too
-narrow to read does a margin run beneath its comment. In code
+either side. A comment's margin lies on its far side from the passage, so each side is ruled into
+columns: the one beside the passage holds comments on the passage, the next comments on those, and
+so on outward for as many removes as the page reaches. A comment always stands in the column of
+its own remove, with empty columns beyond it if nobody has answered; only where another column
+would be too narrow to read does a margin run beneath its comment. In code
 the same shape is `children`, `thread` and `below` in `radbinical/page.py`: the passage and every
 comment are nodes, and a comment's `target` is the node it is written on.
 
