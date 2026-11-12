@@ -255,9 +255,18 @@ the viewer (`spanOf`), the cutting of a text into marked pieces (`pieces`) and t
 writing each comment in the margin where its words end (`edge`, `stack`); none of it touches the page, and
 `tests/test_kernel.py` runs it under Node.
 
-On a wide screen the page opens pinned to the text, which is writing in the margins. The passage
-has a margin all round it. A small mark, its writer's logo and its number, closes the words a
-comment is on, and the comment is written at the edge of the passage nearest that mark (`edge`).
+The page opens pinned to the text, which is writing in the margins, and is the same on every
+screen. It is one shape repeated: a text at a width that is comfortable to read, and its margin.
+The passage is a pane 27 times the type size wide. Each layer of margin on either side of it is a
+pane 21 wide: the comments on the passage in the layer next to it, and a reply in the next layer
+out from the comment it is on. On a screen narrower than a pane, a pane is as wide as the screen.
+The sheet is as wide as its panes need. With room for all of them the passage stands in the middle
+of the window; otherwise the sheet scrolls sideways within its frame, and on a phone the panes
+snap into place one at a time, so a swipe goes from the passage to a margin, or a layer further out.
+
+A small mark, its writer's logo and its number, closes the words a comment is on, and the comment
+is written at the edge of the passage nearest that mark (`edge`). Selecting the mark goes to the
+comment; selecting the comment's own mark, at its head, goes back to the words.
 
 - Beside the passage, comments run down the margin in the order of their marks. Each is whole and
   starts level with its mark. The stretch of margin from a comment's mark to the next one's is the
@@ -265,24 +274,16 @@ comment is on, and the comment is written at the edge of the passage nearest tha
   (`stack`): the lower one starts lower if it can still end before the next mark, as the last one
   always can; otherwise the ones above it move up into free margin. It gives way by six lines or
   so on its own; of any more than that it takes half and the ones above move up by the other
-  half. A comment that runs past the foot of the passage spreads into the room under it.
+  half. The margin begins at the head of the passage. A reply stands level with its own mark in
+  the comment it is on.
+- Where panes stand side by side, a comment that runs past the foot of the passage spreads into
+  the room under it.
 - Above or below the passage, a comment starts at its mark and runs to the right from there, as
-  far as the next comment that starts there, or on into the right margin where that is clear.
-- Each margin is in layers. Comments on the passage are in the layer next to it, and a reply is in
-  the next layer out from the comment it is on: beside the passage, the next margin outward, level
-  with its own mark in that comment; above or below, the next band outward.
-- Beside the passage each layer is one unbroken margin, as wide all the way down, so how far
-  out a comment stands always says which layer it is in. How wide each layer's margin is, is
-  found, not fixed. A comment is as high as its words need at its margin's width, so a layer of
-  long comments that push each other off their marks stands better in a wider margin, and a
-  layer whose comments have room to spare can do with a thinner one. The search (`beside` in
-  the viewer) starts from equal widths and moves a step of width from one layer to another,
-  keeping a move when the comments then stand nearer their marks. No layer's margin is narrower
-  than twelve times the type size: where a side has more layers than the window has room for,
-  the sheet is made wider than the window and the page scrolls sideways.
+  far as the next comment that starts there, the edge of the passage, or a pane further where the
+  right margin is clear. A reply to it stands in the next band outward.
 
-Nothing is cut or folded. Pin to text switches to the ruled columns described above, which a
-narrow window and the printed sheet also use.
+Nothing is cut or folded. On a wide screen, Pin to text switches to the ruled columns described
+above, which the printed sheet also uses.
 
 The rounds slider and Play show the page as it stood after each round;
 clicking a reader in the key hides or shows them. Selecting a comment opens its whole thread.
