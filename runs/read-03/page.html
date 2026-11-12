@@ -297,15 +297,15 @@ function edge(x, y, w, h) {
 // - if it cannot, those notes above move up instead, into whatever margin is free above them, so
 //   that it can start at its words;
 // - and whatever the free margin above does not cover, it makes up by starting lower.
-// Returns each note's top.
-function stack(items, gap = 0, give = Infinity) {
+// The margin begins at `top`: no note starts above that. Returns each note's top.
+function stack(items, gap = 0, give = Infinity, top = -Infinity) {
   const tops = [];
-  let run = 0, free = -Infinity; // the first of the notes now touching, and the highest that one may start
+  let run = 0, free = top; // the first of the notes now touching, and the highest that one may start
   items.forEach((it, i) => {
-    const foot = i ? tops[i - 1] + items[i - 1].h + gap : -Infinity; // the highest this note can start, the notes above staying put
+    const foot = i ? tops[i - 1] + items[i - 1].h + gap : top; // the highest this note can start, the notes above staying put
     if (it.want >= foot) { tops.push(it.want); run = i; free = foot; return }
     const need = foot - it.want, next = items[i + 1], spare = !next || foot + it.h + gap <= next.want;
-    const up = Math.min(Math.max(0, tops[run] - free), spare ? Math.max(0, need - give) / 2 : need);
+    const up = i ? Math.min(Math.max(0, tops[run] - free), spare ? Math.max(0, need - give) / 2 : need) : 0;
     for (let k = run; k < i; k++) tops[k] -= up;
     tops.push(foot - up);
   });
@@ -326,6 +326,7 @@ function start() {
   if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
   // What is worked out from the record; worked out again when a served page brings a newer one.
   let authors, people, byId, rounds, LIVE = null;
+  let keptX = 0, centred = false; // sideways scrolling of a sheet wider than the window (margins)
   const derive = () => {
     authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
     // People who wrote on the page, as against models.
@@ -452,7 +453,8 @@ function start() {
     // how many columns of at least LEAST a thread has room for, where the side is narrowest: beside the passage
     const pinned = S.pin && wide.matches && !document.documentElement.classList.contains('printing');
     body.classList.toggle('pinned', pinned);
-    $('field').innerHTML = ''; body.style.height = ''; body.style.setProperty('--at', '0px');
+    keptX = scrollX; // the sheet may be made wider than the window below; where it was scrolled to is kept
+    $('field').innerHTML = ''; body.style.height = ''; body.style.setProperty('--at', '0px'); document.querySelector('.wrap').style.minWidth = '';
     const room = m => { const notch = m.querySelector(':scope > .notch'); return Math.max(1, Math.floor((m.clientWidth - (notch ? notch.offsetWidth : 0)) / (LEAST * rem))) };
     const lay = n => {
       sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
@@ -486,7 +488,8 @@ function start() {
   function margins(V, sides, rem) {
     sides.forEach(m => m.innerHTML = '');
     const body = $('body'), field = $('field'), pass = $('passage');
-    const W = body.clientWidth, pw = pass.offsetWidth, ph = pass.offsetHeight, bx = (W - pw) / 2, gap = 0.7 * rem, least = 14 * rem, give = 6 * rem;
+    const gap = 0.7 * rem, least = 14 * rem, give = 6 * rem, thin = 12 * rem; // thin: the narrowest a layer's margin may be
+    let W = body.clientWidth, pw = pass.offsetWidth, ph = pass.offsetHeight, bx = (W - pw) / 2;
     const all = [];
     (function walk(id) { for (const k of V.kids(id)) { all.push(k); walk(k.id) } })('passage');
     field.innerHTML = all.map(c => `<div class="slip" data-slip="${c.id}">${runHTML(c, V).replace('>', '><i class="cut"></i>')}</div>`).join('');
@@ -499,10 +502,22 @@ function start() {
     };
     // where a comment's mark is in the text it is on, from that text's top left corner
     const markIn = (c, on) => { const o = on.getBoundingClientRect(), m = on.querySelector(`sup.m[data-m="${c.id}"]`).getBoundingClientRect(); return { x: m.left - o.left, y: m.top - o.top, mid: (m.top + m.bottom) / 2 - o.top } };
-    const firsts = V.kids('passage').map(c => { const m = markIn(c, pass); return { c, m, at: edge(m.x, m.mid, pw, ph) } });
+    const find = () => V.kids('passage').map(c => { const m = markIn(c, pass); return { c, m, at: edge(m.x, m.mid, pw, ph) } });
+    let firsts = find();
     const at = where => firsts.filter(f => f.at === where);
     // the comments at each remove from the passage, starting from those given
     const layers = roots => { const out = [roots]; for (let next; (next = out[out.length - 1].flatMap(c => V.kids(c.id))).length;) out.push(next); return out };
+    // A side needs a margin at least `thin` wide for each of its layers. Where the window has not
+    // that much beside the passage, the sheet is made wider than the window and the page scrolls
+    // sideways; the first time, it is scrolled to have the passage in the middle.
+    const need = thin * Math.max(...['left', 'right'].map(side => layers(at(side).map(f => f.c)).length));
+    if (need > bx) {
+      const wrap = document.querySelector('.wrap');
+      wrap.style.minWidth = wrap.offsetWidth + 2 * (need - bx) + 'px';
+      W = body.clientWidth; pw = pass.offsetWidth; ph = pass.offsetHeight; bx = (W - pw) / 2; firsts = find();
+      scrollTo(centred ? keptX : (document.documentElement.scrollWidth - innerWidth) / 2, scrollY);
+      centred = true;
+    }
     // above or below: a comment starts at its mark, with room to run to `end`; ones whose marks are too close for both to have room stand one under the other
     const starts = (where, end) => {
       const out = [];
@@ -529,7 +544,7 @@ function start() {
     const heights = new Map(), offsets = new Map(), wants = new Map(firsts.map(f => [f.c.id, f.m.y]));
     const beside = side => {
       const left = side === 'left', rings = layers(at(side).map(f => f.c)), ids = rings.flat().map(c => c.id);
-      const thin = 12 * rem, step = rem, room = Math.min(bx, rings.length * MOST * rem);
+      const step = rem, room = Math.min(bx, rings.length * MOST * rem);
       const lay = (strips, real) => {
         const high = (id, w) => { const k = id + '|' + w; if (real || !heights.has(k)) heights.set(k, size(id, w)); return heights.get(k) };
         // how far down its parent's note a reply's mark is, the parent being as wide and as cut as it now is
@@ -543,7 +558,7 @@ function start() {
           const w = Math.floor(strips[k] - gap), x = left ? bx - out - strips[k] : bx + pw + gap + out;
           out += strips[k];
           const items = ring.map(c => ({ c, want: k ? box[c.target].y + markOf(c) : wants.get(c.id), h: high(c.id, w) })).sort((a, b) => a.want - b.want);
-          stack(items, gap, give).forEach((y, i) => box[items[i].c.id] = { x, y, w, h: items[i].h, want: items[i].want });
+          stack(items, gap, give, 0).forEach((y, i) => box[items[i].c.id] = { x, y, w, h: items[i].h, want: items[i].want }); // the margin beside the passage begins at its head
           if (!k) {
             // the room under the passage: up to where the first comment below it starts, or half of it
             const edgeIn = left ? (under.length ? under[0].x - gap : bx + pw / 2 - gap / 2) : (under.length ? Infinity : bx + pw / 2 + gap / 2);
