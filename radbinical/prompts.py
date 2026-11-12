@@ -45,6 +45,17 @@ def system_prompt(page, me, label):
     )
 
 
+def asked_note(ask):
+    """What opens an asked turn: which words the reader has been asked about, and that the turn is
+    for one comment on them."""
+    where = "the passage" if ask["target"] == "passage" else f"comment {ask['target']}"
+    quote = " ".join((ask.get("quote") or "").split())
+    what = f'these words of {where}: "{quote}"' if quote else where
+    block = f'on="{ask["target"]}"' + (" and those words as its quote" if quote else "")
+    return (f"A person reading the page has asked you about {what}. You see the page as it stands now. This turn is "
+            f"for one comment in answer: a single block with {block}. Reply without a block if you have nothing to say.")
+
+
 # A block ends at its closing tag or, when that is left out, where the next block or the reply ends.
 _BLOCK = re.compile(r"<comment\b([^>]*)>(.*?)(</comment\s*>|(?=<comment\b)|\Z)", re.S | re.I)
 _ATTR = re.compile(r"""([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))""")

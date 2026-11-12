@@ -1,4 +1,5 @@
 """Shared HTTP plumbing for the OpenAI-style providers, and where each provider's key is read."""
+import contextvars
 import json
 import os
 import random
@@ -18,22 +19,42 @@ KEYS = {  # environment variables holding each provider's key, first set one win
 }
 
 
+_GIVEN = contextvars.ContextVar("given_keys", default=None)
+
+
+def use_keys(keys, env=True):
+    """From here on in this thread, take providers' keys from `keys` ({provider: key}) first, and
+    from the environment only when `env` is true. The server calls this for each request that
+    brings its own keys."""
+    _GIVEN.set(({p: k for p, k in (keys or {}).items() if p in KEYS and k}, env))
+
+
 def api_key(provider):
-    """The provider's key from the environment, or None."""
+    """The provider's key: the one given by `use_keys`, else the environment's, or None."""
+    given = _GIVEN.get()
+    if given:
+        if given[0].get(provider):
+            return given[0][provider]
+        if not given[1]:
+            return None
     return next((os.environ[n] for n in KEYS[provider] if os.environ.get(n)), None)
 
 
 ATTEMPTS = 8  # with backoff capped at a minute, about five minutes of retrying
+ATTEMPTS_ASKED = 3  # for a request that brought its keys: someone is waiting at a page
 
 
 def post_json(url, provider, body):
     # If no key is set locally a placeholder is sent; in a managed environment the
     # network proxy swaps in the real credential for the host.
-    key = api_key(provider) or "placeholder-key"
+    key = api_key(provider)
+    if key is None and _GIVEN.get():
+        raise RuntimeError(f"no {provider} key was given")
+    key = key or "placeholder-key"
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={
         "Authorization": f"Bearer {key}", "Content-Type": "application/json", "X-Title": "radbinical"})
-    last = None
-    for attempt in range(ATTEMPTS):
+    last, attempts = None, ATTEMPTS_ASKED if _GIVEN.get() else ATTEMPTS
+    for attempt in range(attempts):
         wait = min(3 * 2 ** attempt, 60) + random.random()
         try:
             with urllib.request.urlopen(req, timeout=600) as r:
@@ -53,7 +74,7 @@ def post_json(url, provider, body):
                 wait = min(float(after), 120) + random.random()
         except (urllib.error.URLError, TimeoutError, ConnectionError, RuntimeError, json.JSONDecodeError) as e:
             last = e
-        if attempt < ATTEMPTS - 1:
+        if attempt < attempts - 1:
             time.sleep(wait)
     raise last
 

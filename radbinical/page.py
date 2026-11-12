@@ -64,10 +64,37 @@ def cast_of(readers):
     return hashlib.sha1("\n".join(ids).encode("utf-8")).hexdigest()[:8]
 
 
+def passage_text(raw):
+    """A passage as it is kept: paragraphs parted by one blank line, each a single run."""
+    return "\n\n".join(" ".join(p.split()) for p in re.split(r"\n\s*\n", raw) if p.strip())
+
+
 def load_passage(path):
-    raw = Path(path).read_text(encoding="utf-8")
-    paras = [" ".join(p.split()) for p in re.split(r"\n\s*\n", raw) if p.strip()]
-    return "\n\n".join(paras)
+    return passage_text(Path(path).read_text(encoding="utf-8"))
+
+
+def on_page(d):
+    """The comments that stand on the page: all but those taken off it (`hidden`), which stay in
+    the record."""
+    return [c for c in d["comments"] if not c.get("hidden")]
+
+
+def shown_text(text):
+    """A comment's text as it is shown: one run, its line breaks and repeated spaces closed up.
+    A span on a comment is counted in this."""
+    return " ".join(text.split())
+
+
+def _given_span(text, span, quote):
+    """A span given as offsets into `text`, checked: (start, end), or None. When the words there
+    are not `quote`, the quote is looked for instead, since offsets counted elsewhere can differ."""
+    try:
+        s, e = int(span[0]), int(span[1])
+    except (TypeError, ValueError, IndexError):
+        return None
+    if 0 <= s < e <= len(text) and (not quote or shown_text(text[s:e]) == shown_text(quote)):
+        return s, e
+    return locate(text, quote) if quote else None
 
 
 def children(page, cid):
@@ -132,20 +159,25 @@ class Page:
 
         `kind` marks a comment that is not a model's own reading ("human"); `meta` is a
         dict of notes about it. Both are stored on the comment and never shown to readers.
+
+        `args["span"]`, (start, end), says exactly where the comment is: offsets into the
+        passage, or into a comment's text as shown (`shown_text`). With it the quote is not
+        looked for, so words that occur twice are not mistaken for their first occurrence.
         """
         d, flags = self.d, self.d["flags"]
         target = str(args.get("target", "")).strip().strip("[]")
         text = str(args.get("text", "")).strip()
         quote = str(args.get("quote") or "").strip()
+        given = args.get("span")
         if not text:
             return False, "Not recorded: the comment text is empty."
         with self.lock:
             by_id = {c["id"]: c for c in d["comments"]}
             c = {"author": author, "layer": layer, "text": text}
             if target.lower() == "passage":
-                if not quote:
+                if not quote and not given:
                     return False, "Not recorded: a comment on the passage needs `quote`, the exact words it attaches to."
-                span = locate(d["passage"]["text"], quote)
+                span = _given_span(d["passage"]["text"], given, quote) if given else locate(d["passage"]["text"], quote)
                 if not span:
                     return False, "Not recorded: that quote was not found in the passage. Copy the words exactly as they appear."
                 if flags["anchor"] == "sentence":
@@ -156,7 +188,13 @@ class Page:
                 if parent["author"] == author and not flags["allow_self_reply"]:
                     return False, "Not recorded: replying to your own comment is switched off for this page."
                 c.update(target=target)
-                if quote:
+                if given:
+                    shown = shown_text(parent["text"])
+                    span = _given_span(shown, given, quote)
+                    if not span:
+                        return False, "Not recorded: those words were not found in that comment."
+                    c.update(start=span[0], end=span[1], quote=shown[span[0]:span[1]])
+                elif quote:
                     span = locate(parent["text"], quote)
                     c["quote"] = parent["text"][span[0]:span[1]] if span else quote
             else:
