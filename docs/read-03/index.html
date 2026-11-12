@@ -104,11 +104,19 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 #left .margin { margin-left: 0; padding-left: 0; border-left: none; margin-right: 0.15rem; padding-right: 0.55rem; border-right: 1px solid var(--rule) }
 .notch { display: none }
 #pin { display: none }
-/* pinned: writing in the margins. Every comment is a note in the field around the passage, at the
-   edge its words end nearest, whole; a reply is one layer further out. The sides, ruled into
-   columns, are for when the page is not pinned. */
+/* pinned: writing in the margins, on every screen. Every comment is a note in the field around the
+   passage, at the edge its words end nearest, whole; a reply is one layer further out. The sides,
+   ruled into columns, are for a wide page that is not pinned, and for print. */
 .field { display: none }
 .body.pinned > .side { display: none }
+/* The sheet is as wide as its panes need: the passage, and a margin for each layer on either side,
+   every one at its reading width. Where that is more than the window shows, the sheet scrolls
+   sideways within its frame; on a narrow screen a pane fills the frame and they snap one at a time. */
+.body.pinned { position: relative; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin }
+.body.pinned.compact { scroll-snap-type: x mandatory }
+.body.pinned > .passage { position: absolute; left: var(--px, 0px); top: var(--at, 0px); width: var(--pw); max-width: none; margin: 0; transform: none }
+.pane { position: absolute; top: 0; scroll-snap-align: start; pointer-events: none }
+.slip .hd { cursor: pointer }
 .body.pinned > .field { display: block; font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; overflow-wrap: break-word }
 .slip { position: absolute }
 .cut { display: none }
@@ -120,7 +128,7 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 .c .hd { white-space: nowrap }
 .c .lemma { font-weight: 700 }
 .c code { font-size: 0.9em }
-.c.flash { animation: flash 1.6s ease-out }
+.c.flash, sup.m.flash { animation: flash 1.6s ease-out }
 @keyframes flash { from { background: color-mix(in srgb, var(--mark) 55%, transparent) } to { background: transparent } }
 @media (prefers-reduced-motion: reduce) { .c.flash { animation: none; outline: 2px solid var(--mark) } }
 /* a person's comment: dotted number */
@@ -327,7 +335,7 @@ function start() {
   if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
   // What is worked out from the record; worked out again when a served page brings a newer one.
   let authors, people, byId, rounds, LIVE = null;
-  let keptX = 0, centred = false; // sideways scrolling of a sheet wider than the window (margins)
+  let keptX = null, keptAt = 0; // how far the sheet is scrolled sideways, and where the passage then stood on it (margins)
   const derive = () => {
     authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
     // People who wrote on the page, as against models.
@@ -439,7 +447,7 @@ function start() {
   // or as many of those as `most` leaves at least LEAST wide.
   const ruled = (V, most) => Math.min(most, 1 + Math.max(0, ...V.kids('passage').map(c => deep(V, c.id))));
   const LEAST = 8; // rem: the narrowest a column of commentary may be
-  const MOST = 32; // rem: the widest a strip of margin notes may be
+  const MEASURE = 27, NOTE = 21; // rem: the reading width of the passage, and of a note in a margin
 
   // The passage's own margin has two sides, each of one or more columns. The innermost column of a
   // side stands beside the passage and widens beneath it. Threads go down the columns in the order of
@@ -452,10 +460,10 @@ function start() {
     const most = Math.max(1, Math.floor(sides[0].offsetWidth / (30 * rem)));
     const foot = m => { const t = m.lastElementChild; return t && t.matches('.node') ? t.offsetTop + t.offsetHeight : 0 };
     // how many columns of at least LEAST a thread has room for, where the side is narrowest: beside the passage
-    const pinned = S.pin && wide.matches && !document.documentElement.classList.contains('printing');
+    const pinned = S.pin && !document.documentElement.classList.contains('printing');
+    if (body.classList.contains('pinned') && keptX !== null) keptX = body.scrollLeft;
     body.classList.toggle('pinned', pinned);
-    keptX = scrollX; // the sheet may be made wider than the window below; where it was scrolled to is kept
-    $('field').innerHTML = ''; body.style.height = ''; body.style.setProperty('--at', '0px'); document.querySelector('.wrap').style.minWidth = '';
+    $('field').innerHTML = ''; body.style.height = ''; body.style.setProperty('--at', '0px'); body.style.removeProperty('--pw'); body.style.removeProperty('--px');
     const room = m => { const notch = m.querySelector(':scope > .notch'); return Math.max(1, Math.floor((m.clientWidth - (notch ? notch.offsetWidth : 0)) / (LEAST * rem))) };
     const lay = n => {
       sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
@@ -465,7 +473,7 @@ function start() {
       return body.offsetHeight;
     };
     body.style.setProperty('--ph', $('passage').offsetHeight + 'px');
-    $('all').hidden = !phone.matches || !tops.length;
+    $('all').hidden = pinned || !phone.matches || !tops.length;
     $('all').textContent = `Read all ${V.size} comments`;
     if (pinned) return margins(V, sides, rem);
     let best = 1, least = lay(1);
@@ -473,24 +481,30 @@ function start() {
     if (best !== most) lay(best);
   }
 
-  // Pinned: writing in the margins (kernel: edge, stack). The passage has a margin all round it, and
-  // a comment on it is written at the edge its mark, which ends its words, is nearest.
+  // Pinned: writing in the margins (kernel: edge, stack). The page is one shape whatever the
+  // screen: a text at its reading width, and its margin. The passage is a pane MEASURE wide. Each
+  // layer of margin on either side of it is a pane NOTE wide, the comments on the passage in the
+  // layer next to it and a reply in the next layer out from the comment it is on. On a screen
+  // narrower than a pane, a pane is as wide as the screen. The sheet is as wide as its panes
+  // need, and scrolls sideways where the window shows fewer: on a phone, one pane at a time.
   //
+  // A comment on the passage is written at the edge its mark, which ends its words, is nearest.
   // Beside the passage, comments run down the margin in the order of their marks, each whole and
-  // each starting level with its mark. Where two would meet, the one with room to spare gives way
-  // (stack). One that runs past the foot of the passage spreads into the room under it.
+  // each starting level with its mark; where two would meet, the one with room to spare gives way
+  // (stack). A reply stands level with its own mark in the comment it is on. Where panes stand
+  // side by side, a comment that runs past the foot of the passage spreads into the room under it.
   //
-  // Above or below the passage, a comment starts at its mark and runs to the right from there: as
-  // far as the next comment that starts under the passage, or the edge of the margin.
-  //
-  // Each margin is in layers. Comments on the passage are in the layer next to it; a reply is in the
-  // next layer out from the comment it is on: beside the passage, the next margin outward, level
-  // with its own mark in that comment; above or below, the next band outward.
+  // Above or below the passage, a comment starts at its mark and runs to the right: as far as the
+  // next comment that starts there, or the edge of the passage, or a pane further where the right
+  // margin is clear. A reply to it stands in the next band outward.
   function margins(V, sides, rem) {
     sides.forEach(m => m.innerHTML = '');
     const body = $('body'), field = $('field'), pass = $('passage');
-    const gap = 0.7 * rem, least = 14 * rem, give = 6 * rem, thin = 12 * rem; // thin: the narrowest a layer's margin may be
-    let W = body.clientWidth, pw = pass.offsetWidth, ph = pass.offsetHeight, bx = (W - pw) / 2;
+    const view = body.clientWidth, compact = view < 40 * rem; // compact: one pane at a time
+    const pw = Math.min(MEASURE * rem, view), note = Math.min(NOTE * rem, view), gap = 0.7 * rem, give = 6 * rem, least = compact ? pw : 14 * rem;
+    body.classList.toggle('compact', compact);
+    body.style.setProperty('--pw', pw + 'px');
+    const ph = pass.offsetHeight;
     const all = [];
     (function walk(id) { for (const k of V.kids(id)) { all.push(k); walk(k.id) } })('passage');
     field.innerHTML = all.map(c => `<div class="slip" data-slip="${c.id}">${runHTML(c, V).replace('>', '><i class="cut"></i>')}</div>`).join('');
@@ -503,28 +517,24 @@ function start() {
     };
     // where a comment's mark is in the text it is on, from that text's top left corner
     const markIn = (c, on) => { const o = on.getBoundingClientRect(), m = on.querySelector(`sup.m[data-m="${c.id}"]`).getBoundingClientRect(); return { x: m.left - o.left, y: m.top - o.top, mid: (m.top + m.bottom) / 2 - o.top } };
-    const find = () => V.kids('passage').map(c => { const m = markIn(c, pass); return { c, m, at: edge(m.x, m.mid, pw, ph) } });
-    let firsts = find();
+    const firsts = V.kids('passage').map(c => { const m = markIn(c, pass); return { c, m, at: edge(m.x, m.mid, pw, ph) } });
     const at = where => firsts.filter(f => f.at === where);
     // the comments at each remove from the passage, starting from those given
     const layers = roots => { const out = [roots]; for (let next; (next = out[out.length - 1].flatMap(c => V.kids(c.id))).length;) out.push(next); return out };
-    // A side needs a margin at least `thin` wide for each of its layers. Where the window has not
-    // that much beside the passage, the sheet is made wider than the window and the page scrolls
-    // sideways; the first time, it is scrolled to have the passage in the middle.
-    const need = thin * Math.max(...['left', 'right'].map(side => layers(at(side).map(f => f.c)).length));
-    if (need > bx) {
-      const wrap = document.querySelector('.wrap');
-      wrap.style.minWidth = wrap.offsetWidth + 2 * (need - bx) + 'px';
-      W = body.clientWidth; pw = pass.offsetWidth; ph = pass.offsetHeight; bx = (W - pw) / 2; firsts = find();
-      scrollTo(centred ? keptX : (document.documentElement.scrollWidth - innerWidth) / 2, scrollY);
-      centred = true;
-    }
+
+    // The panes. With room for all of them the passage stands in the middle of the window;
+    // otherwise the sheet begins at the outermost margin on the left.
+    const rings = { left: at('left').length ? layers(at('left').map(f => f.c)) : [], right: at('right').length ? layers(at('right').map(f => f.c)) : [] };
+    const leftW = rings.left.length * note, rightW = rings.right.length * note, mid = (view - pw) / 2;
+    const bx = leftW <= mid && rightW <= mid ? mid : leftW;
+    const x = (side, k) => (side === 'left' ? bx - (k + 1) * note : bx + pw + gap + k * note);
+
     // above or below: a comment starts at its mark, with room to run to `end`; ones whose marks are too close for both to have room stand one under the other
     const starts = (where, end) => {
       const out = [];
       for (const f of at(where).sort((a, b) => a.m.x - b.m.x)) {
-        const x = Math.min(bx + f.m.x, end - least), last = out[out.length - 1];
-        if (last && x < last.x + least) last.roots.push(f.c); else out.push({ x, roots: [f.c] });
+        const sx = Math.min(bx + f.m.x, end - least), last = out[out.length - 1];
+        if (last && sx < last.x + least) last.roots.push(f.c); else out.push({ x: sx, roots: [f.c] });
       }
       return out;
     };
@@ -532,72 +542,35 @@ function start() {
 
     // beside the passage
     const span = {}; // each side: how far its comments reach up and down
-    // Beside the passage each layer is one unbroken margin, as wide all the way down, so that how
-    // far out a note stands always says which layer it is in. How wide each layer's margin is, is
-    // found, not fixed. A note is as high as its words need at its margin's width, so a layer of
-    // long notes that push each other off their marks stands better in a wider margin, and a
-    // layer whose notes have margin to spare beneath them can do with a thinner one.
-    //
-    // `lay` sets a side down for given widths and says how far its notes stand from their marks;
-    // in each layer the notes are stacked down the margin (kernel: stack). The search starts from
-    // equal widths and moves a step of width from one layer to another, keeping a move when the
-    // notes then stand nearer their marks; it stops when no move helps.
-    const heights = new Map(), offsets = new Map(), wants = new Map(firsts.map(f => [f.c.id, f.m.y]));
     const beside = side => {
-      const left = side === 'left', rings = layers(at(side).map(f => f.c)), ids = rings.flat().map(c => c.id);
-      const step = rem, room = Math.min(bx, rings.length * MOST * rem);
-      const lay = (strips, real) => {
-        const high = (id, w) => { const k = id + '|' + w; if (real || !heights.has(k)) heights.set(k, size(id, w)); return heights.get(k) };
-        // how far down its parent's note a reply's mark is, the parent being as wide and as cut as it now is
-        const markOf = c => {
-          const p = box[c.target], k = `${c.id}|${p.w}|${p.cut ? p.cut.w + 'x' + p.cut.h : ''}`;
-          if (real || !offsets.has(k)) { size(c.target, p.w, p.cut); offsets.set(k, markIn(c, el[c.target]).y) }
-          return offsets.get(k);
-        };
-        let far = 0, out = 0; // out: how far from the passage this layer's margin begins
-        rings.forEach((ring, k) => {
-          const w = Math.floor(strips[k] - gap), x = left ? bx - out - strips[k] : bx + pw + gap + out;
-          out += strips[k];
-          const items = ring.map(c => ({ c, want: k ? box[c.target].y + markOf(c) : wants.get(c.id), h: high(c.id, w) })).sort((a, b) => a.want - b.want);
-          stack(items, gap, give, 0).forEach((y, i) => box[items[i].c.id] = { x, y, w, h: items[i].h, want: items[i].want }); // the margin beside the passage begins at its head
-          if (!k) {
-            // the room under the passage: up to where the first comment below it starts, or half of it
-            const edgeIn = left ? (under.length ? under[0].x - gap : bx + pw / 2 - gap / 2) : (under.length ? Infinity : bx + pw / 2 + gap / 2);
-            const wide = left ? edgeIn - x : x + w - edgeIn;
-            let floor = -Infinity, spread = false;
-            for (const it of wide > w + 4 * rem ? items : []) {
-              const b = box[it.c.id];
-              if (spread) b.y = Math.max(floor, it.want);
-              if (spread || b.y + b.h > ph + gap) {
-                spread = true;
-                b.cut = { side: left ? 'right' : 'left', w: wide - w, h: Math.max(0, ph + gap - b.y) };
-                Object.assign(b, { x: left ? x : edgeIn, w: wide, h: size(it.c.id, wide, b.cut) });
-              }
-              floor = b.y + b.h + gap;
-            }
+      const left = side === 'left', w = Math.floor(note - gap);
+      rings[side].forEach((ring, k) => {
+        const items = ring.map(c => ({ c, want: k ? box[c.target].y + markIn(c, el[c.target]).y : markIn(c, pass).y, h: size(c.id, w) })).sort((a, b) => a.want - b.want);
+        stack(items, gap, give, 0).forEach((y, i) => box[items[i].c.id] = { x: x(side, k), y, w, h: items[i].h }); // the margin beside the passage begins at its head
+        if (k || compact) return;
+        // the room under the passage: up to where the first comment below it starts, or half of it
+        const edgeIn = left ? (under.length ? under[0].x - gap : bx + pw / 2 - gap / 2) : (under.length ? Infinity : bx + pw / 2 + gap / 2);
+        const wide = left ? edgeIn - x(side, 0) : x(side, 0) + w - edgeIn;
+        let floor = -Infinity, spread = false;
+        for (const it of wide > w + 4 * rem ? items : []) {
+          const b = box[it.c.id];
+          if (spread) b.y = Math.max(floor, it.want);
+          if (spread || b.y + b.h > ph + gap) {
+            spread = true;
+            b.cut = { side: left ? 'right' : 'left', w: wide - w, h: Math.max(0, ph + gap - b.y) };
+            Object.assign(b, { x: left ? x(side, 0) : edgeIn, w: wide, h: size(it.c.id, wide, b.cut) });
           }
-          for (const it of items) far += (box[it.c.id].y - it.want) ** 2;
-        });
-        // widths are left equal unless changing them is worth something
-        return far + strips.reduce((sum, s, k) => sum + 0.02 * rings[k].length * (s - room / rings.length) ** 2, 0);
-      };
-      let strips = rings.map(() => room / rings.length), least = lay(strips);
-      for (let moved = rings.length > 1, round = 0; moved && round < 40; round++) {
-        moved = false;
-        for (let a = 0; a < rings.length; a++) for (let b = 0; b < rings.length; b++) {
-          if (a === b || strips[a] - step < thin) continue;
-          const next = strips.map((s, k) => (k === a ? s - step : k === b ? s + step : s)), far = lay(next);
-          if (far < least - 1) { strips = next; least = far; moved = true }
+          floor = b.y + b.h + gap;
         }
-      }
-      lay(strips, true);
-      const ys = ids.map(id => box[id]);
+      });
+      const ys = rings[side].flat().map(c => box[c.id]);
       span[side] = { top: Math.min(0, ...ys.map(b => b.y)), bottom: Math.max(0, ...ys.map(b => b.y + b.h)) };
     };
     // The right margin first: a band above or below runs on into it where it is clear, and the left
     // margin's room under the passage ends where the band below starts.
     beside('right');
-    const ends = { true: span.right.bottom <= ph + gap ? W : bx + pw, false: span.right.top >= -gap ? W : bx + pw };
+    const far = compact ? bx + pw : Math.min(bx + pw + note, Math.max(view, bx + pw + rightW)); // how far a band may run where the right margin is clear
+    const ends = { true: span.right.bottom <= ph + gap ? far : bx + pw, false: span.right.top >= -gap ? far : bx + pw };
     under = starts('below', ends.true); over = starts('above', ends.false);
     beside('left');
 
@@ -621,8 +594,17 @@ function start() {
       e.style.clipPath = !n ? '' : n.side === 'right' ? `polygon(0 0, ${b.w - n.w}px 0, ${b.w - n.w}px ${n.h}px, 100% ${n.h}px, 100% 100%, 0 100%)`
         : `polygon(${n.w}px 0, 100% 0, 100% 100%, 0 100%, 0 ${n.h}px, ${n.w}px ${n.h}px)`;
     }
+    const high = Math.max(ph, ...all.map(c => box[c.id].y + box[c.id].h)) + up;
+    // each pane is a place for the sheet to come to rest
+    const panes = [...rings.left.map((_, k) => [x('left', k), note]), [bx, pw], ...rings.right.map((_, k) => [x('right', k), note])];
+    field.insertAdjacentHTML('beforeend', panes.map(([px, w]) => `<i class="pane" style="left:${px}px;width:${w}px;height:${high}px"></i>`).join(''));
+    body.style.setProperty('--px', bx + 'px');
     body.style.setProperty('--at', up + 'px');
-    body.style.height = Math.max(ph, ...all.map(c => box[c.id].y + box[c.id].h)) + up + 'px';
+    body.style.height = high + 'px';
+    // The sheet opens with the passage in the middle of the window, and after that stays where it
+    // was scrolled to, reckoned from the passage, which moves when a margin is added to its left.
+    body.scrollLeft = keptX === null ? bx - mid : keptX + bx - keptAt;
+    keptX = body.scrollLeft; keptAt = bx;
   }
 
   function drawKey() {
@@ -669,13 +651,20 @@ function start() {
   }
   function flash(el) {
     if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const body = $('body'), r = el.getBoundingClientRect();
+    if (body.classList.contains('compact')) {
+      // One pane at a time: bring across the pane it is in. A small step sideways would only snap back.
+      const at = r.left - body.getBoundingClientRect().left + body.scrollLeft;
+      const pane = [...body.querySelectorAll('.pane')].map(p => p.offsetLeft).filter(x => x <= at + 1).pop();
+      if (pane !== undefined) body.scrollTo({ left: pane, behavior: 'smooth' });
+      scrollBy({ top: r.top + r.height / 2 - innerHeight / 2, behavior: 'smooth' });
+    } else el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
   }
   function go(id) {
     const c = byId[id]; if (!c) return;
     if (!shown().has(id)) { S.upTo = rounds; S.off.clear(); $('layer').value = rounds; draw() } // make sure a linked comment is visible
-    if (phone.matches) return openReader([rootOf(c).id], id);
+    if (phone.matches && !$('body').classList.contains('pinned')) return openReader([rootOf(c).id], id);
     if (sheet.open) sheet.close();
     flash($(id));
   }
@@ -687,11 +676,12 @@ function start() {
   };
   document.querySelector('.daf').addEventListener('mouseover', hover(true));
   document.querySelector('.daf').addEventListener('mouseout', hover(false));
-  const pickMark = m => { if (phone.matches) return openReader([rootOf(byId[m.dataset.m]).id], m.dataset.m); flash($(m.dataset.m)) };
+  const pickMark = m => { if (phone.matches && !$('body').classList.contains('pinned')) return openReader([rootOf(byId[m.dataset.m]).id], m.dataset.m); flash($(m.dataset.m)) };
   document.addEventListener('click', e => {
     const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
     const a = e.target.closest('.t header a'); if (a && a.hash === location.hash) return go(a.hash.slice(1)); // same link again: hashchange will not fire
     const m = e.target.closest('sup.m'); if (m) return pickMark(m);
+    const h = e.target.closest('.slip .hd'); if (h) return flash(document.querySelector(`sup.m[data-m="${h.closest('.c').id}"]`)); // a note's own mark leads back to where its words end
     const c = e.target.closest('.c'); if (c && !getSelection().toString()) return openReader([c.dataset.root], c.id);
     const k = e.target.closest('[data-author]');
     if (k) { const n = k.dataset.author; S.off.has(n) ? S.off.delete(n) : S.off.add(n); draw() }
@@ -753,7 +743,7 @@ function start() {
     $('play').hidden = rounds < 2;
     const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
     $('made').innerHTML = `
-      <div><h2>Reading the page</h2><p>The passage has a margin all round it, and the comments on it are written there. A small mark in the passage, its writer's and its number, shows where the words a comment is on end, and the comment is written at the edge of the passage nearest that mark. Beside the passage, comments run down the margin in the order of their marks, each starting level with its mark. Where two would meet, the one with room to spare gives way: a comment starts lower, by a few lines at most on its own, if it can still end before the next one's mark; beyond that, and otherwise, the ones above it move up into free margin. One that runs past the foot of the passage spreads into the room under it. Above or below the passage, a comment starts at its mark and runs to the right. Every comment has a margin in the same way, one layer further out: a reply stands in the next margin outward, level with its own mark in the comment it answers, or in the next band above or below. Each layer's margin is one width all the way down, so how far out a comment stands says which layer it is in; how wide each is, is found so that the comments stand as near their marks as they can: a layer of long comments gets a wider margin, and so shorter comments. Nothing is cut short or folded away. Point at a comment to light the words it is on; select one to read its whole thread. Pin to text switches to ruled columns filled from the top; a narrow window and the printed sheet use those too.</p></div>
+      <div><h2>Reading the page</h2><p>The page is one shape repeated: a text, set at a width that is comfortable to read, and its margin. The passage is the text in the middle, and the comments on it are written in its margin, on either side. A small mark in the passage, its writer's and its number, shows where the words a comment is on end, and the comment is written at the edge of the passage nearest that mark, level with it or as near as its neighbours leave it. Every comment is a text with a margin in the same way: a reply stands in the next margin outward, level with its own mark in the comment it answers. Words that end nearer the head or the foot of the passage than either side have their comment above or below it. Nothing is cut short or folded away. The sheet is as wide as its margins need. Where the window shows only part of it, scroll or swipe sideways; on a phone the passage and each margin fill the screen one at a time. Select a mark to go to its comment, and a comment's own mark, at its head, to go back to the words it is on. Select a comment to read its whole thread. On a wide screen, Pin to text switches to ruled columns filled from the top, which the printed sheet also uses.</p></div>
       <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
       <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
       <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
