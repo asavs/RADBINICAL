@@ -277,7 +277,9 @@ comment is on, and the comment is written at the edge of the passage nearest tha
   long comments that push each other off their marks stands better in a wider margin, and a
   layer whose comments have room to spare can do with a thinner one. The search (`beside` in
   the viewer) starts from equal widths and moves a step of width from one layer to another,
-  keeping a move when the comments then stand nearer their marks.
+  keeping a move when the comments then stand nearer their marks. No layer's margin is narrower
+  than twelve times the type size: where a side has more layers than the window has room for,
+  the sheet is made wider than the window and the page scrolls sideways.
 
 Nothing is cut or folded. Pin to text switches to the ruled columns described above, which a
 narrow window and the printed sheet also use.

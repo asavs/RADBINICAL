@@ -70,6 +70,11 @@ class Kernel(unittest.TestCase):
         # and the ones above move up only as far as the margin above them is free
         self.assertEqual(js('k.stack([{want: 0, h: 200}, {want: 300, h: 400}, {want: 370, h: 100}], 10, 50)'), [0, 210, 620])
 
+    def test_no_note_starts_above_the_top_of_the_margin(self):
+        # with nothing above them the first two would rise to 200 and below; the margin begins at 250
+        self.assertEqual(js('k.stack([{want: 300, h: 160}, {want: 370, h: 100}, {want: 480, h: 50}], 10, Infinity, 250)'), [250, 420, 530])
+        self.assertEqual(js('k.stack([{want: -20, h: 50}, {want: 10, h: 50}], 10, Infinity, 0)'), [0, 60])
+
     def test_a_note_without_room_keeps_its_place_and_the_ones_above_move_up(self):
         # moved down, the second would run into the third's words; the margin above the first is free
         self.assertEqual(js('k.stack([{want: 300, h: 160}, {want: 370, h: 100}, {want: 480, h: 50}], 10)'), [200, 370, 480])

@@ -56,15 +56,15 @@ function edge(x, y, w, h) {
 // - if it cannot, those notes above move up instead, into whatever margin is free above them, so
 //   that it can start at its words;
 // - and whatever the free margin above does not cover, it makes up by starting lower.
-// Returns each note's top.
-function stack(items, gap = 0, give = Infinity) {
+// The margin begins at `top`: no note starts above that. Returns each note's top.
+function stack(items, gap = 0, give = Infinity, top = -Infinity) {
   const tops = [];
-  let run = 0, free = -Infinity; // the first of the notes now touching, and the highest that one may start
+  let run = 0, free = top; // the first of the notes now touching, and the highest that one may start
   items.forEach((it, i) => {
-    const foot = i ? tops[i - 1] + items[i - 1].h + gap : -Infinity; // the highest this note can start, the notes above staying put
+    const foot = i ? tops[i - 1] + items[i - 1].h + gap : top; // the highest this note can start, the notes above staying put
     if (it.want >= foot) { tops.push(it.want); run = i; free = foot; return }
     const need = foot - it.want, next = items[i + 1], spare = !next || foot + it.h + gap <= next.want;
-    const up = Math.min(Math.max(0, tops[run] - free), spare ? Math.max(0, need - give) / 2 : need);
+    const up = i ? Math.min(Math.max(0, tops[run] - free), spare ? Math.max(0, need - give) / 2 : need) : 0;
     for (let k = run; k < i; k++) tops[k] -= up;
     tops.push(foot - up);
   });
