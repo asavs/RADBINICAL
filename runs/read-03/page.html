@@ -34,7 +34,7 @@
 * { box-sizing: border-box }
 body { background: var(--paper); color: var(--ink); font-family: var(--ui); font-size: 0.9375rem; line-height: 1.5;
   padding-block: 1.25rem 3rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
-.wrap { max-width: 92rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem }
+.wrap { max-width: 124rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem }
 button { font: inherit; color: inherit; cursor: pointer }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 .banner { border: 1px dashed var(--warn); color: var(--warn); padding: 0.5rem 0.75rem; font-size: 0.85rem }
@@ -80,7 +80,8 @@ img.g.flip { filter: var(--flip) }
   font-size: 1.6em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-indent: 0; line-height: 1.3 }
 .seg { background-image: var(--ul); background-size: 100% 1px; background-position: 0 100%; background-repeat: no-repeat }
 .seg.lit { background-color: color-mix(in srgb, var(--c, var(--mark)) 22%, transparent); background-size: 100% 3px }
-sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0 }
+sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0; white-space: nowrap }
+sup.m .g { margin-right: 0.12em }
 sup.m:hover, sup.m.lit { text-decoration: underline }
 
 /* nodes and margins: a comment, then the margin of comments on it. In a row the margin stands beside
@@ -102,21 +103,15 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 #left .margin { margin-left: 0; padding-left: 0; border-left: none; margin-right: 0.15rem; padding-right: 0.55rem; border-right: 1px solid var(--rule) }
 .notch { display: none }
 #pin { display: none }
-/* pinned: each comment on the passage stands level with its words, on the side they begin nearer to,
-   and is cut where the next begins. A pile is the box at one spot: one thread, or a stack of threads
-   whose words are too close for each to have room, with a tab for each and one of them in front. */
-.body.pinned .col { position: relative; pointer-events: none } /* the column lies over the passage's place; only its piles take the pointer */
-.pile { position: absolute; overflow: hidden; background: var(--sheet); pointer-events: auto }
-#left .pile { left: 0; right: calc(var(--pw) / 2 + 0.35rem) }
-#right .pile { right: 0; left: calc(var(--pw) / 2 + 0.35rem) }
-.pile > .node:not(.front) { display: none }
-.pile.cut { -webkit-mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent); mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent) }
-.pile:hover, .pile:focus-within { max-height: none !important; z-index: 1; overflow: visible; -webkit-mask-image: none; mask-image: none; box-shadow: 0 0 0 1px var(--rule), 0 0.4rem 1.1rem rgb(0 0 0 / 0.18) }
-.tabs { display: flex; flex-wrap: wrap; gap: 0 0.5rem; padding: 0 0.3rem 0.1rem; font-family: var(--small); font-size: 0.8rem; line-height: 1.5; text-align: left }
-#left .tabs { justify-content: flex-end }
-.tab { display: inline-flex; align-items: center; gap: 0.2rem; background: none; border: none; border-bottom: 2px solid transparent; padding: 0 0.05rem; font-weight: 700; color: var(--c) }
-.tab[aria-pressed="true"] { border-bottom-color: var(--c) }
-.tab[aria-pressed="false"] { opacity: 0.6 }
+/* pinned: writing in the margins. Every comment is a note in the field around the passage, at the
+   edge its words end nearest, whole; a reply is one layer further out. The sides, ruled into
+   columns, are for when the page is not pinned. */
+.field { display: none }
+.body.pinned > .side { display: none }
+.body.pinned > .field { display: block; font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; overflow-wrap: break-word }
+.slip { position: absolute }
+.cut { display: none }
+.c sup.m { font-size: 0.72em }
 .c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem; padding: 0.1rem 0.3rem; background: color-mix(in srgb, var(--c) 6%, transparent) }
 .c:hover, .c.lit { background: color-mix(in srgb, var(--c) 17%, transparent) }
 .c.kin { background: color-mix(in srgb, var(--c) 12%, transparent) }
@@ -181,7 +176,7 @@ th { font-weight: 500; color: var(--ink-2) }
    beside it and widens beneath it. */
 @media (min-width: 1100px) {
   .body { position: relative; container-type: inline-size; --pw: clamp(17rem, 40cqw, 27rem) }
-  .body > .passage { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
+  .body > .passage { position: absolute; top: var(--at, 0px); left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
   .notch { display: block; width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 0.9rem) }
   #left .notch { float: right } #right .notch { float: left }
   .passage p { font-size: 1.3rem }
@@ -222,7 +217,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
       <aside class="ctl" aria-label="Rounds">
         <label for="layer">Rounds <input type="range" id="layer" min="1" max="1" step="1" value="1"></label>
         <button id="play" hidden>Play</button>
-        <button id="pin" aria-pressed="false" title="Set each comment on the passage level with its words, cut short where the next begins">Pin to text</button>
+        <button id="pin" aria-pressed="true" title="Write each comment in the margin where its words end; off, comments fill ruled columns from the top">Pin to text</button>
         <button id="print" title="Print the page as one poster sheet">Print</button>
         <a id="again" hidden target="_blank" rel="noopener">Another round</a>
       </aside>
@@ -231,6 +226,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
       <section class="passage" id="passage" aria-label="Passage"></section>
       <section class="side" id="left" aria-label="Commentary, left margin"></section>
       <section class="side" id="right" aria-label="Commentary, right margin"></section>
+      <section class="field" id="field" aria-label="Commentary, in the margins"></section>
     </div>
     <button class="all" id="all" hidden></button>
   </main>
@@ -253,19 +249,20 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
 const shownText = c => c.text.replace(/\s+/g, ' ').trim();
 
 // The span [start, end) of comment `c` in the shown text of the node it is on, or null when it is on
-// the whole text. A comment on the passage stores its span. A comment on a comment quotes the
-// words it means, copied from that comment, and its span is where they are found; `on` is the
-// comment it is written on.
+// the whole text. A comment on the passage stores its span, and a comment on a comment may. One
+// that does not quotes the words it means, copied from that comment, and its span is where they
+// are first found; `on` is the comment it is written on.
 function spanOf(c, on) {
-  if (c.target === 'passage') return [c.start, c.end];
+  if (c.target === 'passage' || (c.start != null && c.end != null)) return [c.start, c.end];
   const q = (c.quote || '').replace(/\s+/g, ' ').trim();
   const i = q && on ? shownText(on).indexOf(q) : -1;
   return i < 0 ? null : [i, i + q.length];
 }
 
 // A text cut wherever a span starts or ends, and at any offset in `cuts`. `spans` is
-// [{id, start, end}]. Returns the pieces in order, [{start, end, on, begins}]: `on` the ids of the
-// spans that cover the piece, `begins` the ids of the spans that start at its first character.
+// [{id, start, end}]. Returns the pieces in order, [{start, end, on, begins, ends}]: `on` the ids of
+// the spans that cover the piece, `begins` the ids of the spans that start at its first character,
+// `ends` the ids of those that end with its last.
 // Spans may overlap, nest or coincide.
 function pieces(text, spans, cuts = []) {
   const n = text.length, at = new Set([0, n, ...cuts]);
@@ -274,45 +271,49 @@ function pieces(text, spans, cuts = []) {
   const pts = [...at].filter(p => p >= 0 && p <= n).sort((a, b) => a - b), out = [];
   for (let i = 0; i < pts.length - 1; i++) {
     const start = pts[i], end = pts[i + 1];
-    out.push({ start, end, on: spans.filter(s => s.start <= start && s.end >= end).map(s => s.id), begins: spans.filter(s => s.start === start).map(s => s.id) });
+    out.push({ start, end, on: spans.filter(s => s.start <= start && s.end >= end).map(s => s.id), begins: spans.filter(s => s.start === start).map(s => s.id), ends: spans.filter(s => s.end === end).map(s => s.id) });
   }
   return out;
 }
 
-// Boxes down one column, each wanting to start level with the words it is on. `items` is [{want}] in
-// order down the page, `want` the height of its words. A box starts at its words, or as soon after
-// the box above as leaves that box `least`, and runs to where the next one starts; the last runs to
-// `end`, the foot of the text. No box is less than `least` high. Returns [{top, height}].
-function place(items, least, gap = 0, end = Infinity) {
+// Which edge of its text a comment is written at: the one its words end nearest. (`x`, `y`) is where
+// they end, measured from the text's top left corner, and `w` and `h` are the text's width and
+// height. Returns 'left', 'right', 'above' or 'below'; a side wins a tie with above or below.
+function edge(x, y, w, h) {
+  const d = { left: x, right: w - x, above: y, below: h - y };
+  return Object.keys(d).reduce((a, b) => (d[b] < d[a] ? b : a));
+}
+
+// Notes down one margin, each wanting to start level with where its words end. `items` is
+// [{want, h}] in order down the page: `want` the height of those words and `h` the note's own
+// height. Every note is whole and keeps its place in the order. One with room starts at its words.
+//
+// The stretch of margin from a note's words down to the next note's words is the room it is
+// entitled to. When the note above runs into it, the one with room to spare gives way:
+// - it starts lower, right under the note above, if it can do that and still end before the next
+//   note's words (the last note always can: the margin below it is open). It gives way by up to
+//   `give` on its own; of any more than that it takes half, and the notes above it that touch move
+//   up by the other half, as far as the margin above them is free;
+// - if it cannot, those notes above move up instead, into whatever margin is free above them, so
+//   that it can start at its words;
+// - and whatever the free margin above does not cover, it makes up by starting lower.
+// Returns each note's top.
+function stack(items, gap = 0, give = Infinity) {
   const tops = [];
-  let floor = 0;
-  for (const it of items) {
-    tops.push(Math.max(it.want, floor));
-    floor = tops[tops.length - 1] + least + gap;
-  }
-  return tops.map((top, i) => ({ top, height: i < tops.length - 1 ? tops[i + 1] - top - gap : Math.max(least, end - top) }));
-}
-
-// Which side of its text a comment stands on: the side its words begin nearer to. `x` is where they
-// begin, `lo` and `hi` the text's two edges. Returns 0 for the `lo` side and 1 for the `hi` side.
-const nearer = (x, lo, hi) => (x - lo <= hi - x ? 0 : 1);
-
-// Boxes whose words are too close together for each to have room, gathered into stacks. `items` is
-// [{want}] in order down the page. A box that could not start at its words, because the box above
-// needs `least` to show, joins that box as a stack; so every stack starts at the words of its first
-// member. Returns the stacks in order, each a list of indexes into `items`.
-function stacks(items, least, gap = 0) {
-  const out = [];
-  let floor = -Infinity;
+  let run = 0, free = -Infinity; // the first of the notes now touching, and the highest that one may start
   items.forEach((it, i) => {
-    if (out.length && floor > it.want) return out[out.length - 1].push(i);
-    out.push([i]);
-    floor = it.want + least + gap;
+    const foot = i ? tops[i - 1] + items[i - 1].h + gap : -Infinity; // the highest this note can start, the notes above staying put
+    if (it.want >= foot) { tops.push(it.want); run = i; free = foot; return }
+    const need = foot - it.want, next = items[i + 1], spare = !next || foot + it.h + gap <= next.want;
+    const up = Math.min(Math.max(0, tops[run] - free), spare ? Math.max(0, need - give) / 2 : need);
+    for (let k = run; k < i; k++) tops[k] -= up;
+    tops.push(foot - up);
   });
-  return out;
+  return tops;
 }
 
-if (typeof module !== 'undefined') module.exports = { shownText, spanOf, pieces, place, nearer, stacks };
+if (typeof module !== 'undefined') module.exports = { shownText, spanOf, pieces, edge, stack };
+
 
 const D = {"passage": {"id": "read-poor-support", "title": "Right of the Poor to Support", "source": "Samuel Read, An Inquiry into the Natural Grounds of Right to Vendible Property, or Wealth (Edinburgh, 1829), Book II, ch. 9, sect. 3, pp. 364-366", "text": "In the state of nature the land would still have remained open to him, and he would have been at full liberty to use all his exertions to procure subsistence; and whatever difficulty he might at times have found in acquiring his daily food, he never could have wanted employment. But in the advanced state of society before described the case is totally changed; to the unemployed labourer in that state the land is entirely locked up, his hands are tied, and he is placed in the cruellest of all situations, being expected and called upon (where no provision is made for his case) to perish for want in the midst of plenty; and all the while he is denied the use of his arms or exertions in any way that should procure him a morsel of food. These, however, are too hard conditions to be either endured or imposed by human nature; and it always happens when such a case occurs that the rigour of the law is relaxed and mitigated. Judges will hardly pronounce sentence of condemnation, and juries will not find a man \"guilty\" who takes a loaf of bread under such pressing circumstances; while it is uniformly found that the spectators warmly applaud such lenity and mercy. The law itself is thus suspended and permitted in such cases to fall into abeyance. And why is this?--Clearly because, when an individual happens to be reduced to the unhappy condition which has been described--to the condition of being without food and without employment in a society where no legal provision is made for the relief of his case--all conventional laws are dissolved in regard to him. He is then left to his state of nature, and he that moment re-acquires all those rights which that state implies, namely, a right to use all his energies of mind and body, and all the means within his power, to procure the sustenance immediately necessary to the preservation of his life, how he may, but with as little hurt as he can to his more fortunate brethren. If, therefore, the society of which he is a member maintains and acts upon the doctrine that he has no right to support, it is at open war with him; his hand must necessarily be against every man's and every man's against his. Prudence or pusillanimity, or the hopelessness of succeeding against so great odds, may restrain his arm and induce him to submit patiently and without resistance to his fate,--to perish without any attempt to prolong his life otherwise than by the ordinary and allowed means,--but it never can be his duty to perish in this manner."}, "readers": [{"model": "anthropic/claude-opus-5.5", "name": "Claude Opus 5.5"}, {"model": "openai/gpt-6.1-terra", "name": "GPT-6.1 Terra"}, {"model": "google/gemini-3.5-flash", "name": "Gemini 3.5 Flash"}, {"model": "nvidia/nemotron-3-ultra-550b-a55b", "name": "Nemotron 3 Ultra"}], "cast": "02d8044c", "group": "read-03", "flags": {"max_layers": 4, "stop_when_all_pass": true, "blind_first_layer": true, "sequential": false, "signed": true, "anchor": "span", "cross_refs": true, "allow_self_reply": true, "max_comments_per_turn": null, "max_tokens": 16000, "temperature": null, "seed": 0, "forecast": false}, "comments": [{"author": "GPT-6.1 Terra", "layer": 1, "text": "“Employment” here means the opportunity to exert oneself toward subsistence, not necessarily a job or a livelihood. Read’s contrast depends on treating exclusion from land as the loss of that opportunity, even if access to land would not guarantee food.", "target": "passage", "start": 241, "end": 278, "quote": "he never could have wanted employment", "n": 1, "id": "c1"}, {"author": "GPT-6.1 Terra", "layer": 1, "text": "The claim is broader than the example of taking a loaf. Yet the ensuing right is limited to immediate sustenance and qualified by the duty to cause as little harm as possible. Read’s dissolution of law does not mean the disappearance of every moral constraint.", "target": "passage", "start": 1519, "end": 1571, "quote": "all conventional laws are dissolved in regard to him", "n": 2, "id": "c2"}, {"author": "GPT-6.1 Terra", "layer": 1, "text": "This moves from an emergency permission to take sustenance to a social right to support. The argument gives society a reason to provide relief, but leaves open how that obligation should be distributed or administered.", "target": "passage", "start": 1940, "end": 2087, "quote": "If, therefore, the society of which he is a member maintains and acts upon the doctrine that he has no right to support, it is at open war with him", "n": 3, "id": "c3"}, {"author": "Claude Opus 5.5", "layer": 1, "text": "The argument runs from an observed fact to a right. Judges hesitate, juries refuse to convict, spectators applaud, and Read reads this as evidence that the law has already dissolved for the starving man. But lenity is mercy extended *within* the law. It isn't obviously a recognition that the law no longer applies. A jury that acquits is still a jury, sitting in a court the starving man is still subject to. Read needs the stronger reading because mercy can be withdrawn and a right cannot. The \"Clearly\" carries more weight than the evidence gives it.", "target": "passage", "start": 1256, "end": 1289, "quote": "And why is this?--Clearly because", "n": 4, "id": "c4"}, {"author": "Claude Opus 5.5", "layer": 1, "text": "This parenthesis, repeated later as \"where no legal provision is made for the relief of his case,\" shows what the passage is for. It isn't really a manifesto for the right of the starving to take. It's an argument for a poor law, and it works by showing what society faces without one. The state of nature returns only where provision fails. So the \"open war\" sentence works as a warning to the propertied: a legal right to support is what keeps the starving man inside the social compact. By 1829 the old Poor Law was under heavy attack. That attack ended in the 1834 reform, which is worth keeping in mind as the backdrop.", "target": "passage", "start": 540, "end": 581, "quote": "(where no provision is made for his case)", "n": 5, "id": "c5"}, {"author": "Claude Opus 5.5", "layer": 1, "text": "Even after \"all conventional laws are dissolved,\" a constraint remains. It looks Lockean: the law of nature binds in the state of nature too. So the re-acquired right is a right of necessity limited by least harm, not the Hobbesian war of all against all that the next sentence (\"his hand must necessarily be against every man's\") seems to invoke. The passage holds both pictures at once. It is worth asking whether the \"war\" is the starving man's posture or only society's posture toward him.", "target": "passage", "start": 1874, "end": 1938, "quote": "but with as little hurt as he can to his more fortunate brethren", "n": 6, "id": "c6"}, {"author": "Claude Opus 5.5", "layer": 1, "text": "The ending is careful. Read does not say the man must resist, or even that resisting is wise; he lets prudence and \"pusillanimity\" counsel submission. What he denies is that submission is a *duty*. Read is claiming a permission, not an obligation. Society may demand his compliance, and he may give it, but compliance cannot be owed. That moves the question from what the poor man will do to what society can rightly ask of him.", "target": "passage", "start": 2445, "end": 2498, "quote": "but it never can be his duty to perish in this manner", "n": 7, "id": "c7"}, {"author": "Gemini 3.5 Flash", "layer": 1, "text": "Read highlights the structural paradox of modern property: the state encloses the commons—thereby removing the state-of-nature means of self-subsistence—while simultaneously forbidding the landless from using their labor outside the wage relation. Property rights effectively weaponize starvation unless offset by a public right to relief.", "target": "passage", "start": 509, "end": 741, "quote": "being expected and called upon (where no provision is made for his case) to perish for want in the midst of plenty; and all the while he is denied the use of his arms or exertions in any way that should procure him a morsel of food.", "n": 8, "id": "c8"}, {"author": "Gemini 3.5 Flash", "layer": 1, "text": "It is striking how Read treats popular sympathy and jury nullification not as mere legal flaws or sentimental lapses, but as empirical proof that positive law collapses when it directly contradicts fundamental natural rights.", "target": "passage", "start": 930, "end": 1171, "quote": "Judges will hardly pronounce sentence of condemnation, and juries will not find a man \"guilty\" who takes a loaf of bread under such pressing circumstances; while it is uniformly found that the spectators warmly applaud such lenity and mercy.", "n": 9, "id": "c9"}, {"author": "Gemini 3.5 Flash", "layer": 1, "text": "This extends the classic doctrine of necessity (found in Aquinas and Locke) into 19th-century political economy. The social contract is reciprocal: if political society deprives a person of both the means of independent survival and the opportunity to work, it unilaterally voids the contract, returning that specific individual to a state of nature regarding property.", "target": "passage", "start": 1519, "end": 1685, "quote": "all conventional laws are dissolved in regard to him. He is then left to his state of nature, and he that moment re-acquires all those rights which that state implies", "n": 10, "id": "c10"}, {"author": "Gemini 3.5 Flash", "layer": 1, "text": "A sharp rejection of Malthusian or quietist views that framed poverty as an inevitable, passive fate to be borne with resignation. Read insists that self-preservation cannot be contracted away; submission to starvation may be forced by superior power, but it can never be a moral obligation.", "target": "passage", "start": 2449, "end": 2499, "quote": "it never can be his duty to perish in this manner.", "n": 11, "id": "c11"}, {"author": "Nemotron 3 Ultra", "layer": 1, "text": "Read's state of nature is strikingly economic rather than Hobbesian. The defining feature isn't violence or insecurity but *access*—land as an open Commons where labor always finds employment. The \"advanced state of society\" introduces a new violence: not the war of all against all, but the lockout of the laborer from the means of applying labor. This inverts Locke: property (the enclosure of land) creates the very precarity that the social contract was meant to remedy.", "target": "passage", "start": 0, "end": 279, "quote": "In the state of nature the land would still have remained open to him, and he would have been at full liberty to use all his exertions to procure subsistence; and whatever difficulty he might at times have found in acquiring his daily food, he never could have wanted employment.", "n": 12, "id": "c12"}, {"author": "Nemotron 3 Ultra", "layer": 1, "text": "A remarkable empirical claim: the *practice* of courts and juries already recognizes the right Read is theorizing. The positive law says \"property is absolute\"; the living law says \"necessity suspends property.\" Read treats this not as lawlessness but as the *true* law revealing itself when convention fails. The spectators' applause matters—it signals a shared moral judgment that the statute has lost its legitimacy in these cases.", "target": "passage", "start": 930, "end": 1255, "quote": "Judges will hardly pronounce sentence of condemnation, and juries will not find a man \"guilty\" who takes a loaf of bread under such pressing circumstances; while it is uniformly found that the spectators warmly applaud such lenity and mercy. The law itself is thus suspended and permitted in such cases to fall into abeyance.", "n": 13, "id": "c13"}, {"author": "Nemotron 3 Ultra", "layer": 1, "text": "The \"war\" metaphor is deliberate and heavy. Read is writing in 1829, five years before the New Poor Law (1834) would codify the \"no right to support\" doctrine into the workhouse test. He's diagnosing a structural violence: a property regime that creates destitution and then criminalizes the destitute's survival strategies *is* a declaration of war. The poor man's \"hand against every man\" isn't criminality—it's the reversion to natural self-defense when the civil compact has been unilaterally voided by the propertied.", "target": "passage", "start": 1940, "end": 2166, "quote": "If, therefore, the society of which he is a member maintains and acts upon the doctrine that he has no right to support, it is at open war with him; his hand must necessarily be against every man's and every man's against his.", "n": 14, "id": "c14"}, {"author": "GPT-6.1 Terra", "layer": 2, "text": "The 1834 Act did not simply abolish relief or a legal claim to it. The workhouse test made relief more restrictive and deterrent, especially for the able-bodied, while outdoor relief continued in practice. Read’s warning is relevant to the reform, but the two doctrines should not be equated.", "target": "c14", "quote": "would codify the \"no right to support\" doctrine into the workhouse test", "n": 15, "id": "c15"}, {"author": "GPT-6.1 Terra", "layer": 2, "text": "Is the restriction quite that specific? Read’s point is that access to the resources needed to subsist is blocked, not necessarily that all non-wage work is legally forbidden.", "target": "c8", "quote": "forbidding the landless from using their labor outside the wage relation", "n": 16, "id": "c16"}, {"author": "Claude Opus 5.5", "layer": 2, "text": "This needs qualifying. The 1834 Act did not abolish the legal provision Read's argument turns on. It kept a statutory right to relief and made that relief conditional and deliberately unattractive (\"less eligibility\"). By Read's own terms that matters. His parenthesis is \"where no legal provision is made,\" and the workhouse is a provision, however harsh. The real target in 1829 was the abolitionist position: Malthus's proposal to phase out relief entirely. The 1834 reformers declined to adopt it. So Read's argument cuts against Malthus more cleanly than against the New Poor Law. Whether a deterrent provision counts as \"provision\" in Read's sense is a fair question, but it is a different question from the one c14 poses.", "target": "c14", "quote": "would codify the \"no right to support\" doctrine into the workhouse test", "n": 17, "id": "c17"}, {"author": "Claude Opus 5.5", "layer": 2, "text": "I'd say it applies Locke rather than inverting him. Two Lockean texts already hold most of this. The proviso makes appropriation legitimate only where \"enough and as good\" is left for others. First Treatise §42 grants the needy \"a right to the surplusage\" of another's goods when they have no means to subsist otherwise. Read's move is to treat the advanced society as the point where the proviso fails for the unemployed labourer. Charity, or a poor law, is then what discharges the debt. That is Locke's own escape clause, taken seriously under conditions Locke treated as hypothetical.", "target": "c12", "quote": "This inverts Locke", "n": 18, "id": "c18"}, {"author": "Claude Opus 5.5", "layer": 2, "text": "The empirical step looks weaker still against the record. In 1829 the English courts did not recognize necessity as a defence to theft. That position was later fixed in *Dudley and Stephens*, and before it in Hale's flat denial of the defence. So the \"abeyance\" Read describes is discretionary leniency working around the doctrine, not an expression of it. That cuts both ways. It weakens his inference that the law has already dissolved. It also gives him a better argument than the one he makes: a law that can be applied only by having its officers decline to apply it already needs the provision he is arguing for.", "target": "c4", "see_also": ["c9", "c13"], "n": 19, "id": "c19"}, {"author": "Gemini 3.5 Flash", "layer": 2, "text": "Read's move here is strategically necessary for his argument: if judicial lenity and jury nullification are merely acts of grace or discretionary mercy, the poor man's survival remains dependent on the caprice of the propertied class. By interpreting lenity as an empirical symptom of law's total *dissolution* under necessity, Read attempts to convert what the legal system treats as an exception into a constitutional limit on property itself.", "target": "c4", "n": 20, "id": "c20"}, {"author": "Gemini 3.5 Flash", "layer": 2, "text": "The passage explicitly places the initiation of \"war\" on society: if society denies the right to support, \"*it* is at open war with him.\" The poor man's condition is defensive, forced upon him by enclosure. The retention of the \"least hurt\" principle shows that for Read, natural law persists even when conventional law collapses—the civil contract is voided, but basic moral obligations of natural justice remain intact.", "target": "c6", "n": 21, "id": "c21"}, {"author": "Gemini 3.5 Flash", "layer": 2, "text": "This shift—from an individual *permission* to seize food in extremity to a societal *obligation* to provide organized relief—is Read's core move. His argument to the propertied class is utilitarian: without an institutionalized Poor Law, you get erratic extractions driven by individual necessity. Public relief is framed as the price society must pay to render the rest of the property regime legitimate and secure.", "target": "c3", "see_also": ["c5"], "n": 22, "id": "c22"}, {"author": "Nemotron 3 Ultra", "layer": 2, "text": "This is a sharp objection. Read's move from \"juries refuse to convict\" to \"law is dissolved\" does compress a crucial distinction: between *nullification* (the law exists but is refused) and *dissolution* (the law ceases to bind). But Read might reply that the *uniformity* of the refusal—judges, juries, spectators all aligning—marks not episodic mercy but a systemic rupture. When the sovereign's own courts consistently refuse to enforce the statute against a class of persons in a class of circumstances, the statute has lost its operative force *for that class*. That is what \"dissolved in regard to him\" means: not that the text vanishes, but that the legal relation between that man and the property law has been severed. The \"Clearly\" still carries more than the evidence shows, but the evidence is stronger than \"lenity\" suggests.", "target": "c4", "quote": "But lenity is mercy extended *within* the law. It isn't obviously a recognition that the law no longer applies.", "n": 23, "id": "c23"}, {"author": "Nemotron 3 Ultra", "layer": 2, "text": "Yes—and the historical timing sharpens the stakes. 1829: the Royal Commission on the Poor Laws is sitting; its 1834 report will recommend the \"workhouse test\" that makes relief so degrading that only the truly desperate accept it, effectively legislating the \"no right to support\" doctrine Read warns against. Read is writing *against* the intellectual current that will become the New Poor Law. His \"state of nature\" return is a direct rebuttal to the Malthusian-political-economy line that the poor law itself creates the pauper. He inverts it: the *absence* of a right to support creates the state of nature, and the poor law is the treaty that prevents war. The 1834 Act, in his terms, tears up the treaty.", "target": "c5", "quote": "It's an argument for a poor law, and it works by showing what society faces without one.", "n": 24, "id": "c24"}, {"author": "Nemotron 3 Ultra", "layer": 2, "text": "The tension is deliberate, I think. Read gives us *two* state-of-nature descriptions in succession: first the Lockean one (right of necessity bounded by least harm), then the Hobbesian one (\"his hand must necessarily be against every man's\"). The shift marks the *difference between the individual and the collective*. One starving man re-enters a law-of-nature condition where he *can* observe \"least harm.\" But a *class* of starving men, produced systematically by the property regime, generates the war of all against all. The \"least hurt\" clause is the right of the individual; the \"war\" sentence is the structural condition society creates when it multiplies that individual. Read needs both: the first to ground the right, the second to show why society *must* institutionalize it.", "target": "c6", "quote": "Even after \"all conventional laws are dissolved,\" a constraint remains... The passage holds both pictures at once.", "n": 25, "id": "c25"}, {"author": "GPT-6.1 Terra", "layer": 3, "text": "The Royal Commission was appointed in 1832, not 1829; its report followed in 1834. And, as the discussion on c14 notes, the workhouse test did not simply abolish relief.", "target": "c24", "quote": "1829: the Royal Commission on the Poor Laws is sitting", "n": 26, "id": "c26"}, {"author": "GPT-6.1 Terra", "layer": 3, "text": "That is a possible extension, but the passage describes war between society and the individual “he.” Read does not seem to require a whole class of starving people for that conflict to arise.", "target": "c25", "quote": "a class of starving men, produced systematically by the property regime, generates the war of all against all", "n": 27, "id": "c27"}, {"author": "GPT-6.1 Terra", "layer": 3, "text": "The warning about insecurity appeals to their interests, but the argument is not only utilitarian: Read also insists that the destitute person cannot have a duty to starve. That claim would matter even if compliance made property more secure.", "target": "c22", "quote": "His argument to the propertied class is utilitarian", "n": 28, "id": "c28"}, {"author": "Claude Opus 5.5", "layer": 3, "text": "The text resists this. The war sentence is in the singular throughout: \"it is at open war with *him*; *his* hand must necessarily be against every man's.\" Read gives no sign of moving from one man to a class. The individual is already at war, and the war is declared by society's doctrine, not produced by the number of starving men. A better reconciliation might be that \"least hurt\" governs how he conducts himself, while \"war\" describes his standing. He owes his brethren restraint, but he no longer owes the law obedience. Both pictures then describe the same single man.", "target": "c25", "quote": "The shift marks the *difference between the individual and the collective*.", "n": 29, "id": "c29"}, {"author": "Claude Opus 5.5", "layer": 3, "text": "Not quite in his terms. See c15 and c17: the 1834 Act kept a legal claim to relief and made it deterrent. Read's condition is \"where no legal provision is made,\" so the New Poor Law falls inside his treaty, though on harsh terms. The live question is whether a provision designed to be refused still counts as provision. Read's text doesn't settle that, and treating it as settled overstates his case against 1834.", "target": "c24", "quote": "The 1834 Act, in his terms, tears up the treaty.", "n": 30, "id": "c30"}, {"author": "Claude Opus 5.5", "layer": 3, "text": "Read's own wording undercuts the uniformity. Judges \"will *hardly* pronounce sentence,\" which concedes that they sometimes do. The thing that is \"uniformly found\" is the spectators' applause, not the acquittal. So the consistent element is public sentiment, and the courts are only usually lenient. That supports the claim that convention has lost legitimacy. It does not support the claim that it has lost operative force, which is what \"dissolved\" needs.", "target": "c23", "quote": "the *uniformity* of the refusal", "n": 31, "id": "c31"}, {"author": "Gemini 3.5 Flash", "layer": 3, "text": "The biblical echo in \"his hand must necessarily be against every man's\" (Ishmael's fate in Genesis 16:12) underlines this shift. At the individual level, natural law persists as a moral constraint (\"least hurt\"). But when destitution is structural, natural law degrades into pure self-preservation. Read's move to Hobbesian rhetoric at that exact point is an explicit warning to the propertied: denying a legal right to support converts private distress into a collective security threat.", "target": "c25", "quote": "One starving man re-enters a law-of-nature condition where he *can* observe \"least harm.\" But a *class* of starving men, produced systematically by the property regime, generates the war of all against all.", "n": 32, "id": "c32"}, {"author": "Gemini 3.5 Flash", "layer": 3, "text": "This distinction highlights the tension between formal legal doctrine and informal \"moral economy.\" While high legal doctrine from Hale to *Dudley and Stephens* rejected necessity as a defense for theft, local practice—juries refusing to convict, spectators applauding, magistrates declining to prosecute—frequently enforced a de facto protection for the starving. Read treats this popular moral economy not as extralegal mercy, but as the true natural constitution asserting itself over statutory law.", "target": "c19", "quote": "the \"abeyance\" Read describes is discretionary leniency working around the doctrine, not an expression of it", "n": 33, "id": "c33"}, {"author": "Nemotron 3 Ultra", "layer": 3, "text": "The proviso point is strong, but Read goes further in two ways. First, Locke's proviso addresses individual appropriations leaving \"enough and as good\" for others; Read describes a *system* (advanced commercial society) where the proviso fails *structurally* for an entire class—the unemployed labourer. It's not that this or that enclosure violated the proviso; it's that the property regime *as such* now produces a class for whom \"enough and as good\" is a fiction. Second, Locke's state of nature is political (insecurity, need for impartial judge); Read's is economic (access to land as means of employment). The \"inversion\" I meant is that for Locke, property *solves* the inconveniences of the state of nature; for Read, property *creates* a new state of nature for the propertyless. The poor law isn't just Locke's escape clause activated—it's the treaty that re-secures what the property regime stripped away.", "target": "c18", "quote": "I'd say it applies Locke rather than inverting him.", "n": 34, "id": "c34"}, {"author": "Nemotron 3 Ultra", "layer": 3, "text": "Two contextual notes. Read writes from Edinburgh; Scots law historically treated necessity (especially *necessitas victus*) more flexibly than English common law, and Scottish juries had broader acquittal powers. But more importantly, Read's evidence isn't only court doctrine—it's the *convergence* of judges hesitating, juries refusing, and spectators applauding. He reads this triad as the \"living law\" (natural law recognized by moral consensus) suspending the statute. The positive law says \"theft\"; the moral economy says \"necessity.\" When the sovereign's own courts *systematically* refuse to enforce the statute against a class of persons in a class of circumstances, Read argues the legal relation is dissolved *for that class*. That's a sociological claim about law's operative force, not a doctrinal claim about defences.", "target": "c19", "quote": "In 1829 the English courts did not recognize necessity as a defence to theft.", "n": 35, "id": "c35"}, {"author": "Nemotron 3 Ultra", "layer": 3, "text": "True as formal doctrine, but Read's parenthesis is \"where no legal provision is made *for the relief of his case*.\" The workhouse test—less eligibility, family separation, stigma—was designed so that the able-bodied unemployed would *choose* starvation over relief. For Read, a \"provision\" that is structurally deterrent to the very class it purports to serve (the unemployed labourer with tied hands and locked land) functions as *no provision*. He would say the 1834 Act keeps the *form* of a right while emptying its *substance*—exactly the \"doctrine that he has no right to support\" wearing a legal fig leaf. The Malthusian abolitionists were honest about the doctrine; the 1834 reformers were not.", "target": "c17", "quote": "The 1834 Act did not abolish the legal provision Read's argument turns on.", "n": 36, "id": "c36"}, {"author": "Nemotron 3 Ultra", "layer": 3, "text": "The triad matters: *prudence* (rational calculation), *pusillanimity* (moral weakness), *hopelessness* (structural impossibility). Three distinct paths to submission, none of them moral obligation. \"Ordinary and allowed means\" = the poor law, charity, wage labour—all the channels society *permits*. When those channels are blocked (no work, no relief), the man who submits and starves acts *supererogatorily*, not dutifully. Read places the moral burden entirely on society: it is society that makes his survival depend on \"prudence or pusillanimity or hopelessness\" rather than right. The sentence \"it never can be his duty to perish\" is the logical capstone: if society voids the compact, it cannot then demand compliance with the compact's terms as a *duty*.", "target": "passage", "start": 2167, "end": 2499, "quote": "Prudence or pusillanimity, or the hopelessness of succeeding against so great odds, may restrain his arm and induce him to submit patiently and without resistance to his fate,--to perish without any attempt to prolong his life otherwise than by the ordinary and allowed means,--but it never can be his duty to perish in this manner.", "n": 37, "id": "c37"}, {"author": "GPT-6.1 Terra", "layer": 4, "text": "Deterrence was part of the design, but that is not the same as an intention to make people starve: reformers also expected it to push people toward work. Whether Read would regard a harsh, deterrent workhouse as a failure to provide for someone’s case is an important question, but this passage does not settle it.", "target": "c36", "quote": "was designed so that the able-bodied unemployed would *choose* starvation over relief", "n": 38, "id": "c38"}, {"author": "GPT-6.1 Terra", "layer": 4, "text": "Not being duty-bound to submit does not make submission morally above and beyond duty. Read’s examples include hopelessness and “pusillanimity”; he seems to leave room for submission to be neither obligatory nor admirable.", "target": "c37", "quote": "acts *supererogatorily*, not dutifully", "n": 39, "id": "c39"}, {"author": "GPT-6.1 Terra", "layer": 4, "text": "<em>Dudley and Stephens<\/em> concerned killing, not theft, so it is not direct authority on a starving person’s taking food. And Read’s claim about frequent acquittals and public applause needs evidence beyond the passage itself.", "target": "c33", "quote": "from Hale to *Dudley and Stephens* rejected necessity as a defense for theft", "n": 40, "id": "c40"}, {"author": "Claude Opus 5.5", "layer": 4, "text": "\"Supererogatory\" implies the submission is praiseworthy, something beyond duty. Read doesn't grant that. One of his three causes is \"pusillanimity,\" which is a vice, and \"prudence\" and \"hopelessness\" are morally neutral at best. So the man who starves quietly is not going beyond what is owed. He is doing what no one could rightly ask of him, and possibly from weakness. That fits c7's reading: Read claims a permission and denies a duty. He offers no counter-praise for martyrdom. If anything, the sentence quietly refuses the moralists' admiration of patient poverty.", "target": "c37", "quote": "the man who submits and starves acts *supererogatorily*, not dutifully", "n": 41, "id": "c41"}, {"author": "Claude Opus 5.5", "layer": 4, "text": "This overstates what the reformers intended. Less eligibility was designed to make relief less attractive than independent labour. The aim was to push the able-bodied back into work, not into starvation. The workhouse fed people who entered it. Read's test is whether the man is \"expected and called upon … to perish for want.\" A grim provision that keeps him alive doesn't meet that description.\n\nThe stronger version of your point uses Read's own premise. If there is no work to be had, a test that assumes work is available relieves nothing. It also deters. That argument comes from his \"denied the use of his arms\" clause, not from the parenthesis. It would make the 1834 Act deficient in its fit with Read's premise, not in its legal form.", "target": "c36", "quote": "was designed so that the able-bodied unemployed would *choose* starvation over relief", "n": 42, "id": "c42"}, {"author": "Gemini 3.5 Flash", "layer": 4, "text": "Read's phrasing—\"where no legal provision is made *for the relief of his case*\"—supports this. If a legal provision is deliberately designed to be so coercive or degrading that a person would risk starvation to avoid it, it does not offer *relief*; it attaches a severe penalty to survival. In Read's framework, such deterrence does not fulfill the social compact, but merely replaces open exclusion with institutionalized duress.", "target": "c36", "n": 43, "id": "c43"}, {"author": "Gemini 3.5 Flash", "layer": 4, "text": "That distinction between legitimacy and operative force is sharp, but within Read's natural-rights framework, moral legitimacy is the prerequisite for legal obligation. If a statute loses its legitimacy—evidenced by spectator applause and judicial hesitation—it ceases to bind as *law* and remains merely as coercive power. For the starving person, the legal relation is dissolved because obligation has been replaced by sheer force.", "target": "c31", "n": 44, "id": "c44"}, {"author": "Gemini 3.5 Flash", "layer": 4, "text": "The inclusion of *pusillanimity* (cowardice or spiritlessness) in this triad is striking. By grouping quiet submission with \"pusillanimity\" alongside prudence, Read quietly subverts the pious ideal of the patiently suffering poor. Submission to starvation is not a moral duty or a Christian virtue, but a concession to overwhelming odds.", "target": "c37", "quote": "pusillanimity", "n": 45, "id": "c45"}, {"author": "Nemotron 3 Ultra", "layer": 4, "text": "This is a precise and damaging textual correction. Read writes \"hardly\" (i.e., rarely, with difficulty) not \"never,\" and reserves \"uniformly\" for the spectators. The convergence I claimed is not in the text as written. What remains is a gradient: judges *usually* hesitate, juries *usually* refuse, spectators *always* applaud. The \"living law\" argument then rests on a predominant practice rather than a systematic rupture. That weakens the inference to *dissolution* (loss of operative force) but may still support *illegitimacy* (loss of moral authority)—the statute commands, but the community that authorizes it withholds assent. Read's \"Clearly\" still overreaches, but the evidence points to a crisis of legitimacy, not a cessation of power.", "target": "c31", "quote": "Read's own wording undercuts the uniformity. Judges \"will *hardly* pronounce sentence,\" which concedes that they sometimes do. The thing that is \"uniformly found\" is the spectators' applause, not the acquittal.", "n": 46, "id": "c46"}, {"author": "Nemotron 3 Ultra", "layer": 4, "text": "You're right on the grammar: the passage never pluralizes \"he.\" But the *condition* described—\"the advanced state of society before described\"—is structural. The \"unemployed labourer\" is a class term; the land is \"entirely locked up\" as a systemic fact. When Read says \"when *an* individual happens to be reduced to the unhappy condition which has been described,\" the \"condition\" is the class position. The singular \"he\" is the instance of the class. The war sentence describes what *that position* entails for any occupant of it. So the individual *is* at war, but he is at war *because* the property regime has made his position a structural one. The \"least hurt\" clause governs his conduct *within* that war; the \"war\" clause describes the standing the regime has assigned him. Both pictures describe the same man, but the war picture reveals what the regime has done to him.", "target": "c29", "quote": "The text resists this. The war sentence is in the singular throughout: \"it is at open war with *him*; *his* hand must necessarily be against every man's.\" Read gives no sign of moving from one man to a class.", "n": 47, "id": "c47"}, {"author": "Nemotron 3 Ultra", "layer": 4, "text": "The phrase \"expected and called upon\" is doing heavy work. It personifies society as an active agent demanding the labourer's death—not merely permitting it, but *calling* for it. \"In the midst of plenty\" sharpens the cruelty: the plenty exists *because* the land is locked up and cultivated; the labourer's exclusion from it is the condition of its production. Read is describing a structural extraction: the property regime generates surplus by enclosing the means of subsistence, then demands the excluded treat their exclusion as a moral obligation to die quietly. The \"cruellest of all situations\" is not destitution per se but destitution *imposed as a duty*.", "target": "passage", "start": 363, "end": 623, "quote": "to the unemployed labourer in that state the land is entirely locked up, his hands are tied, and he is placed in the cruellest of all situations, being expected and called upon (where no provision is made for his case) to perish for want in the midst of plenty", "n": 48, "id": "c48"}], "log": [{"layer": 1, "reader": "GPT-6.1 Terra", "model": "openai/gpt-6.1-terra", "via": "openai", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 1000, "completion_tokens": 304, "cost": 0.00252, "cost_estimated": true}}, {"layer": 1, "reader": "Claude Opus 5.5", "model": "anthropic/claude-opus-5.5", "via": "anthropic", "comments": 4, "replies": 1, "usage": {"prompt_tokens": 1398, "completion_tokens": 947, "cost": 0.024532, "cost_estimated": true}}, {"layer": 1, "reader": "Gemini 3.5 Flash", "model": "google/gemini-3.5-flash", "via": "google", "comments": 4, "replies": 1, "usage": {"completion_tokens": 442, "prompt_tokens": 1001, "total_tokens": 2167, "cost": 0.0119955, "cost_estimated": true}}, {"layer": 1, "reader": "Nemotron 3 Ultra", "model": "nvidia/nemotron-3-ultra-550b-a55b", "via": "nvidia", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 1034, "completion_tokens": 912, "total_tokens": 1946, "cost": 0.0028092, "cost_estimated": true}}, {"layer": 2, "reader": "GPT-6.1 Terra", "model": "openai/gpt-6.1-terra", "via": "openai", "comments": 2, "replies": 1, "usage": {"prompt_tokens": 2764, "completion_tokens": 324, "cost": 0.004384, "cost_estimated": true}}, {"layer": 2, "reader": "Claude Opus 5.5", "model": "anthropic/claude-opus-5.5", "via": "anthropic", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 4017, "completion_tokens": 1066, "cost": 0.037388, "cost_estimated": true}}, {"layer": 2, "reader": "Gemini 3.5 Flash", "model": "google/gemini-3.5-flash", "via": "google", "comments": 3, "replies": 1, "usage": {"completion_tokens": 297, "prompt_tokens": 2813, "total_tokens": 4801, "cost": 0.0221115, "cost_estimated": true}}, {"layer": 2, "reader": "Nemotron 3 Ultra", "model": "nvidia/nemotron-3-ultra-550b-a55b", "via": "nvidia", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 2848, "completion_tokens": 1098, "total_tokens": 3946, "cost": 0.004344, "cost_estimated": true}}, {"layer": 3, "reader": "GPT-6.1 Terra", "model": "openai/gpt-6.1-terra", "via": "openai", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 4380, "completion_tokens": 280, "cost": 0.00578, "cost_estimated": true}}, {"layer": 3, "reader": "Claude Opus 5.5", "model": "anthropic/claude-opus-5.5", "via": "anthropic", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 6360, "completion_tokens": 770, "cost": 0.04084, "cost_estimated": true}}, {"layer": 3, "reader": "Gemini 3.5 Flash", "model": "google/gemini-3.5-flash", "via": "google", "comments": 2, "replies": 1, "usage": {"completion_tokens": 305, "prompt_tokens": 4479, "total_tokens": 6771, "cost": 0.0273465, "cost_estimated": true}}, {"layer": 3, "reader": "Nemotron 3 Ultra", "model": "nvidia/nemotron-3-ultra-550b-a55b", "via": "nvidia", "comments": 4, "replies": 1, "usage": {"prompt_tokens": 4518, "completion_tokens": 3251, "total_tokens": 7769, "cost": 0.0105132, "cost_estimated": true}}, {"layer": 4, "reader": "GPT-6.1 Terra", "model": "openai/gpt-6.1-terra", "via": "openai", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 6226, "completion_tokens": 341, "cost": 0.007931, "cost_estimated": true}}, {"layer": 4, "reader": "Claude Opus 5.5", "model": "anthropic/claude-opus-5.5", "via": "anthropic", "comments": 2, "replies": 1, "usage": {"prompt_tokens": 9026, "completion_tokens": 1000, "cost": 0.056104, "cost_estimated": true}}, {"layer": 4, "reader": "Gemini 3.5 Flash", "model": "google/gemini-3.5-flash", "via": "google", "comments": 3, "replies": 1, "usage": {"completion_tokens": 287, "prompt_tokens": 6369, "total_tokens": 8939, "cost": 0.0326835, "cost_estimated": true}}, {"layer": 4, "reader": "Nemotron 3 Ultra", "model": "nvidia/nemotron-3-ultra-550b-a55b", "via": "nvidia", "comments": 3, "replies": 1, "usage": {"prompt_tokens": 6456, "completion_tokens": 1382, "total_tokens": 7838, "cost": 0.0071904, "cost_estimated": true}}], "counter": 48, "layers_done": 4, "started": "2026-11-10T15:31:38", "prompt_example": "You are one of 4 readers sharing a single page. At the centre of the page is a passage. Around it, in the margins, commentary accumulates over several rounds. You appear on the page as Claude Opus 5.5. The other readers are GPT-6.1 Terra, Gemini 3.5 Flash, Nemotron 3 Ultra.\n\nThe page is one shape repeated: a text with a margin. The passage has a margin, where the comments on it stand. Every comment has a margin of its own, where the comments on that comment stand. You are shown each comment beneath what it is written on, set in one step.\n\nTo write a comment, put a block like this in your reply:\n\n<comment on=\"passage\">\n<quote>the exact words you mean<\/quote>\nyour comment\n<\/comment>\n\n`on` says whose margin the comment goes in: \"passage\", or the id of a comment, such as \"c7\". On the passage the quote is required: the span exactly as it appears; it can be a few words or several sentences. On a comment it is optional, and marks the part of that comment you mean. A block can also carry see=\"c2 c5\" to point at other comments.\n\nThere is no assignment and nothing here is being scored. Comment where you have something to say, as briefly or at as much length as the thought needs, and leave the rest alone. Agreeing, disagreeing, asking, connecting and staying silent are all fine. Your reply is your whole turn this round: put a block in it for every comment you want to make, or none if you have nothing to add. Only the blocks go on the page. If a comment cannot be recorded you will be told why, once, and can write it again.", "site": {"run": "read-03", "workflow": "https://github.com/asavs/RADBINICAL/actions/workflows/run.yml"}};
 const $ = id => document.getElementById(id);
@@ -323,7 +324,16 @@ const lemmaOf = (q, n = 8) => { const w = q.trim().split(/\s+/); return w.length
 
 function start() {
   if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
-  const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
+  // What is worked out from the record; worked out again when a served page brings a newer one.
+  let authors, people, byId, rounds, LIVE = null;
+  const derive = () => {
+    authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
+    // People who wrote on the page, as against models.
+    people = new Set([...D.readers.filter(r => r.human || r.model.startsWith('human:')).map(r => r.name), ...D.comments.filter(c => c.kind === 'human').map(c => c.author)]);
+    byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
+    rounds = Math.max(1, D.layers_done || 1);
+  };
+  derive();
   const BRANDS = {"anthropic": {"name": "Anthropic", "icon": "claude-color", "color": "#D97757"}, "openai": {"name": "OpenAI", "icon": "openai"}, "google": {"name": "Google", "icon": "gemini-color", "color": "#3186FF"}, "x-ai": {"name": "xAI", "icon": "grok"}, "xai": {"name": "xAI", "icon": "grok"}, "deepseek": {"name": "DeepSeek", "icon": "deepseek-color", "color": "#4D6BFE"}, "moonshotai": {"name": "Moonshot AI", "icon": "kimi-color", "color": "#1783FF", "flip": true}, "nvidia": {"name": "NVIDIA", "icon": "nvidia-color", "color": "#74B71B"}, "qwen": {"name": "Alibaba", "icon": "qwen-color", "color": "#082DFF"}, "meta-llama": {"name": "Meta", "icon": "meta-color", "color": "#0082FB"}, "mistralai": {"name": "Mistral AI", "icon": "mistral-color", "color": "#FA500F"}, "nousresearch": {"name": "Nous Research", "icon": "nousresearch", "color": "#2F3CF5"}};
   const ICONS = 'https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/';
   const PREFIXES = ['openrouter', 'nous', 'openai', 'google', 'xai', 'nvidia', 'anthropic', 'mock'];
@@ -337,35 +347,27 @@ function start() {
   const ink = a => { const b = brandOf(a); return b ? (b.color || 'var(--ink)') : `var(--a${authors.indexOf(a) % 8})` };
   // Two readers from one maker share a logo, so those also carry a short name.
   const shared = a => { const b = brandOf(a); return !!b && authors.some(o => o !== a && brandOf(o) === b) };
-  // People who wrote on the page, as against models.
-  const people = new Set([...D.readers.filter(r => r.human || r.model.startsWith('human:')).map(r => r.name), ...D.comments.filter(c => c.kind === 'human').map(c => c.author)]);
   const glyph = (a, named) => {
     const b = brandOf(a), tag = !named && shared(a) ? `<i class="tag">${esc(a.split(/[\s]+/).pop())}</i>` : '';
     const u = b && ICONS + b.icon + '.svg';
     const mark = people.has(a) ? '<i class="g person"></i>' : !b || !S.icons ? '<i class="g"></i>' :b.icon.endsWith('-color') ? `<img class="g${b.flip ? ' flip' : ''}" src="${u}" alt="">` : `<i class="g mark" style="--u:url(${u})"></i>`;
     return named ? mark : `<span class="who" data-name="${esc(a)}">${mark}${tag}</span>`;
   };
-  const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
   const num = id => id.replace(/^c/, '');
-  const rounds = Math.max(1, D.layers_done || 1);
-  const S = { upTo: rounds, off: new Set(), icons: false, pin: false };
+  const S = { upTo: rounds, off: new Set(), icons: false, pin: true };
   const kinds = c => (people.has(c.author) ? ' human' : '');
   const phone = matchMedia('(max-width: 699px)'), wide = matchMedia('(min-width: 1100px)');
   const sheet = $('sheet');
 
-  $('title').textContent = D.passage.title;
-  $('source').textContent = D.passage.source || '';
-  $('mock').hidden = !D.readers.some(r => r.model.startsWith('mock:'));
-  $('layer').max = rounds; $('layer').value = rounds; $('layer').disabled = rounds < 2;
 
   const rootOf = c => { while (c && c.target !== 'passage') c = byId[c.target]; return c };
   // What is on show, as a tree. A node is the passage ('passage') or a comment, and kids(id) are the
-  // comments written on it: the passage's in the order of the words they are on, a comment's as made.
+  // comments written on it: the passage's in the order their words end, a comment's as made.
   function shown() {
     const K = { passage: [] };
     for (const c of D.comments) // stored in the order they were written, so parents come first
-      if (c.layer <= S.upTo && !S.off.has(c.author) && K[c.target]) { K[c.target].push(c); K[c.id] = [] }
-    K.passage.sort((a, b) => a.start - b.start || a.n - b.n);
+      if (!c.hidden && c.layer <= S.upTo && !S.off.has(c.author) && K[c.target]) { K[c.target].push(c); K[c.id] = [] }
+    K.passage.sort((a, b) => a.end - b.end || a.n - b.n);
     return { size: Object.keys(K).length - 1, has: id => id !== 'passage' && id in K, kids: id => K[id] || [] };
   }
 
@@ -375,13 +377,12 @@ function start() {
     return `repeating-linear-gradient(90deg, ${inks.map((c, i) => `${c} ${i * 14}px ${(i + 1) * 14}px`).join(', ')})`;
   };
 
-  // The passage: clean text, with a small numbered mark where each comment on it begins.
   // Marking a text (kernel: pieces). Each stretch that comments are on is a .seg carrying their ids,
   // underlined in their colours; the passage and a comment's own text are marked the same way.
   const spansOn = (id, V) => V.kids(id).map(k => [k, spanOf(k, byId[id])]).filter(([, sp]) => sp).map(([k, sp]) => ({ id: k.id, start: sp[0], end: sp[1] }));
   const segOpen = ids => `<span class="seg" style="--ul:${underline(ids.map(i => byId[i]))}" data-ids="${ids.join(' ')}">`;
 
-  // The passage: clean text, with a small numbered mark where each comment on it begins.
+  // The passage: clean text, with a small mark where each comment on it ends: its writer's mark and its number.
   function drawPassage(V) {
     const text = D.passage.text, paras = [];
     let pos = 0;
@@ -393,19 +394,25 @@ function start() {
       for (const pc of all.filter(pc => pc.start >= a && pc.end <= b)) {
         let chunk = esc(text.slice(pc.start, pc.end)), box = '';
         if (first) { chunk = chunk.replace(/^(\S+)\s*/, (_, w) => { box = `<span class="incipit">${w}</span>`; return '' }); first = false }
-        html += box + pc.begins.map(i => byId[i]).map(c => `<sup class="m${people.has(c.author) ? ' h' : ''}" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
-        html += pc.on.length ? segOpen(pc.on) + chunk + '</span>' : chunk;
+        html += box + (pc.on.length ? segOpen(pc.on) + chunk + '</span>' : chunk);
+        html += pc.ends.map(i => markHTML(byId[i])).join('');
       }
       html += '</p>';
     }
     $('passage').innerHTML = html;
   }
 
-  // A comment's text as one run, the parts that replies quote marked as the passage's are.
+  // The mark that ends the words a comment is on: its writer's mark and its number.
+  const markHTML = c => `<sup class="m${people.has(c.author) ? ' h' : ''}" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${glyph(c.author, true)}${num(c.id)}</sup>`;
+
+  // A comment's text as one run, marked as the passage is: the parts that replies quote underlined,
+  // and each reply's mark where its words end. A reply on the whole comment has its mark at the end.
   function bodyHTML(c, V) {
-    const raw = shownText(c);
-    const out = pieces(raw, spansOn(c.id, V)).map(pc => pc.on.length ? '\uE000' + pc.on.join(' ') + '\uE001' + raw.slice(pc.start, pc.end) + '\uE002' : raw.slice(pc.start, pc.end)).join('');
-    return inline(out).replace(/\uE000([\w ]+)\uE001/g, (_, ids) => segOpen(ids.split(' '))).replace(/\uE002/g, '</span>');
+    const raw = shownText(c), spans = spansOn(c.id, V), whole = V.kids(c.id).filter(k => !spans.some(s => s.id === k.id));
+    const out = pieces(raw, spans).map(pc => (pc.on.length ? '\uE000' + pc.on.join(' ') + '\uE001' + raw.slice(pc.start, pc.end) + '\uE002' : raw.slice(pc.start, pc.end))
+      + pc.ends.map(i => '\uE003' + i + '\uE004').join('')).join('');
+    return inline(out).replace(/\uE000([\w ]+)\uE001/g, (_, ids) => segOpen(ids.split(' '))).replace(/\uE002/g, '</span>')
+      .replace(/\uE003(\w+)\uE004/g, (_, i) => markHTML(byId[i])) + whole.map(markHTML).join('');
   }
 
   // A comment as it stands in a margin: mark, number, the opening words it is on in bold, then the comment.
@@ -413,7 +420,7 @@ function start() {
   function runHTML(c, V) {
     const top = c.target === 'passage';
     const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 3 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
-    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}${bodyHTML(c, V)}</div>`;
+    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}<span class="tx">${bodyHTML(c, V)}</span></div>`;
   }
 
   // A node: a comment drawn by `content`, then its margin, holding a node for each comment on it.
@@ -430,6 +437,7 @@ function start() {
   // or as many of those as `most` leaves at least LEAST wide.
   const ruled = (V, most) => Math.min(most, 1 + Math.max(0, ...V.kids('passage').map(c => deep(V, c.id))));
   const LEAST = 8; // rem: the narrowest a column of commentary may be
+  const MOST = 32; // rem: the widest a strip of margin notes may be
 
   // The passage's own margin has two sides, each of one or more columns. The innermost column of a
   // side stands beside the passage and widens beneath it. Threads go down the columns in the order of
@@ -444,6 +452,7 @@ function start() {
     // how many columns of at least LEAST a thread has room for, where the side is narrowest: beside the passage
     const pinned = S.pin && wide.matches && !document.documentElement.classList.contains('printing');
     body.classList.toggle('pinned', pinned);
+    $('field').innerHTML = ''; body.style.height = ''; body.style.setProperty('--at', '0px');
     const room = m => { const notch = m.querySelector(':scope > .notch'); return Math.max(1, Math.floor((m.clientWidth - (notch ? notch.offsetWidth : 0)) / (LEAST * rem))) };
     const lay = n => {
       sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
@@ -455,57 +464,154 @@ function start() {
     body.style.setProperty('--ph', $('passage').offsetHeight + 'px');
     $('all').hidden = !phone.matches || !tops.length;
     $('all').textContent = `Read all ${V.size} comments`;
-    if (pinned) return pin(V, sides, room, rem);
+    if (pinned) return margins(V, sides, rem);
     let best = 1, least = lay(1);
     for (let n = 2; n <= most; n++) { const h = lay(n); if (h < least) [best, least] = [n, h] }
     if (best !== most) lay(best);
   }
 
-  // Pinned (kernel: nearer, stacks, place). Each comment on the passage stands on the side its words
-  // begin nearer to, and starts exactly level with their mark; the pile above is cut there, down to
-  // two lines if need be. Only where the pile above would be left less than that does the comment
-  // join it as a stack: one thread in front, a tab for each. A stack's tabs stand just above the
-  // words of its first comment, and each comment in it is set down by as far as its own words are
-  // below those, so whichever is in front starts level with its words and the tabs never move.
-  // Pointing at a pile shows all of the thread in front.
-  function pin(V, sides, room, rem) {
-    sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>');
-    const least = 3 * rem, gap = 0.35 * rem, tabs = 1.3 * rem, at = $('passage').getBoundingClientRect();
-    const made = V.kids('passage').map(c => {
-      const mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`).getBoundingClientRect();
-      return { c, want: mark.top - at.top, side: nearer(mark.left, at.left, at.right) };
+  // Pinned: writing in the margins (kernel: edge, stack). The passage has a margin all round it, and
+  // a comment on it is written at the edge its mark, which ends its words, is nearest.
+  //
+  // Beside the passage, comments run down the margin in the order of their marks, each whole and
+  // each starting level with its mark. Where two would meet, the one with room to spare gives way
+  // (stack). One that runs past the foot of the passage spreads into the room under it.
+  //
+  // Above or below the passage, a comment starts at its mark and runs to the right from there: as
+  // far as the next comment that starts under the passage, or the edge of the margin.
+  //
+  // Each margin is in layers. Comments on the passage are in the layer next to it; a reply is in the
+  // next layer out from the comment it is on: beside the passage, the next margin outward, level
+  // with its own mark in that comment; above or below, the next band outward.
+  function margins(V, sides, rem) {
+    sides.forEach(m => m.innerHTML = '');
+    const body = $('body'), field = $('field'), pass = $('passage');
+    const W = body.clientWidth, pw = pass.offsetWidth, ph = pass.offsetHeight, bx = (W - pw) / 2, gap = 0.7 * rem, least = 14 * rem, give = 6 * rem;
+    const all = [];
+    (function walk(id) { for (const k of V.kids(id)) { all.push(k); walk(k.id) } })('passage');
+    field.innerHTML = all.map(c => `<div class="slip" data-slip="${c.id}">${runHTML(c, V).replace('>', '><i class="cut"></i>')}</div>`).join('');
+    const el = Object.fromEntries([...field.children].map(e => [e.dataset.slip, e])), box = {};
+    // Give a note its width, and the corner of it the passage stands in, if any; returns its height.
+    const size = (id, w, cut) => {
+      el[id].style.width = w + 'px';
+      el[id].querySelector('.cut').style.cssText = cut && cut.h > 0 ? `display:block;float:${cut.side};width:${cut.w}px;height:${cut.h}px` : '';
+      return el[id].offsetHeight;
+    };
+    // where a comment's mark is in the text it is on, from that text's top left corner
+    const markIn = (c, on) => { const o = on.getBoundingClientRect(), m = on.querySelector(`sup.m[data-m="${c.id}"]`).getBoundingClientRect(); return { x: m.left - o.left, y: m.top - o.top, mid: (m.top + m.bottom) / 2 - o.top } };
+    const firsts = V.kids('passage').map(c => { const m = markIn(c, pass); return { c, m, at: edge(m.x, m.mid, pw, ph) } });
+    const at = where => firsts.filter(f => f.at === where);
+    // the comments at each remove from the passage, starting from those given
+    const layers = roots => { const out = [roots]; for (let next; (next = out[out.length - 1].flatMap(c => V.kids(c.id))).length;) out.push(next); return out };
+    // above or below: a comment starts at its mark, with room to run to `end`; ones whose marks are too close for both to have room stand one under the other
+    const starts = (where, end) => {
+      const out = [];
+      for (const f of at(where).sort((a, b) => a.m.x - b.m.x)) {
+        const x = Math.min(bx + f.m.x, end - least), last = out[out.length - 1];
+        if (last && x < last.x + least) last.roots.push(f.c); else out.push({ x, roots: [f.c] });
+      }
+      return out;
+    };
+    let under = at('below'), over = [];
+
+    // beside the passage
+    const span = {}; // each side: how far its comments reach up and down
+    // Beside the passage each layer is one unbroken margin, as wide all the way down, so that how
+    // far out a note stands always says which layer it is in. How wide each layer's margin is, is
+    // found, not fixed. A note is as high as its words need at its margin's width, so a layer of
+    // long notes that push each other off their marks stands better in a wider margin, and a
+    // layer whose notes have margin to spare beneath them can do with a thinner one.
+    //
+    // `lay` sets a side down for given widths and says how far its notes stand from their marks;
+    // in each layer the notes are stacked down the margin (kernel: stack). The search starts from
+    // equal widths and moves a step of width from one layer to another, keeping a move when the
+    // notes then stand nearer their marks; it stops when no move helps.
+    const heights = new Map(), offsets = new Map(), wants = new Map(firsts.map(f => [f.c.id, f.m.y]));
+    const beside = side => {
+      const left = side === 'left', rings = layers(at(side).map(f => f.c)), ids = rings.flat().map(c => c.id);
+      const thin = 12 * rem, step = rem, room = Math.min(bx, rings.length * MOST * rem);
+      const lay = (strips, real) => {
+        const high = (id, w) => { const k = id + '|' + w; if (real || !heights.has(k)) heights.set(k, size(id, w)); return heights.get(k) };
+        // how far down its parent's note a reply's mark is, the parent being as wide and as cut as it now is
+        const markOf = c => {
+          const p = box[c.target], k = `${c.id}|${p.w}|${p.cut ? p.cut.w + 'x' + p.cut.h : ''}`;
+          if (real || !offsets.has(k)) { size(c.target, p.w, p.cut); offsets.set(k, markIn(c, el[c.target]).y) }
+          return offsets.get(k);
+        };
+        let far = 0, out = 0; // out: how far from the passage this layer's margin begins
+        rings.forEach((ring, k) => {
+          const w = Math.floor(strips[k] - gap), x = left ? bx - out - strips[k] : bx + pw + gap + out;
+          out += strips[k];
+          const items = ring.map(c => ({ c, want: k ? box[c.target].y + markOf(c) : wants.get(c.id), h: high(c.id, w) })).sort((a, b) => a.want - b.want);
+          stack(items, gap, give).forEach((y, i) => box[items[i].c.id] = { x, y, w, h: items[i].h, want: items[i].want });
+          if (!k) {
+            // the room under the passage: up to where the first comment below it starts, or half of it
+            const edgeIn = left ? (under.length ? under[0].x - gap : bx + pw / 2 - gap / 2) : (under.length ? Infinity : bx + pw / 2 + gap / 2);
+            const wide = left ? edgeIn - x : x + w - edgeIn;
+            let floor = -Infinity, spread = false;
+            for (const it of wide > w + 4 * rem ? items : []) {
+              const b = box[it.c.id];
+              if (spread) b.y = Math.max(floor, it.want);
+              if (spread || b.y + b.h > ph + gap) {
+                spread = true;
+                b.cut = { side: left ? 'right' : 'left', w: wide - w, h: Math.max(0, ph + gap - b.y) };
+                Object.assign(b, { x: left ? x : edgeIn, w: wide, h: size(it.c.id, wide, b.cut) });
+              }
+              floor = b.y + b.h + gap;
+            }
+          }
+          for (const it of items) far += (box[it.c.id].y - it.want) ** 2;
+        });
+        // widths are left equal unless changing them is worth something
+        return far + strips.reduce((sum, s, k) => sum + 0.02 * rings[k].length * (s - room / rings.length) ** 2, 0);
+      };
+      let strips = rings.map(() => room / rings.length), least = lay(strips);
+      for (let moved = rings.length > 1, round = 0; moved && round < 40; round++) {
+        moved = false;
+        for (let a = 0; a < rings.length; a++) for (let b = 0; b < rings.length; b++) {
+          if (a === b || strips[a] - step < thin) continue;
+          const next = strips.map((s, k) => (k === a ? s - step : k === b ? s + step : s)), far = lay(next);
+          if (far < least - 1) { strips = next; least = far; moved = true }
+        }
+      }
+      lay(strips, true);
+      const ys = ids.map(id => box[id]);
+      span[side] = { top: Math.min(0, ...ys.map(b => b.y)), bottom: Math.max(0, ...ys.map(b => b.y + b.h)) };
+    };
+    // The right margin first: a band above or below runs on into it where it is clear, and the left
+    // margin's room under the passage ends where the band below starts.
+    beside('right');
+    const ends = { true: span.right.bottom <= ph + gap ? W : bx + pw, false: span.right.top >= -gap ? W : bx + pw };
+    under = starts('below', ends.true); over = starts('above', ends.false);
+    beside('left');
+
+    // above and below the passage
+    const band = (cols, down) => cols.forEach((col, i) => {
+      const w = (i < cols.length - 1 ? cols[i + 1].x - gap : ends[down]) - col.x;
+      let y = down ? ph + gap : -gap;
+      for (const c of layers(col.roots).flat()) {
+        const h = size(c.id, w);
+        box[c.id] = { x: col.x, y: down ? y : y - h, w, h };
+        y += down ? h + gap : -h - gap;
+      }
     });
-    sides.forEach((m, k) => {
-      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least + tabs, gap), wide = ruled(V, room(col));
-      const boxes = place(groups.map(g => ({ want: mine[g[0]].want - (g.length > 1 ? tabs : 0) })), least, gap, at.height);
-      col.insertAdjacentHTML('beforeend', groups.map((g, i) => {
-        const row = g.length < 2 ? '' : `<div class="tabs" style="height:${tabs}px">${g.map(j => mine[j].c).map(c =>
-          `<button class="tab" data-front="${c.id}" style="--c:${ink(c.author)}" aria-pressed="false" aria-label="Comment ${num(c.id)} by ${esc(c.author)}">${glyph(c.author, true)}${num(c.id)}</button>`).join('')}</div>`;
-        return `<div class="pile" style="top:${boxes[i].top}px;max-height:${boxes[i].height}px">${row}${g.map(j => nodeHTML(mine[j].c, V, runHTML, wide)).join('')}</div>`;
-      }).join(''));
-      if (boxes.length) col.style.minHeight = boxes[boxes.length - 1].top + boxes[boxes.length - 1].height + 'px';
-      col.querySelectorAll('.pile').forEach((p, i) => {
-        p.querySelectorAll(':scope > .node').forEach((n, m) => n.style.marginTop = mine[groups[i][m]].want - mine[groups[i][0]].want + 'px');
-        front(p.querySelector(':scope > .node'));
-      });
-    });
-  }
-  // Bring one thread of a pile to the front, and mark the pile as cut if it does not all show.
-  function front(node) {
-    const pile = node.parentElement, id = node.querySelector(':scope > .c').id;
-    pile.querySelectorAll(':scope > .node').forEach(n => n.classList.toggle('front', n === node));
-    pile.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', t.dataset.front === id));
-    pile.classList.toggle('cut', pile.scrollHeight > pile.clientHeight + 1);
-  }
-  // Bring the thread that holds comment `id` to the front of its pile, if it is behind another.
-  function surface(id) {
-    const el = $(id), node = el && el.closest('.pile > .node');
-    if (node && !node.classList.contains('front')) front(node);
+    band(under, true); band(over, false);
+
+    const up = Math.max(0, ...all.map(c => -box[c.id].y)); // what is above the passage pushes it, and everything, down
+    for (const c of all) {
+      const b = box[c.id], e = el[c.id], n = b.cut && b.cut.h > 0 && b.cut;
+      e.style.left = b.x + 'px'; e.style.top = b.y + up + 'px';
+      // a note the passage stands in a corner of is cut to its own shape, so it neither covers the passage nor takes its clicks
+      e.style.clipPath = !n ? '' : n.side === 'right' ? `polygon(0 0, ${b.w - n.w}px 0, ${b.w - n.w}px ${n.h}px, 100% ${n.h}px, 100% 100%, 0 100%)`
+        : `polygon(${n.w}px 0, 100% 0, 100% 100%, 0 100%, 0 ${n.h}px, ${n.w}px ${n.h}px)`;
+    }
+    body.style.setProperty('--at', up + 'px');
+    body.style.height = Math.max(ph, ...all.map(c => box[c.id].y + box[c.id].h)) + up + 'px';
   }
 
   function drawKey() {
     $('key').innerHTML = authors.map(a => {
-      const n = D.comments.filter(c => c.author === a && c.layer <= S.upTo).length;
+      const n = D.comments.filter(c => c.author === a && c.layer <= S.upTo && !c.hidden).length;
       return `<button style="--c:${ink(a)}" aria-pressed="${!S.off.has(a)}" data-author="${esc(a)}">${glyph(a, true)}<span>${esc(a)}</span><b>${n}</b></button>`;
     }).join('');
   }
@@ -518,7 +624,7 @@ function start() {
     const refs = (c.see_also || []).filter(r => byId[r]).map(r => `<button data-go="${r}" style="text-decoration-color:${ink(byId[r].author)}" title="${esc(byId[r].author)}">${num(r)}</button>`).join(', ');
     const tag = people.has(c.author) ? `<span class="tag">${(c.meta || {}).blind ? 'a person, writing blind' : 'a person'}</span>` : '';
     return `<div class="t${kinds(c)}" id="t-${c.id}" style="--c:${ink(c.author)}"><header><span>${glyph(c.author, true)} ${esc(c.author)}</span>${tag}<a href="#${c.id}" title="Link to this comment">${num(c.id)}</a></header>
-      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>`;
+      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}${LIVE ? LIVE.card(c) : ''}</div>`;
   }
   let sheetSpan = null;
   function openReader(rootIds, flashId) {
@@ -555,22 +661,19 @@ function start() {
     if (!shown().has(id)) { S.upTo = rounds; S.off.clear(); $('layer').value = rounds; draw() } // make sure a linked comment is visible
     if (phone.matches) return openReader([rootOf(c).id], id);
     if (sheet.open) sheet.close();
-    surface(id);
     flash($(id));
   }
 
   const hover = on => e => {
     const c = e.target.closest('.c'); if (c) light(c.id, on);
     const g = e.target.closest('.seg'); if (g) g.dataset.ids.split(' ').forEach(i => { const el = $(i); if (el) el.classList.toggle('lit', on) }); // marked words light the comments on them
-    const t = on && e.target.closest('.tab'); if (t) surface(t.dataset.front);
-    const m = e.target.closest('sup.m'); if (m) { if (on) surface(m.dataset.m); light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
+    const m = e.target.closest('sup.m'); if (m) { light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
   };
   document.querySelector('.daf').addEventListener('mouseover', hover(true));
   document.querySelector('.daf').addEventListener('mouseout', hover(false));
-  const pickMark = m => { if (phone.matches) return openReader([m.dataset.m]); surface(m.dataset.m); flash($(m.dataset.m)) };
+  const pickMark = m => { if (phone.matches) return openReader([rootOf(byId[m.dataset.m]).id], m.dataset.m); flash($(m.dataset.m)) };
   document.addEventListener('click', e => {
     const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
-    const t = e.target.closest('.tab'); if (t) return surface(t.dataset.front);
     const a = e.target.closest('.t header a'); if (a && a.hash === location.hash) return go(a.hash.slice(1)); // same link again: hashchange will not fire
     const m = e.target.closest('sup.m'); if (m) return pickMark(m);
     const c = e.target.closest('.c'); if (c && !getSelection().toString()) return openReader([c.dataset.root], c.id);
@@ -592,7 +695,6 @@ function start() {
 
   let timer = null;
   const stop = () => { clearInterval(timer); timer = null; $('play').textContent = 'Play' };
-  $('play').hidden = rounds < 2;
   $('play').addEventListener('click', () => {
     if (timer) return stop();
     const show = n => { S.upTo = n; $('layer').value = n; draw() };
@@ -626,21 +728,47 @@ function start() {
   addEventListener('afterprint', () => { root.classList.remove('printing'); drawMargins(shown()) });
   $('print').addEventListener('click', () => print());
 
-  const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
-  $('made').innerHTML = `
-    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it. So each side is ruled into columns: the one beside the passage holds comments on the passage, the next holds comments on those, and so on outward, as far as the page goes. A comment nobody has answered has empty columns beyond it. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, on the side they begin nearer to, cut short where the next begins; point at one to see all of it. Comments whose words are too close together to each have room share a spot as a stack, with a tab for each; point at or select a tab, or the comment's number in the passage, to bring it to the front.</p></div>
-    <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
-    <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
-    <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
-    ${authors.some(brandOf) ? '<div><h2>Logos</h2><p>Each reader is marked with its maker\'s logo and brand colour, to show whose model wrote what. The marks belong to their owners. Icons are linked from the <a href="https://github.com/lobehub/lobe-icons">lobe-icons</a> set.</p></div>' : ''}
-    <div><h2>Round by round</h2><div class="tbl"><table><tr><th>Round</th><th>Reader</th><th>Comments</th><th>Note</th></tr>${
-      [...D.log].sort((a, b) => a.layer - b.layer).map(l =>`<tr><td>${l.layer}</td><td>${esc(l.reader)}</td><td>${l.comments}</td><td>${esc(l.error ? 'Failed: ' + l.error : (l.closing || ''))}</td></tr>`).join('')}</table></div></div>`;
-  draw();
-  if (authors.some(brandOf)) { // logos are linked, not bundled: show them only once one is known to load
+  // Everything around the sheet that the record decides.
+  function dress() {
+    $('title').textContent = D.passage.title;
+    $('source').textContent = D.passage.source || '';
+    $('mock').hidden = !D.readers.some(r => r.model.startsWith('mock:'));
+    $('layer').max = rounds; $('layer').value = S.upTo; $('layer').disabled = rounds < 2;
+    $('play').hidden = rounds < 2;
+    const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
+    $('made').innerHTML = `
+      <div><h2>Reading the page</h2><p>The passage has a margin all round it, and the comments on it are written there. A small mark in the passage, its writer's and its number, shows where the words a comment is on end, and the comment is written at the edge of the passage nearest that mark. Beside the passage, comments run down the margin in the order of their marks, each starting level with its mark. Where two would meet, the one with room to spare gives way: a comment starts lower, by a few lines at most on its own, if it can still end before the next one's mark; beyond that, and otherwise, the ones above it move up into free margin. One that runs past the foot of the passage spreads into the room under it. Above or below the passage, a comment starts at its mark and runs to the right. Every comment has a margin in the same way, one layer further out: a reply stands in the next margin outward, level with its own mark in the comment it answers, or in the next band above or below. Each layer's margin is one width all the way down, so how far out a comment stands says which layer it is in; how wide each is, is found so that the comments stand as near their marks as they can: a layer of long comments gets a wider margin, and so shorter comments. Nothing is cut short or folded away. Point at a comment to light the words it is on; select one to read its whole thread. Pin to text switches to ruled columns filled from the top; a narrow window and the printed sheet use those too.</p></div>
+      <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
+      <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
+      <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
+      ${authors.some(brandOf) ? '<div><h2>Logos</h2><p>Each reader is marked with its maker\'s logo and brand colour, to show whose model wrote what. The marks belong to their owners. Icons are linked from the <a href="https://github.com/lobehub/lobe-icons">lobe-icons</a> set.</p></div>' : ''}
+      <div><h2>Round by round</h2><div class="tbl"><table><tr><th>Round</th><th>Reader</th><th>Comments</th><th>Note</th></tr>${
+        [...D.log].sort((a, b) => a.layer - b.layer).map(l =>`<tr><td>${l.layer}</td><td>${esc(l.reader)}</td><td>${l.comments}</td><td>${esc(l.error ? 'Failed: ' + l.error : (l.closing || ''))}</td></tr>`).join('')}</table></div></div>`;
+  }
+  // Logos are linked, not bundled: they are shown only once one is known to load. Asked once, when
+  // a reader with a maker's mark is first on the page, which on a served page can be after it opens.
+  let asked = false;
+  function logos() {
+    if (asked || !authors.some(brandOf)) return;
+    asked = true;
     const probe = new Image();
     probe.onload = () => { S.icons = true; draw() };
     probe.src = ICONS + 'claude.svg';
   }
+  // A served page's newer record, taken in place of the one shown. Whoever was looking at the
+  // latest round goes on looking at the latest.
+  function reload(fresh) {
+    const latest = S.upTo >= rounds;
+    for (const k of Object.keys(D)) delete D[k];
+    Object.assign(D, fresh);
+    derive();
+    if (latest || S.upTo > rounds) S.upTo = rounds;
+    dress(); draw(); logos();
+  }
+  if (D.live && typeof live === 'function') LIVE = live({ D, $, esc, sheet, reload, byId: id => byId[id] });
+  dress();
+  draw();
+  logos();
   if (location.hash) go(location.hash.slice(1));
 }
 start();
