@@ -34,7 +34,7 @@
 * { box-sizing: border-box }
 body { background: var(--paper); color: var(--ink); font-family: var(--ui); font-size: 0.9375rem; line-height: 1.5;
   padding-block: 1.25rem 3rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
-.wrap { max-width: 92rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem }
+.wrap { max-width: 124rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem }
 button { font: inherit; color: inherit; cursor: pointer }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 .banner { border: 1px dashed var(--warn); color: var(--warn); padding: 0.5rem 0.75rem; font-size: 0.85rem }
@@ -80,7 +80,8 @@ img.g.flip { filter: var(--flip) }
   font-size: 1.6em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-indent: 0; line-height: 1.3 }
 .seg { background-image: var(--ul); background-size: 100% 1px; background-position: 0 100%; background-repeat: no-repeat }
 .seg.lit { background-color: color-mix(in srgb, var(--c, var(--mark)) 22%, transparent); background-size: 100% 3px }
-sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0 }
+sup.m { font-family: var(--small); font-weight: 700; font-size: 0.56em; line-height: 0; color: var(--c); cursor: pointer; padding: 0 0.08em; text-indent: 0; white-space: nowrap }
+sup.m .g { margin-right: 0.12em }
 sup.m:hover, sup.m.lit { text-decoration: underline }
 
 /* nodes and margins: a comment, then the margin of comments on it. In a row the margin stands beside
@@ -102,21 +103,15 @@ sup.m:hover, sup.m.lit { text-decoration: underline }
 #left .margin { margin-left: 0; padding-left: 0; border-left: none; margin-right: 0.15rem; padding-right: 0.55rem; border-right: 1px solid var(--rule) }
 .notch { display: none }
 #pin { display: none }
-/* pinned: each comment on the passage stands level with its words, on the side they begin nearer to,
-   and is cut where the next begins. A pile is the box at one spot: one thread, or a stack of threads
-   whose words are too close for each to have room, with a tab for each and one of them in front. */
-.body.pinned .col { position: relative; pointer-events: none } /* the column lies over the passage's place; only its piles take the pointer */
-.pile { position: absolute; overflow: hidden; background: var(--sheet); pointer-events: auto }
-#left .pile { left: 0; right: calc(var(--pw) / 2 + 0.35rem) }
-#right .pile { right: 0; left: calc(var(--pw) / 2 + 0.35rem) }
-.pile > .node:not(.front) { display: none }
-.pile.cut { -webkit-mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent); mask-image: linear-gradient(#000 calc(100% - 1.5rem), transparent) }
-.pile:hover, .pile:focus-within { max-height: none !important; z-index: 1; overflow: visible; -webkit-mask-image: none; mask-image: none; box-shadow: 0 0 0 1px var(--rule), 0 0.4rem 1.1rem rgb(0 0 0 / 0.18) }
-.tabs { display: flex; flex-wrap: wrap; gap: 0 0.5rem; padding: 0 0.3rem 0.1rem; font-family: var(--small); font-size: 0.8rem; line-height: 1.5; text-align: left }
-#left .tabs { justify-content: flex-end }
-.tab { display: inline-flex; align-items: center; gap: 0.2rem; background: none; border: none; border-bottom: 2px solid transparent; padding: 0 0.05rem; font-weight: 700; color: var(--c) }
-.tab[aria-pressed="true"] { border-bottom-color: var(--c) }
-.tab[aria-pressed="false"] { opacity: 0.6 }
+/* pinned: writing in the margins. Every comment is a note in the field around the passage, at the
+   edge its words end nearest, whole; a reply is one layer further out. The sides, ruled into
+   columns, are for when the page is not pinned. */
+.field { display: none }
+.body.pinned > .side { display: none }
+.body.pinned > .field { display: block; font-family: var(--gloss); font-size: 0.92rem; line-height: 1.4; text-align: justify; hyphens: auto; overflow-wrap: break-word }
+.slip { position: absolute }
+.cut { display: none }
+.c sup.m { font-size: 0.72em }
 .c { cursor: pointer; border-radius: 2px; scroll-margin: 6rem; padding: 0.1rem 0.3rem; background: color-mix(in srgb, var(--c) 6%, transparent) }
 .c:hover, .c.lit { background: color-mix(in srgb, var(--c) 17%, transparent) }
 .c.kin { background: color-mix(in srgb, var(--c) 12%, transparent) }
@@ -181,7 +176,7 @@ th { font-weight: 500; color: var(--ink-2) }
    beside it and widens beneath it. */
 @media (min-width: 1100px) {
   .body { position: relative; container-type: inline-size; --pw: clamp(17rem, 40cqw, 27rem) }
-  .body > .passage { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
+  .body > .passage { position: absolute; top: var(--at, 0px); left: 50%; transform: translateX(-50%); width: var(--pw); max-width: none; margin: 0 }
   .notch { display: block; width: calc(var(--pw) / 2 + 0.35rem); height: calc(var(--ph, 30rem) + 0.9rem) }
   #left .notch { float: right } #right .notch { float: left }
   .passage p { font-size: 1.3rem }
@@ -222,7 +217,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
       <aside class="ctl" aria-label="Rounds">
         <label for="layer">Rounds <input type="range" id="layer" min="1" max="1" step="1" value="1"></label>
         <button id="play" hidden>Play</button>
-        <button id="pin" aria-pressed="false" title="Set each comment on the passage level with its words, cut short where the next begins">Pin to text</button>
+        <button id="pin" aria-pressed="true" title="Write each comment in the margin where its words end; off, comments fill ruled columns from the top">Pin to text</button>
         <button id="print" title="Print the page as one poster sheet">Print</button>
         <a id="again" hidden target="_blank" rel="noopener">Another round</a>
       </aside>
@@ -231,6 +226,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
       <section class="passage" id="passage" aria-label="Passage"></section>
       <section class="side" id="left" aria-label="Commentary, left margin"></section>
       <section class="side" id="right" aria-label="Commentary, right margin"></section>
+      <section class="field" id="field" aria-label="Commentary, in the margins"></section>
     </div>
     <button class="all" id="all" hidden></button>
   </main>
@@ -244,6 +240,7 @@ html.printing #left .notch { float: right } html.printing #right .notch { float:
 
 <script>
 /*__KERNEL__*/
+/*__LIVE__*/
 const D = /*__PAGE_DATA__*/null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -253,7 +250,16 @@ const lemmaOf = (q, n = 8) => { const w = q.trim().split(/\s+/); return w.length
 
 function start() {
   if (!D) { $('title').textContent = 'No page data'; $('source').textContent = 'Build this file with: python3 -m radbinical render runs/<dir>'; return }
-  const authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
+  // What is worked out from the record; worked out again when a served page brings a newer one.
+  let authors, people, byId, rounds, LIVE = null;
+  const derive = () => {
+    authors = [...new Set([...D.readers.map(r => r.name), ...D.comments.map(c => c.author)])];
+    // People who wrote on the page, as against models.
+    people = new Set([...D.readers.filter(r => r.human || r.model.startsWith('human:')).map(r => r.name), ...D.comments.filter(c => c.kind === 'human').map(c => c.author)]);
+    byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
+    rounds = Math.max(1, D.layers_done || 1);
+  };
+  derive();
   const BRANDS = /*__BRANDS__*/{};
   const ICONS = 'https://cdn.jsdelivr.net/npm/@lobehub/icons-static-svg@1.101.0/icons/';
   const PREFIXES = ['openrouter', 'nous', 'openai', 'google', 'xai', 'nvidia', 'anthropic', 'mock'];
@@ -267,35 +273,27 @@ function start() {
   const ink = a => { const b = brandOf(a); return b ? (b.color || 'var(--ink)') : `var(--a${authors.indexOf(a) % 8})` };
   // Two readers from one maker share a logo, so those also carry a short name.
   const shared = a => { const b = brandOf(a); return !!b && authors.some(o => o !== a && brandOf(o) === b) };
-  // People who wrote on the page, as against models.
-  const people = new Set([...D.readers.filter(r => r.human || r.model.startsWith('human:')).map(r => r.name), ...D.comments.filter(c => c.kind === 'human').map(c => c.author)]);
   const glyph = (a, named) => {
     const b = brandOf(a), tag = !named && shared(a) ? `<i class="tag">${esc(a.split(/[\s]+/).pop())}</i>` : '';
     const u = b && ICONS + b.icon + '.svg';
     const mark = people.has(a) ? '<i class="g person"></i>' : !b || !S.icons ? '<i class="g"></i>' :b.icon.endsWith('-color') ? `<img class="g${b.flip ? ' flip' : ''}" src="${u}" alt="">` : `<i class="g mark" style="--u:url(${u})"></i>`;
     return named ? mark : `<span class="who" data-name="${esc(a)}">${mark}${tag}</span>`;
   };
-  const byId = Object.fromEntries(D.comments.map(c => [c.id, c]));
   const num = id => id.replace(/^c/, '');
-  const rounds = Math.max(1, D.layers_done || 1);
-  const S = { upTo: rounds, off: new Set(), icons: false, pin: false };
+  const S = { upTo: rounds, off: new Set(), icons: false, pin: true };
   const kinds = c => (people.has(c.author) ? ' human' : '');
   const phone = matchMedia('(max-width: 699px)'), wide = matchMedia('(min-width: 1100px)');
   const sheet = $('sheet');
 
-  $('title').textContent = D.passage.title;
-  $('source').textContent = D.passage.source || '';
-  $('mock').hidden = !D.readers.some(r => r.model.startsWith('mock:'));
-  $('layer').max = rounds; $('layer').value = rounds; $('layer').disabled = rounds < 2;
 
   const rootOf = c => { while (c && c.target !== 'passage') c = byId[c.target]; return c };
   // What is on show, as a tree. A node is the passage ('passage') or a comment, and kids(id) are the
-  // comments written on it: the passage's in the order of the words they are on, a comment's as made.
+  // comments written on it: the passage's in the order their words end, a comment's as made.
   function shown() {
     const K = { passage: [] };
     for (const c of D.comments) // stored in the order they were written, so parents come first
-      if (c.layer <= S.upTo && !S.off.has(c.author) && K[c.target]) { K[c.target].push(c); K[c.id] = [] }
-    K.passage.sort((a, b) => a.start - b.start || a.n - b.n);
+      if (!c.hidden && c.layer <= S.upTo && !S.off.has(c.author) && K[c.target]) { K[c.target].push(c); K[c.id] = [] }
+    K.passage.sort((a, b) => a.end - b.end || a.n - b.n);
     return { size: Object.keys(K).length - 1, has: id => id !== 'passage' && id in K, kids: id => K[id] || [] };
   }
 
@@ -305,13 +303,12 @@ function start() {
     return `repeating-linear-gradient(90deg, ${inks.map((c, i) => `${c} ${i * 14}px ${(i + 1) * 14}px`).join(', ')})`;
   };
 
-  // The passage: clean text, with a small numbered mark where each comment on it begins.
   // Marking a text (kernel: pieces). Each stretch that comments are on is a .seg carrying their ids,
   // underlined in their colours; the passage and a comment's own text are marked the same way.
   const spansOn = (id, V) => V.kids(id).map(k => [k, spanOf(k, byId[id])]).filter(([, sp]) => sp).map(([k, sp]) => ({ id: k.id, start: sp[0], end: sp[1] }));
   const segOpen = ids => `<span class="seg" style="--ul:${underline(ids.map(i => byId[i]))}" data-ids="${ids.join(' ')}">`;
 
-  // The passage: clean text, with a small numbered mark where each comment on it begins.
+  // The passage: clean text, with a small mark where each comment on it ends: its writer's mark and its number.
   function drawPassage(V) {
     const text = D.passage.text, paras = [];
     let pos = 0;
@@ -323,19 +320,25 @@ function start() {
       for (const pc of all.filter(pc => pc.start >= a && pc.end <= b)) {
         let chunk = esc(text.slice(pc.start, pc.end)), box = '';
         if (first) { chunk = chunk.replace(/^(\S+)\s*/, (_, w) => { box = `<span class="incipit">${w}</span>`; return '' }); first = false }
-        html += box + pc.begins.map(i => byId[i]).map(c => `<sup class="m${people.has(c.author) ? ' h' : ''}" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${num(c.id)}</sup>`).join('');
-        html += pc.on.length ? segOpen(pc.on) + chunk + '</span>' : chunk;
+        html += box + (pc.on.length ? segOpen(pc.on) + chunk + '</span>' : chunk);
+        html += pc.ends.map(i => markHTML(byId[i])).join('');
       }
       html += '</p>';
     }
     $('passage').innerHTML = html;
   }
 
-  // A comment's text as one run, the parts that replies quote marked as the passage's are.
+  // The mark that ends the words a comment is on: its writer's mark and its number.
+  const markHTML = c => `<sup class="m${people.has(c.author) ? ' h' : ''}" data-m="${c.id}" style="--c:${ink(c.author)}" aria-label="Comment ${num(c.id)} by ${esc(c.author)}" role="button" tabindex="0">${glyph(c.author, true)}${num(c.id)}</sup>`;
+
+  // A comment's text as one run, marked as the passage is: the parts that replies quote underlined,
+  // and each reply's mark where its words end. A reply on the whole comment has its mark at the end.
   function bodyHTML(c, V) {
-    const raw = shownText(c);
-    const out = pieces(raw, spansOn(c.id, V)).map(pc => pc.on.length ? '\uE000' + pc.on.join(' ') + '\uE001' + raw.slice(pc.start, pc.end) + '\uE002' : raw.slice(pc.start, pc.end)).join('');
-    return inline(out).replace(/\uE000([\w ]+)\uE001/g, (_, ids) => segOpen(ids.split(' '))).replace(/\uE002/g, '</span>');
+    const raw = shownText(c), spans = spansOn(c.id, V), whole = V.kids(c.id).filter(k => !spans.some(s => s.id === k.id));
+    const out = pieces(raw, spans).map(pc => (pc.on.length ? '\uE000' + pc.on.join(' ') + '\uE001' + raw.slice(pc.start, pc.end) + '\uE002' : raw.slice(pc.start, pc.end))
+      + pc.ends.map(i => '\uE003' + i + '\uE004').join('')).join('');
+    return inline(out).replace(/\uE000([\w ]+)\uE001/g, (_, ids) => segOpen(ids.split(' '))).replace(/\uE002/g, '</span>')
+      .replace(/\uE003(\w+)\uE004/g, (_, i) => markHTML(byId[i])) + whole.map(markHTML).join('');
   }
 
   // A comment as it stands in a margin: mark, number, the opening words it is on in bold, then the comment.
@@ -343,7 +346,7 @@ function start() {
   function runHTML(c, V) {
     const top = c.target === 'passage';
     const lemma = c.quote ? `<span class="lemma">${esc(lemmaOf(c.quote, top ? 3 : 5).replace(/[.,;:…]+$/, ''))}.</span> ` : '';
-    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}${bodyHTML(c, V)}</div>`;
+    return `<div class="c${kinds(c)}" id="${c.id}" data-root="${rootOf(c).id}" ${top ? '' : `data-on="${c.target}" `}style="--c:${ink(c.author)}"><span class="hd">${glyph(c.author)}<span class="n">${num(c.id)}</span></span>${lemma}<span class="tx">${bodyHTML(c, V)}</span></div>`;
   }
 
   // A node: a comment drawn by `content`, then its margin, holding a node for each comment on it.
@@ -360,6 +363,7 @@ function start() {
   // or as many of those as `most` leaves at least LEAST wide.
   const ruled = (V, most) => Math.min(most, 1 + Math.max(0, ...V.kids('passage').map(c => deep(V, c.id))));
   const LEAST = 8; // rem: the narrowest a column of commentary may be
+  const MOST = 32; // rem: the widest a strip of margin notes may be
 
   // The passage's own margin has two sides, each of one or more columns. The innermost column of a
   // side stands beside the passage and widens beneath it. Threads go down the columns in the order of
@@ -374,6 +378,7 @@ function start() {
     // how many columns of at least LEAST a thread has room for, where the side is narrowest: beside the passage
     const pinned = S.pin && wide.matches && !document.documentElement.classList.contains('printing');
     body.classList.toggle('pinned', pinned);
+    $('field').innerHTML = ''; body.style.height = ''; body.style.setProperty('--at', '0px');
     const room = m => { const notch = m.querySelector(':scope > .notch'); return Math.max(1, Math.floor((m.clientWidth - (notch ? notch.offsetWidth : 0)) / (LEAST * rem))) };
     const lay = n => {
       sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>' + '<div class="col"></div>'.repeat(n - 1));
@@ -385,57 +390,154 @@ function start() {
     body.style.setProperty('--ph', $('passage').offsetHeight + 'px');
     $('all').hidden = !phone.matches || !tops.length;
     $('all').textContent = `Read all ${V.size} comments`;
-    if (pinned) return pin(V, sides, room, rem);
+    if (pinned) return margins(V, sides, rem);
     let best = 1, least = lay(1);
     for (let n = 2; n <= most; n++) { const h = lay(n); if (h < least) [best, least] = [n, h] }
     if (best !== most) lay(best);
   }
 
-  // Pinned (kernel: nearer, stacks, place). Each comment on the passage stands on the side its words
-  // begin nearer to, and starts exactly level with their mark; the pile above is cut there, down to
-  // two lines if need be. Only where the pile above would be left less than that does the comment
-  // join it as a stack: one thread in front, a tab for each. A stack's tabs stand just above the
-  // words of its first comment, and each comment in it is set down by as far as its own words are
-  // below those, so whichever is in front starts level with its words and the tabs never move.
-  // Pointing at a pile shows all of the thread in front.
-  function pin(V, sides, room, rem) {
-    sides.forEach(m => m.innerHTML = '<div class="col"><i class="notch"></i></div>');
-    const least = 3 * rem, gap = 0.35 * rem, tabs = 1.3 * rem, at = $('passage').getBoundingClientRect();
-    const made = V.kids('passage').map(c => {
-      const mark = document.querySelector(`#passage sup.m[data-m="${c.id}"]`).getBoundingClientRect();
-      return { c, want: mark.top - at.top, side: nearer(mark.left, at.left, at.right) };
+  // Pinned: writing in the margins (kernel: edge, stack). The passage has a margin all round it, and
+  // a comment on it is written at the edge its mark, which ends its words, is nearest.
+  //
+  // Beside the passage, comments run down the margin in the order of their marks, each whole and
+  // each starting level with its mark. Where two would meet, the one with room to spare gives way
+  // (stack). One that runs past the foot of the passage spreads into the room under it.
+  //
+  // Above or below the passage, a comment starts at its mark and runs to the right from there: as
+  // far as the next comment that starts under the passage, or the edge of the margin.
+  //
+  // Each margin is in layers. Comments on the passage are in the layer next to it; a reply is in the
+  // next layer out from the comment it is on: beside the passage, the next margin outward, level
+  // with its own mark in that comment; above or below, the next band outward.
+  function margins(V, sides, rem) {
+    sides.forEach(m => m.innerHTML = '');
+    const body = $('body'), field = $('field'), pass = $('passage');
+    const W = body.clientWidth, pw = pass.offsetWidth, ph = pass.offsetHeight, bx = (W - pw) / 2, gap = 0.7 * rem, least = 14 * rem, give = 6 * rem;
+    const all = [];
+    (function walk(id) { for (const k of V.kids(id)) { all.push(k); walk(k.id) } })('passage');
+    field.innerHTML = all.map(c => `<div class="slip" data-slip="${c.id}">${runHTML(c, V).replace('>', '><i class="cut"></i>')}</div>`).join('');
+    const el = Object.fromEntries([...field.children].map(e => [e.dataset.slip, e])), box = {};
+    // Give a note its width, and the corner of it the passage stands in, if any; returns its height.
+    const size = (id, w, cut) => {
+      el[id].style.width = w + 'px';
+      el[id].querySelector('.cut').style.cssText = cut && cut.h > 0 ? `display:block;float:${cut.side};width:${cut.w}px;height:${cut.h}px` : '';
+      return el[id].offsetHeight;
+    };
+    // where a comment's mark is in the text it is on, from that text's top left corner
+    const markIn = (c, on) => { const o = on.getBoundingClientRect(), m = on.querySelector(`sup.m[data-m="${c.id}"]`).getBoundingClientRect(); return { x: m.left - o.left, y: m.top - o.top, mid: (m.top + m.bottom) / 2 - o.top } };
+    const firsts = V.kids('passage').map(c => { const m = markIn(c, pass); return { c, m, at: edge(m.x, m.mid, pw, ph) } });
+    const at = where => firsts.filter(f => f.at === where);
+    // the comments at each remove from the passage, starting from those given
+    const layers = roots => { const out = [roots]; for (let next; (next = out[out.length - 1].flatMap(c => V.kids(c.id))).length;) out.push(next); return out };
+    // above or below: a comment starts at its mark, with room to run to `end`; ones whose marks are too close for both to have room stand one under the other
+    const starts = (where, end) => {
+      const out = [];
+      for (const f of at(where).sort((a, b) => a.m.x - b.m.x)) {
+        const x = Math.min(bx + f.m.x, end - least), last = out[out.length - 1];
+        if (last && x < last.x + least) last.roots.push(f.c); else out.push({ x, roots: [f.c] });
+      }
+      return out;
+    };
+    let under = at('below'), over = [];
+
+    // beside the passage
+    const span = {}; // each side: how far its comments reach up and down
+    // Beside the passage each layer is one unbroken margin, as wide all the way down, so that how
+    // far out a note stands always says which layer it is in. How wide each layer's margin is, is
+    // found, not fixed. A note is as high as its words need at its margin's width, so a layer of
+    // long notes that push each other off their marks stands better in a wider margin, and a
+    // layer whose notes have margin to spare beneath them can do with a thinner one.
+    //
+    // `lay` sets a side down for given widths and says how far its notes stand from their marks;
+    // in each layer the notes are stacked down the margin (kernel: stack). The search starts from
+    // equal widths and moves a step of width from one layer to another, keeping a move when the
+    // notes then stand nearer their marks; it stops when no move helps.
+    const heights = new Map(), offsets = new Map(), wants = new Map(firsts.map(f => [f.c.id, f.m.y]));
+    const beside = side => {
+      const left = side === 'left', rings = layers(at(side).map(f => f.c)), ids = rings.flat().map(c => c.id);
+      const thin = 12 * rem, step = rem, room = Math.min(bx, rings.length * MOST * rem);
+      const lay = (strips, real) => {
+        const high = (id, w) => { const k = id + '|' + w; if (real || !heights.has(k)) heights.set(k, size(id, w)); return heights.get(k) };
+        // how far down its parent's note a reply's mark is, the parent being as wide and as cut as it now is
+        const markOf = c => {
+          const p = box[c.target], k = `${c.id}|${p.w}|${p.cut ? p.cut.w + 'x' + p.cut.h : ''}`;
+          if (real || !offsets.has(k)) { size(c.target, p.w, p.cut); offsets.set(k, markIn(c, el[c.target]).y) }
+          return offsets.get(k);
+        };
+        let far = 0, out = 0; // out: how far from the passage this layer's margin begins
+        rings.forEach((ring, k) => {
+          const w = Math.floor(strips[k] - gap), x = left ? bx - out - strips[k] : bx + pw + gap + out;
+          out += strips[k];
+          const items = ring.map(c => ({ c, want: k ? box[c.target].y + markOf(c) : wants.get(c.id), h: high(c.id, w) })).sort((a, b) => a.want - b.want);
+          stack(items, gap, give).forEach((y, i) => box[items[i].c.id] = { x, y, w, h: items[i].h, want: items[i].want });
+          if (!k) {
+            // the room under the passage: up to where the first comment below it starts, or half of it
+            const edgeIn = left ? (under.length ? under[0].x - gap : bx + pw / 2 - gap / 2) : (under.length ? Infinity : bx + pw / 2 + gap / 2);
+            const wide = left ? edgeIn - x : x + w - edgeIn;
+            let floor = -Infinity, spread = false;
+            for (const it of wide > w + 4 * rem ? items : []) {
+              const b = box[it.c.id];
+              if (spread) b.y = Math.max(floor, it.want);
+              if (spread || b.y + b.h > ph + gap) {
+                spread = true;
+                b.cut = { side: left ? 'right' : 'left', w: wide - w, h: Math.max(0, ph + gap - b.y) };
+                Object.assign(b, { x: left ? x : edgeIn, w: wide, h: size(it.c.id, wide, b.cut) });
+              }
+              floor = b.y + b.h + gap;
+            }
+          }
+          for (const it of items) far += (box[it.c.id].y - it.want) ** 2;
+        });
+        // widths are left equal unless changing them is worth something
+        return far + strips.reduce((sum, s, k) => sum + 0.02 * rings[k].length * (s - room / rings.length) ** 2, 0);
+      };
+      let strips = rings.map(() => room / rings.length), least = lay(strips);
+      for (let moved = rings.length > 1, round = 0; moved && round < 40; round++) {
+        moved = false;
+        for (let a = 0; a < rings.length; a++) for (let b = 0; b < rings.length; b++) {
+          if (a === b || strips[a] - step < thin) continue;
+          const next = strips.map((s, k) => (k === a ? s - step : k === b ? s + step : s)), far = lay(next);
+          if (far < least - 1) { strips = next; least = far; moved = true }
+        }
+      }
+      lay(strips, true);
+      const ys = ids.map(id => box[id]);
+      span[side] = { top: Math.min(0, ...ys.map(b => b.y)), bottom: Math.max(0, ...ys.map(b => b.y + b.h)) };
+    };
+    // The right margin first: a band above or below runs on into it where it is clear, and the left
+    // margin's room under the passage ends where the band below starts.
+    beside('right');
+    const ends = { true: span.right.bottom <= ph + gap ? W : bx + pw, false: span.right.top >= -gap ? W : bx + pw };
+    under = starts('below', ends.true); over = starts('above', ends.false);
+    beside('left');
+
+    // above and below the passage
+    const band = (cols, down) => cols.forEach((col, i) => {
+      const w = (i < cols.length - 1 ? cols[i + 1].x - gap : ends[down]) - col.x;
+      let y = down ? ph + gap : -gap;
+      for (const c of layers(col.roots).flat()) {
+        const h = size(c.id, w);
+        box[c.id] = { x: col.x, y: down ? y : y - h, w, h };
+        y += down ? h + gap : -h - gap;
+      }
     });
-    sides.forEach((m, k) => {
-      const col = m.firstElementChild, mine = made.filter(x => x.side === k), groups = stacks(mine, least + tabs, gap), wide = ruled(V, room(col));
-      const boxes = place(groups.map(g => ({ want: mine[g[0]].want - (g.length > 1 ? tabs : 0) })), least, gap, at.height);
-      col.insertAdjacentHTML('beforeend', groups.map((g, i) => {
-        const row = g.length < 2 ? '' : `<div class="tabs" style="height:${tabs}px">${g.map(j => mine[j].c).map(c =>
-          `<button class="tab" data-front="${c.id}" style="--c:${ink(c.author)}" aria-pressed="false" aria-label="Comment ${num(c.id)} by ${esc(c.author)}">${glyph(c.author, true)}${num(c.id)}</button>`).join('')}</div>`;
-        return `<div class="pile" style="top:${boxes[i].top}px;max-height:${boxes[i].height}px">${row}${g.map(j => nodeHTML(mine[j].c, V, runHTML, wide)).join('')}</div>`;
-      }).join(''));
-      if (boxes.length) col.style.minHeight = boxes[boxes.length - 1].top + boxes[boxes.length - 1].height + 'px';
-      col.querySelectorAll('.pile').forEach((p, i) => {
-        p.querySelectorAll(':scope > .node').forEach((n, m) => n.style.marginTop = mine[groups[i][m]].want - mine[groups[i][0]].want + 'px');
-        front(p.querySelector(':scope > .node'));
-      });
-    });
-  }
-  // Bring one thread of a pile to the front, and mark the pile as cut if it does not all show.
-  function front(node) {
-    const pile = node.parentElement, id = node.querySelector(':scope > .c').id;
-    pile.querySelectorAll(':scope > .node').forEach(n => n.classList.toggle('front', n === node));
-    pile.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', t.dataset.front === id));
-    pile.classList.toggle('cut', pile.scrollHeight > pile.clientHeight + 1);
-  }
-  // Bring the thread that holds comment `id` to the front of its pile, if it is behind another.
-  function surface(id) {
-    const el = $(id), node = el && el.closest('.pile > .node');
-    if (node && !node.classList.contains('front')) front(node);
+    band(under, true); band(over, false);
+
+    const up = Math.max(0, ...all.map(c => -box[c.id].y)); // what is above the passage pushes it, and everything, down
+    for (const c of all) {
+      const b = box[c.id], e = el[c.id], n = b.cut && b.cut.h > 0 && b.cut;
+      e.style.left = b.x + 'px'; e.style.top = b.y + up + 'px';
+      // a note the passage stands in a corner of is cut to its own shape, so it neither covers the passage nor takes its clicks
+      e.style.clipPath = !n ? '' : n.side === 'right' ? `polygon(0 0, ${b.w - n.w}px 0, ${b.w - n.w}px ${n.h}px, 100% ${n.h}px, 100% 100%, 0 100%)`
+        : `polygon(${n.w}px 0, 100% 0, 100% 100%, 0 100%, 0 ${n.h}px, ${n.w}px ${n.h}px)`;
+    }
+    body.style.setProperty('--at', up + 'px');
+    body.style.height = Math.max(ph, ...all.map(c => box[c.id].y + box[c.id].h)) + up + 'px';
   }
 
   function drawKey() {
     $('key').innerHTML = authors.map(a => {
-      const n = D.comments.filter(c => c.author === a && c.layer <= S.upTo).length;
+      const n = D.comments.filter(c => c.author === a && c.layer <= S.upTo && !c.hidden).length;
       return `<button style="--c:${ink(a)}" aria-pressed="${!S.off.has(a)}" data-author="${esc(a)}">${glyph(a, true)}<span>${esc(a)}</span><b>${n}</b></button>`;
     }).join('');
   }
@@ -448,7 +550,7 @@ function start() {
     const refs = (c.see_also || []).filter(r => byId[r]).map(r => `<button data-go="${r}" style="text-decoration-color:${ink(byId[r].author)}" title="${esc(byId[r].author)}">${num(r)}</button>`).join(', ');
     const tag = people.has(c.author) ? `<span class="tag">${(c.meta || {}).blind ? 'a person, writing blind' : 'a person'}</span>` : '';
     return `<div class="t${kinds(c)}" id="t-${c.id}" style="--c:${ink(c.author)}"><header><span>${glyph(c.author, true)} ${esc(c.author)}</span>${tag}<a href="#${c.id}" title="Link to this comment">${num(c.id)}</a></header>
-      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}</div>`;
+      <div class="tb">${md(c.text).replace('<p>', '<p>' + lemma)}</div>${refs ? `<div class="refs">see also ${refs}</div>` : ''}${LIVE ? LIVE.card(c) : ''}</div>`;
   }
   let sheetSpan = null;
   function openReader(rootIds, flashId) {
@@ -485,22 +587,19 @@ function start() {
     if (!shown().has(id)) { S.upTo = rounds; S.off.clear(); $('layer').value = rounds; draw() } // make sure a linked comment is visible
     if (phone.matches) return openReader([rootOf(c).id], id);
     if (sheet.open) sheet.close();
-    surface(id);
     flash($(id));
   }
 
   const hover = on => e => {
     const c = e.target.closest('.c'); if (c) light(c.id, on);
     const g = e.target.closest('.seg'); if (g) g.dataset.ids.split(' ').forEach(i => { const el = $(i); if (el) el.classList.toggle('lit', on) }); // marked words light the comments on them
-    const t = on && e.target.closest('.tab'); if (t) surface(t.dataset.front);
-    const m = e.target.closest('sup.m'); if (m) { if (on) surface(m.dataset.m); light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
+    const m = e.target.closest('sup.m'); if (m) { light(m.dataset.m, on); const el = $(m.dataset.m); if (el) el.classList.toggle('lit', on) }
   };
   document.querySelector('.daf').addEventListener('mouseover', hover(true));
   document.querySelector('.daf').addEventListener('mouseout', hover(false));
-  const pickMark = m => { if (phone.matches) return openReader([m.dataset.m]); surface(m.dataset.m); flash($(m.dataset.m)) };
+  const pickMark = m => { if (phone.matches) return openReader([rootOf(byId[m.dataset.m]).id], m.dataset.m); flash($(m.dataset.m)) };
   document.addEventListener('click', e => {
     const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
-    const t = e.target.closest('.tab'); if (t) return surface(t.dataset.front);
     const a = e.target.closest('.t header a'); if (a && a.hash === location.hash) return go(a.hash.slice(1)); // same link again: hashchange will not fire
     const m = e.target.closest('sup.m'); if (m) return pickMark(m);
     const c = e.target.closest('.c'); if (c && !getSelection().toString()) return openReader([c.dataset.root], c.id);
@@ -522,7 +621,6 @@ function start() {
 
   let timer = null;
   const stop = () => { clearInterval(timer); timer = null; $('play').textContent = 'Play' };
-  $('play').hidden = rounds < 2;
   $('play').addEventListener('click', () => {
     if (timer) return stop();
     const show = n => { S.upTo = n; $('layer').value = n; draw() };
@@ -556,21 +654,47 @@ function start() {
   addEventListener('afterprint', () => { root.classList.remove('printing'); drawMargins(shown()) });
   $('print').addEventListener('click', () => print());
 
-  const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
-  $('made').innerHTML = `
-    <div><h2>Reading the page</h2><p>The passage has a margin on either side. Comments on the passage stand in it, in the order of the words they attach to; small numbers in the passage show where each begins. Every comment has a margin of its own, on its far side from the passage, holding the comments on it. So each side is ruled into columns: the one beside the passage holds comments on the passage, the next holds comments on those, and so on outward, as far as the page goes. A comment nobody has answered has empty columns beyond it. Only where the page is too narrow for another column does a margin run beneath its comment, set in from the rule. Select a comment to read its whole thread. Pin to text sets each comment on the passage level with the words it is on, on the side they begin nearer to, cut short where the next begins; point at one to see all of it. Comments whose words are too close together to each have room share a spot as a stack, with a tab for each; point at or select a tab, or the comment's number in the passage, to bring it to the front.</p></div>
-    <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
-    <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
-    <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
-    ${authors.some(brandOf) ? '<div><h2>Logos</h2><p>Each reader is marked with its maker\'s logo and brand colour, to show whose model wrote what. The marks belong to their owners. Icons are linked from the <a href="https://github.com/lobehub/lobe-icons">lobe-icons</a> set.</p></div>' : ''}
-    <div><h2>Round by round</h2><div class="tbl"><table><tr><th>Round</th><th>Reader</th><th>Comments</th><th>Note</th></tr>${
-      [...D.log].sort((a, b) => a.layer - b.layer).map(l =>`<tr><td>${l.layer}</td><td>${esc(l.reader)}</td><td>${l.comments}</td><td>${esc(l.error ? 'Failed: ' + l.error : (l.closing || ''))}</td></tr>`).join('')}</table></div></div>`;
-  draw();
-  if (authors.some(brandOf)) { // logos are linked, not bundled: show them only once one is known to load
+  // Everything around the sheet that the record decides.
+  function dress() {
+    $('title').textContent = D.passage.title;
+    $('source').textContent = D.passage.source || '';
+    $('mock').hidden = !D.readers.some(r => r.model.startsWith('mock:'));
+    $('layer').max = rounds; $('layer').value = S.upTo; $('layer').disabled = rounds < 2;
+    $('play').hidden = rounds < 2;
+    const f = D.flags, row = (k, v) =>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`;
+    $('made').innerHTML = `
+      <div><h2>Reading the page</h2><p>The passage has a margin all round it, and the comments on it are written there. A small mark in the passage, its writer's and its number, shows where the words a comment is on end, and the comment is written at the edge of the passage nearest that mark. Beside the passage, comments run down the margin in the order of their marks, each starting level with its mark. Where two would meet, the one with room to spare gives way: a comment starts lower, by a few lines at most on its own, if it can still end before the next one's mark; beyond that, and otherwise, the ones above it move up into free margin. One that runs past the foot of the passage spreads into the room under it. Above or below the passage, a comment starts at its mark and runs to the right. Every comment has a margin in the same way, one layer further out: a reply stands in the next margin outward, level with its own mark in the comment it answers, or in the next band above or below. Each layer's margin is one width all the way down, so how far out a comment stands says which layer it is in; how wide each is, is found so that the comments stand as near their marks as they can: a layer of long comments gets a wider margin, and so shorter comments. Nothing is cut short or folded away. Point at a comment to light the words it is on; select one to read its whole thread. Pin to text switches to ruled columns filled from the top; a narrow window and the printed sheet use those too.</p></div>
+      <div><h2>Readers</h2><div class="tbl"><table>${D.readers.map(r => row(r.name, r.model)).join('')}</table></div></div>
+      <div><h2>Settings</h2><div class="tbl"><table>${Object.entries(f).map(([k, v]) => row(k, v === null ? 'none' : v)).join('')}</table></div></div>
+      <div><h2>What each reader was told</h2><pre>${esc(D.prompt_example || '')}</pre></div>
+      ${authors.some(brandOf) ? '<div><h2>Logos</h2><p>Each reader is marked with its maker\'s logo and brand colour, to show whose model wrote what. The marks belong to their owners. Icons are linked from the <a href="https://github.com/lobehub/lobe-icons">lobe-icons</a> set.</p></div>' : ''}
+      <div><h2>Round by round</h2><div class="tbl"><table><tr><th>Round</th><th>Reader</th><th>Comments</th><th>Note</th></tr>${
+        [...D.log].sort((a, b) => a.layer - b.layer).map(l =>`<tr><td>${l.layer}</td><td>${esc(l.reader)}</td><td>${l.comments}</td><td>${esc(l.error ? 'Failed: ' + l.error : (l.closing || ''))}</td></tr>`).join('')}</table></div></div>`;
+  }
+  // Logos are linked, not bundled: they are shown only once one is known to load. Asked once, when
+  // a reader with a maker's mark is first on the page, which on a served page can be after it opens.
+  let asked = false;
+  function logos() {
+    if (asked || !authors.some(brandOf)) return;
+    asked = true;
     const probe = new Image();
     probe.onload = () => { S.icons = true; draw() };
     probe.src = ICONS + 'claude.svg';
   }
+  // A served page's newer record, taken in place of the one shown. Whoever was looking at the
+  // latest round goes on looking at the latest.
+  function reload(fresh) {
+    const latest = S.upTo >= rounds;
+    for (const k of Object.keys(D)) delete D[k];
+    Object.assign(D, fresh);
+    derive();
+    if (latest || S.upTo > rounds) S.upTo = rounds;
+    dress(); draw(); logos();
+  }
+  if (D.live && typeof live === 'function') LIVE = live({ D, $, esc, sheet, reload, byId: id => byId[id] });
+  dress();
+  draw();
+  logos();
   if (location.hash) go(location.hash.slice(1));
 }
 start();

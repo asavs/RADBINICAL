@@ -1,0 +1,13 @@
+[
+  {"model": "anthropic/claude-opus-5.5", "name": "Claude Opus 5.5"},
+  {"model": "openai/gpt-6.1-terra", "name": "GPT-6.1 Terra"},
+  {"model": "openai/gpt-6.1-sol", "name": "GPT-6.1 Sol"},
+  {"model": "google/gemini-4-argon", "name": "Gemini 4 Argon"},
+  {"model": "x-ai/grok-4.7", "name": "Grok 4.7"},
+  {"model": "deepseek/deepseek-v4.1-flash", "name": "DeepSeek v4.1"},
+  {"model": "moonshotai/kimi-k3", "name": "Kimi K3"},
+  {"model": "qwen/qwen3.8-27b", "name": "Qwen 3.8 27b"},
+  {"model": "thinkingmachines/inkling", "name": "Inkling"},
+  {"model": "nvidia/nemotron-3-ultra-550b-a55b", "name": "Nemotron 3 Ultra"},
+  {"model": "openrouter:nousresearch/hermes-4-405b", "name": "Hermes 4"}
+]

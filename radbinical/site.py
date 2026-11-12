@@ -44,19 +44,25 @@ def marks(readers, brands):
     return f'<span class="marks">{"".join(out)}</span>' if out else ""
 
 
-def render(run_dir):
-    """Write page.html beside page.json."""
-    run_dir = Path(run_dir)
-    data = json.loads((run_dir / "page.json").read_text(encoding="utf-8"))
-    data["site"] = {"run": run_dir.name, "workflow": WORKFLOW}
+def page_html(data, live=False):
+    """The viewer holding one page's record. `live` adds the controls for writing on the page,
+    which need the server (radbinical/serve.py) behind them."""
     tpl = (TEMPLATES / "viewer.html").read_text(encoding="utf-8")
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     title = "Marginalia on " + re.sub(r"[<>&]", "", data["passage"]["title"])
     brands = json.dumps({k: v for k, v in load_brands().items() if not k.startswith("_")})
     kernel = (TEMPLATES / "kernel.js").read_text(encoding="utf-8")
-    html = (tpl.replace("__TITLE__", title).replace("/*__KERNEL__*/", kernel)
-            .replace("/*__PAGE_DATA__*/null", blob).replace("/*__BRANDS__*/{}", brands))
-    (run_dir / "page.html").write_text(html, encoding="utf-8")
+    controls = (TEMPLATES / "live.js").read_text(encoding="utf-8") if live else ""
+    return (tpl.replace("__TITLE__", title).replace("/*__KERNEL__*/", kernel).replace("/*__LIVE__*/", controls)
+            .replace("/*__BRANDS__*/{}", brands).replace("/*__PAGE_DATA__*/null", blob))
+
+
+def render(run_dir):
+    """Write page.html beside page.json."""
+    run_dir = Path(run_dir)
+    data = json.loads((run_dir / "page.json").read_text(encoding="utf-8"))
+    data["site"] = {"run": run_dir.name, "workflow": WORKFLOW}
+    (run_dir / "page.html").write_text(page_html(data), encoding="utf-8")
 
 
 def _stats(d):

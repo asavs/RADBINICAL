@@ -1,0 +1,78 @@
+<title>Radbinical</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;600&family=EB+Garamond:wght@500;700&display=swap">
+<style>
+:root { --paper: #eef1f4; --sheet: #fdfdfb; --ink: #14181f; --ink-2: #505a69; --rule: #d3d9e1; --mark: #f0bf00; --bad: #c2362b }
+@media (prefers-color-scheme: dark) { :root { --paper: #0f1216; --sheet: #171b21; --ink: #e7eaef; --ink-2: #9ba5b3; --rule: #2b323c; --mark: #d9a800; --bad: #ff8a7a; color-scheme: dark } }
+* { box-sizing: border-box }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 1rem/1.55 "IBM Plex Sans", system-ui, sans-serif; padding: 3rem max(16px, env(safe-area-inset-right, 0px)) 4rem max(16px, env(safe-area-inset-left, 0px)) }
+main { max-width: 42rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem }
+h1 { font: 700 clamp(2.3rem, 1.6rem + 3.4vw, 3.4rem)/1.05 "EB Garamond", Garamond, Georgia, serif; margin: 0 }
+h2 { font: 0.75rem "IBM Plex Mono", ui-monospace, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin: 1rem 0 -0.9rem }
+p { margin: 0; max-width: 60ch } .lede { font: 500 1.4rem/1.4 "EB Garamond", Garamond, Georgia, serif }
+a { color: inherit; text-decoration-color: var(--mark); text-decoration-thickness: 2px; text-underline-offset: 3px }
+ul { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink) }
+li { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.9rem 0; border-bottom: 1px solid var(--rule) }
+li b, li > a { font: 700 1.45rem/1.25 "EB Garamond", Garamond, Georgia, serif }
+li .src { color: var(--ink-2); font-size: 0.92rem }
+li .open { font: 500 1.12rem/1.4 "EB Garamond", Garamond, Georgia, serif; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden }
+button { font: 600 0.9rem "IBM Plex Sans", system-ui, sans-serif; color: var(--paper); background: var(--ink); border: none; border-radius: 999px; padding: 0.4rem 1.1rem; cursor: pointer; align-self: flex-start; margin-top: 0.3rem }
+button:disabled { opacity: 0.5 }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+small, .eyebrow { font: 0.75rem "IBM Plex Mono", ui-monospace, monospace; color: var(--ink-2) }
+.eyebrow { letter-spacing: 0.08em; text-transform: uppercase }
+details { border-top: 2px solid var(--ink); padding-top: 0.8rem }
+summary { cursor: pointer; font-weight: 600 }
+form { display: flex; flex-direction: column; gap: 0.8rem; padding-top: 0.9rem }
+label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.82rem; color: var(--ink-2) }
+input, textarea { font: inherit; font-size: 1rem; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 0.25rem; padding: 0.45rem 0.55rem; width: 100% }
+textarea { font: 500 1.12rem/1.4 "EB Garamond", Garamond, Georgia, serif; resize: vertical }
+.err { color: var(--bad); font-size: 0.9rem }
+[hidden] { display: none }
+</style>
+<main>
+  <div class="eyebrow">Commentary by language models, and by you</div>
+  <h1>Radbinical</h1>
+  <p class="lede">Choose a passage. It opens bare. Ask models to write in its margins, write there yourself, or select any words and ask a model what it makes of them.</p>
+  <p class="err" id="err" role="alert"></p>
+  <h2>Passages</h2>
+  <ul id="passages"><li><span class="src">Loading…</span></li></ul>
+  <details>
+    <summary>Bring a text of your own</summary>
+    <form id="own">
+      <label>Title<input name="title" required maxlength="200"></label>
+      <label>Where it is from (optional)<input name="source" maxlength="400"></label>
+      <label>The text, with a blank line between paragraphs<textarea name="text" rows="10" required></textarea></label>
+      <button>Open a bare page on it</button>
+    </form>
+  </details>
+  <h2 id="mineHead" hidden>Pages you have opened in this browser</h2>
+  <ul id="mine" hidden></ul>
+  <p><small>A page's address is all anyone needs to read it and write on it; share it with whom you like. Your keys for the models are kept in your browser, under Settings on any page. Code: <a href="https://github.com/asavs/RADBINICAL">github.com/asavs/RADBINICAL</a></small></p>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function open(body, button) {
+  $('err').textContent = '';
+  if (button) button.disabled = true;
+  try {
+    const r = await fetch('/api/pages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.statusText);
+    location.href = '/p/' + j.id;
+  } catch (e) { $('err').textContent = 'The page could not be opened: ' + e.message; if (button) button.disabled = false }
+}
+fetch('/api/library').then(r => r.json()).then(lib => {
+  $('passages').innerHTML = lib.passages.map(p => `<li><b>${esc(p.title)}</b>${p.source ? `<span class="src">${esc(p.source)}</span>` : ''}
+    <span class="open">${esc(p.text.slice(0, 400))}</span><small>${p.text.split(/\s+/).length} words</small><button data-passage="${esc(p.id)}">Open a bare page</button></li>`).join('')
+    || '<li><span class="src">No passages yet. Put .txt files in passages/.</span></li>';
+}).catch(() => { $('err').textContent = 'The library could not be loaded.' });
+$('passages').addEventListener('click', e => { const b = e.target.closest('[data-passage]'); if (b) open({ passage: b.dataset.passage }, b) });
+$('own').addEventListener('submit', e => { e.preventDefault(); const f = e.target; open({ title: f.title.value, source: f.source.value, text: f.text.value }, f.querySelector('button')) });
+let mine = [];
+try { mine = JSON.parse(localStorage.getItem('radbinical.pages')) || [] } catch (e) {}
+if (mine.length) {
+  $('mine').hidden = $('mineHead').hidden = false;
+  $('mine').innerHTML = mine.map(p => `<li><a href="/p/${esc(p.id)}">${esc(p.title)}</a><small>${new Date(p.at).toLocaleString()}</small></li>`).join('');
+}
+</script>

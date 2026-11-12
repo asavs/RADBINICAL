@@ -34,6 +34,46 @@ with the output limit a round would use, and start nothing if one cannot be reac
 out of credit, a key with no quota for the model, or a model its provider has retired would
 otherwise fail every turn and leave the page a voice short. `--no-check` skips that.
 
+## Write on a page
+
+    python3 -m radbinical serve              # http://127.0.0.1:8000
+    python3 -m radbinical serve --env-keys   # readers may use the keys in this machine's .env
+
+The first page is the library: the texts in `passages/`, each with the title and source
+`passages/library.json` gives it, and a form for a text of your own. Choosing one opens a bare
+page on it, with nothing in the margins. From there:
+
+- **Ask models** names the models that take a round. They answer at the same time, each seeing
+  the page as it stood when they were asked, and comment where they like. Any model id can be
+  typed in; the ones offered are in `radbinical/roster.json`.
+- **Select words**, in the passage or in a comment in the margins, and choose **Add comment** to
+  write on them yourself or **Request comment** to ask models for one comment on exactly those
+  words. A model asked this way writes its answer in the usual form and may decline; what it writes
+  is put on the words selected, so words that occur twice are not mistaken for each other.
+- Opening a comment's thread gives **Reply**, **Ask a model** and **Remove** under each comment.
+  A removed comment is marked `hidden` in `page.json`: it leaves the page and is no longer shown to
+  readers, and stays in the record.
+- **Settings** holds your name, your provider keys, and whether models are told who wrote each
+  comment (the page's `signed` flag).
+
+Every ask is one round, so the rounds slider plays the page back in the order it was written.
+While models are reading, the bar says who, and what the page has cost so far.
+
+Keys are kept in the reader's browser and sent with each request; the server uses them for that
+request's calls and writes them nowhere. The keys in the server's own `.env` are used only with
+`--env-keys`. A maker's model normally goes only to its maker's API (see Readers and keys); a
+reader who has given an OpenRouter key and not the maker's has it sent through OpenRouter, and the
+page records the reader's model as `openrouter:<id>`.
+
+Pages are kept in `pages/` (`--pages` for another folder), each as `page.json` in a folder named
+by a long random id. That id is the page's address, `/p/<id>`, and is all anyone needs to read the
+page or write on it; there are no accounts. A served page is the same record as a run, so
+`render`, `extend` and the table work on its folder.
+
+To let other machines reach it, give `--host 0.0.0.0` and a port. On a tailnet that is enough. On
+the open internet put it behind something that provides HTTPS, since keys travel to it, and leave
+`--env-keys` off.
+
 ## A turn
 
 Every reader takes its turn the same way, whatever its model can do. It is shown the passage and
@@ -57,7 +97,8 @@ reader is free to say again what it has already said; nothing refuses a repeat, 
 marks it (`repeat_of`).
 
 Each turn's entry in the page's `log` carries `replies`, the number of answers it took, and
-`refused`, the comments still not recorded at the end.
+`refused`, the comments still not recorded at the end. A turn in which the reader was asked about
+particular words (see Write on a page) also carries `asked`, the node and the words.
 
 ## Readers and keys
 
@@ -207,17 +248,39 @@ comment are nodes, and a comment's `target` is the node it is written on.
 
 Under every layout is one question, where on its text a comment is, answered the same way for
 the passage and for a comment: a comment is on a node and, when it quotes, on a span of that node's
-text; with no quote it is on the whole text. `radbinical/templates/kernel.js` holds the answer for
+text; with no quote it is on the whole text. A comment on the passage stores its span as `start`
+and `end`; a comment on a comment stores them when they were given exactly, as offsets into the
+comment's text as shown, and is otherwise where its quote is first found. `radbinical/templates/kernel.js` holds the answer for
 the viewer (`spanOf`), the cutting of a text into marked pieces (`pieces`) and the arithmetic of
-setting boxes level with their words (`place`, `nearer`, `stacks`); none of it touches the page, and
+writing each comment in the margin where its words end (`edge`, `stack`); none of it touches the page, and
 `tests/test_kernel.py` runs it under Node.
 
-Pin to text, on a wide screen, is a second layout on that kernel: each comment on the passage
-stands level with the words it is on, on the side they begin nearer to, and is cut short where
-the next begins, so the sheet is as tall as the passage. A comment always starts exactly at its words: the
-one above is cut there, and only where that would leave it less than two lines do the two share
-the spot as a stack, one in front and a tab for each. Pointing at a comment
-shows all of it; a tab, or the comment's number in the passage, brings it to the front.
+On a wide screen the page opens pinned to the text, which is writing in the margins. The passage
+has a margin all round it. A small mark, its writer's logo and its number, closes the words a
+comment is on, and the comment is written at the edge of the passage nearest that mark (`edge`).
+
+- Beside the passage, comments run down the margin in the order of their marks. Each is whole and
+  starts level with its mark. The stretch of margin from a comment's mark to the next one's is the
+  room it is entitled to, and where two comments would meet, the one with room to spare gives way
+  (`stack`): the lower one starts lower if it can still end before the next mark, as the last one
+  always can; otherwise the ones above it move up into free margin. It gives way by six lines or
+  so on its own; of any more than that it takes half and the ones above move up by the other
+  half. A comment that runs past the foot of the passage spreads into the room under it.
+- Above or below the passage, a comment starts at its mark and runs to the right from there, as
+  far as the next comment that starts there, or on into the right margin where that is clear.
+- Each margin is in layers. Comments on the passage are in the layer next to it, and a reply is in
+  the next layer out from the comment it is on: beside the passage, the next margin outward, level
+  with its own mark in that comment; above or below, the next band outward.
+- Beside the passage each layer is one unbroken margin, as wide all the way down, so how far
+  out a comment stands always says which layer it is in. How wide each layer's margin is, is
+  found, not fixed. A comment is as high as its words need at its margin's width, so a layer of
+  long comments that push each other off their marks stands better in a wider margin, and a
+  layer whose comments have room to spare can do with a thinner one. The search (`beside` in
+  the viewer) starts from equal widths and moves a step of width from one layer to another,
+  keeping a move when the comments then stand nearer their marks.
+
+Nothing is cut or folded. Pin to text switches to the ruled columns described above, which a
+narrow window and the printed sheet also use.
 
 The rounds slider and Play show the page as it stood after each round;
 clicking a reader in the key hides or shows them. Selecting a comment opens its whole thread.
@@ -265,9 +328,12 @@ submissions on every push and pull request.
 | `radbinical/prices.py`, `prices.json` | Cost estimates from tokens, and the price snapshot |
 | `radbinical/human.py` | People as readers |
 | `radbinical/site.py`, `radbinical/templates/` | The web pages |
+| `radbinical/serve.py`, `templates/live.js`, `templates/library.html` | The server, a served page's controls, and the library |
+| `radbinical/roster.json` | The models a served page offers |
 | `runs/` | One folder per run: `page.json`, `page.html` |
+| `pages/` | Served pages, one folder each; not in git |
 | `data/` | The table built from `runs/` |
-| `passages/` | Texts |
+| `passages/` | Texts, and `library.json` with their titles and sources |
 | `humans/` | People's submissions |
 | `docs/` | The website |
 | `tests/` | `python3 -m unittest discover -s tests` |
